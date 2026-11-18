@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Switchwatt – Coming soon</title>
+<meta name="description" content="Switchwatt – der unabhängige Wechselservice für die Direktvermarktung von Solarstrom. Bald für Ihre Anlage.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 30'%3E%3Crect x='1' y='1' width='50' height='28' rx='14' fill='%233DDC97'/%3E%3Ccircle cx='37' cy='15' r='11' fill='%23FFD23F'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0C1A15}
+body{color:#F4F1E8;font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+a{color:#FFD23F}a:hover{color:#FFE27A}
+.display{font-family:"Space Grotesk","Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif}
+.page{min-height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.sun{position:absolute;border-radius:50%;background:#FFD23F;pointer-events:none}
+.sun1{right:-180px;top:-220px;width:620px;height:620px;opacity:.09}
+.sun2{right:-60px;top:-100px;width:380px;height:380px;opacity:.10}
+.wrap{position:relative;width:100%;max-width:1160px;margin:0 auto;padding:0 24px}
+header.wrap{padding-top:32px;padding-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.word{font-weight:700;font-size:28px;letter-spacing:-.8px}
+.word span{color:#FFD23F}
+.badge{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#0C1A15;background:#3DDC97;padding:8px 14px;border-radius:999px}
+main.wrap{flex-grow:1;padding-top:48px;padding-bottom:72px;display:flex;flex-wrap:wrap;align-items:center;gap:56px}
+.copy{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:28px}
+h1{margin:0;font-weight:700;font-size:clamp(48px,8vw,104px);line-height:.95;letter-spacing:-3px}
+h1 span{color:#FFD23F}
+.lead{margin:0;max-width:520px;font-size:21px;line-height:1.5;color:#C9D3CC}
+.cta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.cta{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 28px;border-radius:999px;background:#FFD23F;color:#0C1A15;font-weight:700;font-size:17px;text-decoration:none}
+.cta:hover{background:#FFE27A;color:#0C1A15}
+.muted{font-size:15px;color:#9FB0A6}
+.switch-area{flex:1 1 360px;display:flex;flex-direction:column;align-items:center;gap:22px}
+.switch{position:relative;width:320px;max-width:100%;height:168px;border-radius:999px;border:0;padding:0;cursor:pointer;background:#24352E;box-shadow:inset 0 0 0 4px rgba(244,241,232,.12);transition:background .35s ease}
+.knob{position:absolute;top:14px;left:14px;width:140px;height:140px;border-radius:50%;background:#6E7F76;display:flex;align-items:center;justify-content:center;transition:left .35s ease,background .35s ease}
+.switch[aria-pressed="true"]{background:#3DDC97}
+.switch[aria-pressed="true"] .knob{left:calc(100% - 154px);background:#FFD23F}
+.switch:focus-visible{outline:3px solid #FFD23F;outline-offset:4px}
+.status{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.label{font-weight:700;font-size:26px;color:#C9D3CC}
+.on .label{color:#FFD23F}
+.pills{flex:1 1 100%;display:flex;gap:12px;flex-wrap:wrap}
+.pill{font-size:15px;font-weight:500;border:1px solid rgba(244,241,232,.22);padding:10px 18px;border-radius:999px}
+footer{position:relative;border-top:1px solid rgba(244,241,232,.12)}
+footer .wrap{padding-top:24px;padding-bottom:24px;display:flex;gap:16px 32px;flex-wrap:wrap;justify-content:space-between;font-size:13px;line-height:1.6;color:#9FB0A6}
+@media (prefers-reduced-motion:reduce){.switch,.knob{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="sun sun1" aria-hidden="true"></div>
+<div class="sun sun2" aria-hidden="true"></div>
+
+<header class="wrap">
+<div class="brand">
+<svg width="52" height="30" viewBox="0 0 52 30" aria-hidden="true"><rect x="1" y="1" width="50" height="28" rx="14" fill="#3DDC97"/><circle cx="37" cy="15" r="11" fill="#FFD23F"/><path d="M38.5 7.5l-5.5 8.2h4l-1.4 6.8 5.7-8.9h-4.1z" fill="#0C1A15"/></svg>
+<span class="word display">switch<span>watt</span></span>
+</div>
+<span class="badge">Coming soon</span>
+</header>
+
+<main class="wrap">
+<section class="copy">
+<h1 class="display">Umschalten<br><span>lohnt sich.</span></h1>
+<p class="lead">Der unabhängige Wechselservice für die Direktvermarktung von Solarstrom. Bald für Ihre Anlage.</p>
+<div class="cta-row">
+<a class="cta" href="mailto:angebote@switchwatt.de?subject=Ich%20m%C3%B6chte%20umschalten">Jetzt vormerken lassen
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C1A15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<span class="muted">angebote@switchwatt.de</span>
+</div>
+</section>
+
+<section class="switch-area" id="switchArea" aria-label="Der Schalter">
+<button type="button" class="switch" id="sw" aria-pressed="false" aria-label="Schalter umlegen">
+<span class="knob"><svg width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z" fill="#0C1A15"/></svg></span>
+</button>
+<div class="status" aria-live="polite">
+<span class="label display" id="lbl">Alter Vertrag</span>
+<span class="muted" id="hint">Klicken Sie mal auf den Schalter.</span>
+</div>
+</section>
+
+<section class="pills">
+<span class="pill">Unabhängig</span>
+<span class="pill">Kein Aufwand für Sie</span>
+<span class="pill">Kosten nur bei Mehrerlös</span>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+<span id="impressum"><strong style="color:#C9D3CC">Impressum:</strong> Switchwatt ist ein Service der WordAtech UG (haftungsbeschränkt) · Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe · Geschäftsführung: Kyra-Marilyn Blume · Amtsgericht Bad Homburg HRB 16752 · USt-IdNr.: DE369604900 · <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></span>
+<a href="datenschutz.html">Datenschutz</a>
+</div>
+</footer>
+</div>
+<script>
+(function(){
+var sw=document.getElementById('sw'),area=document.getElementById('switchArea'),lbl=document.getElementById('lbl'),hint=document.getElementById('hint');
+sw.addEventListener('click',function(){
+var on=sw.getAttribute('aria-pressed')!=='true';
+sw.setAttribute('aria-pressed',on?'true':'false');
+area.classList.toggle('on',on);
+lbl.textContent=on?'Mehr Erlös. Null Stress.':'Alter Vertrag';
+hint.textContent=on?'Genau das machen wir für Sie.':'Klicken Sie mal auf den Schalter.';
+});
+})();
+</script>
+</body>
+</html>

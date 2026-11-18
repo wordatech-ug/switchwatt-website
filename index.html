@@ -3,107 +3,298 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Switchwatt – Coming soon</title>
-<meta name="description" content="Switchwatt – der unabhängige Wechselservice für die Direktvermarktung von Solarstrom. Bald für Ihre Anlage.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 30'%3E%3Crect x='1' y='1' width='50' height='28' rx='14' fill='%233DDC97'/%3E%3Ccircle cx='37' cy='15' r='11' fill='%23FFD23F'/%3E%3C/svg%3E">
+<title>Switchwatt – Mehr Erlös aus Ihrem Solarstrom</title>
+<meta name="description" content="Switchwatt vergleicht Direktvermarkter für PV-Dachanlagen von 100 bis 750 kWp und übernimmt den Wechsel. Unabhängig, ohne Provisionen, Kosten nur bei Mehrerlös.">
+<meta property="og:title" content="Switchwatt – Mehr Erlös aus Ihrem Solarstrom">
+<meta property="og:description" content="Wir vergleichen Direktvermarkter für Ihre Dachanlage und übernehmen den Wechsel.">
+<meta property="og:image" content="https://www.switchwatt.de/hero-poster.jpg">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/InterDisplay-SemiBold.woff" as="font" type="font/woff" crossorigin>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;background:#0C1A15}
-body{color:#F4F1E8;font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
-a{color:#FFD23F}a:hover{color:#FFE27A}
-.display{font-family:"Space Grotesk","Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif}
-.page{min-height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative}
-.sun{position:absolute;border-radius:50%;background:#FFD23F;pointer-events:none}
-.sun1{right:-180px;top:-220px;width:620px;height:620px;opacity:.09}
-.sun2{right:-60px;top:-100px;width:380px;height:380px;opacity:.10}
-.wrap{position:relative;width:100%;max-width:1160px;margin:0 auto;padding:0 24px}
-header.wrap{padding-top:32px;padding-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.word{font-weight:700;font-size:28px;letter-spacing:-.8px}
-.word span{color:#FFD23F}
-.badge{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#0C1A15;background:#3DDC97;padding:8px 14px;border-radius:999px}
-main.wrap{flex-grow:1;padding-top:48px;padding-bottom:72px;display:flex;flex-wrap:wrap;align-items:center;gap:56px}
-.copy{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:28px}
-h1{margin:0;font-weight:700;font-size:clamp(48px,8vw,104px);line-height:.95;letter-spacing:-3px}
-h1 span{color:#FFD23F}
-.lead{margin:0;max-width:520px;font-size:21px;line-height:1.5;color:#C9D3CC}
-.cta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-.cta{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 28px;border-radius:999px;background:#FFD23F;color:#0C1A15;font-weight:700;font-size:17px;text-decoration:none}
-.cta:hover{background:#FFE27A;color:#0C1A15}
-.muted{font-size:15px;color:#9FB0A6}
-.switch-area{flex:1 1 360px;display:flex;flex-direction:column;align-items:center;gap:22px}
-.switch{position:relative;width:320px;max-width:100%;height:168px;border-radius:999px;border:0;padding:0;cursor:pointer;background:#24352E;box-shadow:inset 0 0 0 4px rgba(244,241,232,.12);transition:background .35s ease}
-.knob{position:absolute;top:14px;left:14px;width:140px;height:140px;border-radius:50%;background:#6E7F76;display:flex;align-items:center;justify-content:center;transition:left .35s ease,background .35s ease}
-.switch[aria-pressed="true"]{background:#3DDC97}
-.switch[aria-pressed="true"] .knob{left:calc(100% - 154px);background:#FFD23F}
-.switch:focus-visible{outline:3px solid #FFD23F;outline-offset:4px}
-.status{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
-.label{font-weight:700;font-size:26px;color:#C9D3CC}
-.on .label{color:#FFD23F}
-.pills{flex:1 1 100%;display:flex;gap:12px;flex-wrap:wrap}
-.pill{font-size:15px;font-weight:500;border:1px solid rgba(244,241,232,.22);padding:10px 18px;border-radius:999px}
-footer{position:relative;border-top:1px solid rgba(244,241,232,.12)}
-footer .wrap{padding-top:24px;padding-bottom:24px;display:flex;gap:16px 32px;flex-wrap:wrap;justify-content:space-between;font-size:13px;line-height:1.6;color:#9FB0A6}
-@media (prefers-reduced-motion:reduce){.switch,.knob{transition:none}}
+@font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+@font-face{font-family:'Inter Display';src:url(fonts/InterDisplay-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+
+body{margin:0;background:#000000}
+a{color:#8FA6FF}a:hover{color:#B7C6FF}
+@keyframes swUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes swGlow{0%,100%{opacity:.55}50%{opacity:.85}}
+@keyframes swTwinkle{0%,100%{opacity:.25}50%{opacity:.9}}
+.sw-in{animation:swUp .9s cubic-bezier(.2,.7,.2,1) both}
+.sw-d1{animation-delay:.12s}.sw-d2{animation-delay:.24s}.sw-d3{animation-delay:.36s}
+.sw-glow{animation:swGlow 6s ease-in-out infinite}
+.sw-star{animation:swTwinkle 4s ease-in-out infinite}
+@supports (animation-timeline: view()){.sw-reveal{animation:swUp linear both;animation-timeline:view();animation-range:entry 0% entry 40%}}
+.sw-card:hover{border-color:rgba(143,166,255,.35)!important}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
+details[open] .sw-plus{transform:rotate(45deg)}
+@keyframes swRay{0%,100%{opacity:.35}50%{opacity:.75}}
+
+.sw-ray{animation:swRay 7s ease-in-out infinite;filter:blur(18px)}
+@keyframes swRise{from{transform:translateY(150px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes swShimmer{0%,100%{opacity:.45}50%{opacity:.9}}
+@keyframes swSweep{0%{transform:translateX(-520px)}100%{transform:translateX(520px)}}
+.sw-sun{animation:swRise 2.8s cubic-bezier(.2,.7,.2,1) both}
+.sw-shimmer{animation:swShimmer 5s ease-in-out infinite}
+.sw-sweep{animation:swSweep 7s ease-in-out infinite alternate}
+.sw-opt{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.sw-opt:hover{transform:scale(1.06);border-color:#8FA6FF!important;box-shadow:0 0 0 4px rgba(47,84,235,.25),0 10px 30px rgba(47,84,235,.35)}
+.sw-opt:active{transform:scale(.98)}
+.sw-opt:focus-visible{outline:3px solid #8FA6FF;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sw-in,.sw-reveal,.sw-glow,.sw-star,.sw-sun,.sw-shimmer,.sw-sweep{animation:none!important}.sw-opt:hover{transform:none}}
+
+.sw-opt{flex:1 1 200px;min-height:64px;padding:0 22px;border-radius:14px;display:flex;align-items:center;gap:14px;font-size:17px;font-weight:600;font-family:Inter,system-ui,sans-serif;text-align:left;cursor:pointer;background:rgba(255,255,255,.05);color:#FFFFFF;border:1px solid rgba(255,255,255,.18)}
+.sw-opt[aria-pressed=true]{background:#2F54EB;border-color:#8FA6FF;box-shadow:0 0 0 4px rgba(47,84,235,.25)}
+.sw-dot{flex:0 0 auto;width:22px;height:22px;border-radius:50%;box-sizing:border-box;border:2px solid rgba(255,255,255,.35)}
+.sw-opt[aria-pressed=true] .sw-dot{border:6px solid #FFFFFF;background:#2F54EB}
+
 </style>
 </head>
 <body>
-<div class="page">
-<div class="sun sun1" aria-hidden="true"></div>
-<div class="sun sun2" aria-hidden="true"></div>
+<div style="min-height: 100vh; background: #000000; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; overflow: hidden; position: relative">
 
-<header class="wrap">
-<div class="brand">
-<svg width="52" height="30" viewBox="0 0 52 30" aria-hidden="true"><rect x="1" y="1" width="50" height="28" rx="14" fill="#3DDC97"/><circle cx="37" cy="15" r="11" fill="#FFD23F"/><path d="M38.5 7.5l-5.5 8.2h4l-1.4 6.8 5.7-8.9h-4.1z" fill="#0C1A15"/></svg>
-<span class="word display">switch<span>watt</span></span>
+<nav style="position: sticky; top: 16px; z-index: 10; width: 100%; max-width: 1080px; margin: 16px auto 0; box-sizing: border-box; padding: 0 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: rgba(12,12,16,0.82); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 10px 10px 10px 18px; backdrop-filter: blur(12px)">
+<a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF">
+<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#FFFFFF"></rect><rect x="5" y="11" width="24" height="12" rx="6" fill="#2F54EB"></rect><circle cx="23" cy="17" r="4" fill="#FFFFFF"></circle></svg>
+<span style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: 21px; letter-spacing: -0.3px">Switchwatt</span>
+</a>
+<div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap">
+<a href="#ablauf" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">So geht's</a>
+<a href="#check" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Check</a>
+<a href="#vorteile" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Vorteile</a>
+<a href="#faq" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">FAQ</a>
+<a href="#vormerken" style="margin-left: 6px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">Vormerken
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
 </div>
-<span class="badge">Coming soon</span>
+</div>
+</nav>
+
+<header id="top" style="position: relative; padding: 130px 24px 220px; text-align: center">
+<video aria-hidden="true" autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline" poster="hero-poster.jpg" src="hero.mp4" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover"></video>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.48) 40%, rgba(5,10,40,0.45) 70%, #000000 100%)"></div>
+<div aria-hidden="true" class="sw-glow" style="position: absolute; left: 50%; top: -260px; width: 1200px; height: 620px; margin-left: -600px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.35), rgba(47,84,235,0.08) 60%, rgba(0,0,0,0) 100%)"></div>
+<div aria-hidden="true" style="position: absolute; left: 50%; bottom: -520px; width: 1600px; height: 700px; margin-left: -800px; border-radius: 50%; border-top: 1px solid rgba(143,166,255,0.45); box-shadow: 0 -40px 120px rgba(47,84,235,0.35)"></div>
+
+<div style="position: relative; max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 28px">
+<div class="sw-in" style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08)">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 999px; background: rgba(47,84,235,0.35); color: #C9D4FF">PILOT</span>
+<span style="font-size: 14px; color: #A1A1AA">Start Anfang 2027 mit den ersten Anlagen</span>
+</div>
+<h1 class="sw-in sw-d1" style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(44px, 7vw, 84px); line-height: 1.02; letter-spacing: -2px">Mehr Erlös aus<br>Ihrem Solarstrom.</h1>
+<p class="sw-in sw-d2" style="margin: 0; max-width: 620px; font-size: 19px; line-height: 1.55; color: #A1A1AA">Wir vergleichen Direktvermarkter für Ihre Dachanlage und übernehmen den Wechsel. Sie zahlen nur, wenn Sie mehr verdienen.</p>
+<div class="sw-in sw-d3" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">
+<a href="#check" style="display: inline-flex; align-items: center; min-height: 50px; padding: 0 24px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none; box-shadow: 0 0 0 1px rgba(143,166,255,0.4), 0 8px 32px rgba(47,84,235,0.45)">Kostenlos prüfen lassen</a>
+<a href="#ablauf" style="display: inline-flex; align-items: center; min-height: 50px; padding: 0 22px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none">So funktioniert's</a>
+</div>
+</div>
 </header>
 
-<main class="wrap">
-<section class="copy">
-<h1 class="display">Umschalten<br><span>lohnt sich.</span></h1>
-<p class="lead">Der unabhängige Wechselservice für die Direktvermarktung von Solarstrom. Bald für Ihre Anlage.</p>
-<div class="cta-row">
-<a class="cta" href="mailto:angebote@switchwatt.de?subject=Ich%20m%C3%B6chte%20umschalten">Jetzt vormerken lassen
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C1A15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-<span class="muted">angebote@switchwatt.de</span>
+<section style="position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px 40px; display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: center; font-size: 15px; color: #A1A1AA">
+<span>Für Dachanlagen von 100 bis 750 kWp</span>
+<span aria-hidden="true" style="color: #3F3F46">·</span>
+<span>Unabhängig, keine Provisionen</span>
+<span aria-hidden="true" style="color: #3F3F46">·</span>
+<span>Kein Aufwand für Sie</span>
+</section>
+
+<section id="vorteile" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 48px">
+<div class="sw-reveal" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+<span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E4E4E7">Vorteile</span>
+<h2 style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">Mehr rausholen. Nichts tun.</h2>
+</div>
+<div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px">
+<div class="sw-card sw-reveal" style="position: relative; overflow: hidden; border-radius: 20px; padding: 30px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="position: absolute; right: -80px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.35), rgba(47,84,235,0))"></div>
+<span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 26px; font-weight: 600">Mehr Erlös</strong>
+<span style="font-size: 16px; line-height: 1.55; color: #A1A1AA">Viele Verträge sind seit Jahren nicht verglichen. Wir finden heraus, ob Ihrer noch mithält.</span>
+</div>
+<div class="sw-card sw-reveal" style="position: relative; overflow: hidden; border-radius: 20px; padding: 30px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="position: absolute; right: -80px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.35), rgba(47,84,235,0))"></div>
+<span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M6 10l3.5 7h9L15 10z"></path><path d="M8 13.5h8.5M12 10l1.8 7"></path><path d="M5 20h14"></path></svg></span>
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 26px; font-weight: 600">Null Aufwand</strong>
+<span style="font-size: 16px; line-height: 1.55; color: #A1A1AA">Angebote einholen, durchrechnen, kündigen, wechseln: Das übernehmen wir komplett.</span>
+</div>
+<div class="sw-card sw-reveal" style="position: relative; overflow: hidden; border-radius: 20px; padding: 30px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="position: absolute; right: -80px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.35), rgba(47,84,235,0))"></div>
+<span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"></path></svg></span>
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 26px; font-weight: 600">Unabhängig</strong>
+<span style="font-size: 16px; line-height: 1.55; color: #A1A1AA">Keine Provisionen von Direktvermarktern. Wir arbeiten nur für Sie und werden nur bezahlt, wenn Sie mehr verdienen.</span>
+</div>
 </div>
 </section>
 
-<section class="switch-area" id="switchArea" aria-label="Der Schalter">
-<button type="button" class="switch" id="sw" aria-pressed="false" aria-label="Schalter umlegen">
-<span class="knob"><svg width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z" fill="#0C1A15"/></svg></span>
-</button>
-<div class="status" aria-live="polite">
-<span class="label display" id="lbl">Alter Vertrag</span>
-<span class="muted" id="hint">Klicken Sie mal auf den Schalter.</span>
+<section id="ablauf" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 48px">
+<div class="sw-reveal" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+<span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E4E4E7">So geht's</span>
+<h2 style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">In drei Schritten umgeschaltet.</h2>
+</div>
+<div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
+
+<div class="sw-card sw-reveal" style="border-radius: 20px; padding: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 20px">
+<div style="border-radius: 12px; background: #111116; border: 1px solid rgba(255,255,255,0.06); overflow: hidden">
+<div style="display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06)"><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span></div>
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 12px">
+<div style="border: 1.5px dashed rgba(143,166,255,0.45); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: #A1A1AA; font-size: 14px">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"></path></svg>
+<span>Vertrag oder Gutschrift ablegen</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(47,84,235,0.14); font-size: 14px; color: #E4E4E7"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"></path><path d="M14 3v4h4"></path></svg>Gutschrift_Oktober.pdf<span style="margin-left: auto; color: #8FA6FF">hochgeladen</span></div>
+</div>
+</div>
+<div style="padding: 0 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">1. Foto hochladen</strong>
+<span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Vertrag oder letzte Gutschrift, ein Handyfoto reicht. Dazu eine Vollmacht per Häkchen.</span>
+</div>
+</div>
+
+<div class="sw-card sw-reveal" style="border-radius: 20px; padding: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 20px">
+<div style="border-radius: 12px; background: #111116; border: 1px solid rgba(255,255,255,0.06); overflow: hidden">
+<div style="display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06)"><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span></div>
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 14px; font-size: 14px; color: #E4E4E7">
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between"><span>Angebot A</span><span style="color: #8FA6FF">bestes Angebot</span></div><div style="height: 8px; border-radius: 4px; background: #1F1F27"><div style="width: 92%; height: 8px; border-radius: 4px; background: #2F54EB"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between"><span>Angebot B</span><span style="color: #71717A">gut</span></div><div style="height: 8px; border-radius: 4px; background: #1F1F27"><div style="width: 74%; height: 8px; border-radius: 4px; background: #4A4F66"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between"><span>Ihr Vertrag heute</span><span style="color: #71717A">Vergleich</span></div><div style="height: 8px; border-radius: 4px; background: #1F1F27"><div style="width: 58%; height: 8px; border-radius: 4px; background: #4A4F66"></div></div></div>
+</div>
+</div>
+<div style="padding: 0 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">2. Wir vergleichen</strong>
+<span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Wir fragen passende Direktvermarkter an und rechnen jedes Angebot für Ihre Anlage durch.</span>
+</div>
+</div>
+
+<div class="sw-card sw-reveal" style="border-radius: 20px; padding: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 20px">
+<div style="border-radius: 12px; background: #111116; border: 1px solid rgba(255,255,255,0.06); overflow: hidden">
+<div style="display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06)"><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span><span style="width: 9px; height: 9px; border-radius: 50%; background: #3F3F46"></span></div>
+<div style="padding: 22px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+<div style="width: 88px; height: 46px; border-radius: 999px; background: #2F54EB; position: relative; box-shadow: 0 0 32px rgba(47,84,235,0.6)"><span style="position: absolute; right: 6px; top: 6px; width: 34px; height: 34px; border-radius: 50%; background: #FFFFFF"></span></div>
+<strong style="font-size: 16px; color: #FFFFFF">Wechsel bestätigt</strong>
+<span style="font-size: 13px; color: #A1A1AA">Kündigung und Anmeldung erledigen wir.</span>
+</div>
+</div>
+<div style="padding: 0 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">3. Sie schalten um</strong>
+<span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Sie bekommen eine klare Empfehlung. Ein Klick, und wir kümmern uns um den Rest.</span>
+</div>
+</div>
+
 </div>
 </section>
 
-<section class="pills">
-<span class="pill">Unabhängig</span>
-<span class="pill">Kein Aufwand für Sie</span>
-<span class="pill">Kosten nur bei Mehrerlös</span>
+<section id="check" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 40px">
+<div class="sw-reveal" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+<span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E4E4E7">30-Sekunden-Check</span>
+<h2 style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">Lohnt sich ein Wechsel für Sie?</h2>
+</div>
+<div class="sw-reveal" style="position: relative; overflow: hidden; width: 100%; max-width: 860px; box-sizing: border-box; border-radius: 24px; padding: 36px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 28px">
+<div aria-hidden="true" style="position: absolute; left: 50%; top: -220px; width: 700px; height: 360px; margin-left: -350px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.28), rgba(47,84,235,0))"></div>
+<span style="position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: #8FA6FF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5a2 2 0 0 1 4 0v6"></path><path d="M13 9a2 2 0 0 1 4 0v3"></path><path d="M17 11a2 2 0 0 1 4 0v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L5 15a2 2 0 0 1 3-2.6l1 1.1"></path></svg>Einfach eine Antwort antippen</span>
+<fieldset style="position: relative; margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 12px">
+<legend style="padding: 0; margin-bottom: 14px; font-size: 21px; font-weight: 600; display: flex; align-items: center; gap: 12px"><span style="width: 32px; height: 32px; border-radius: 50%; background: #2F54EB; display: inline-flex; align-items: center; justify-content: center; font-size: 15px">1</span>Wann haben Sie Ihren Vertrag zuletzt verglichen?</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button type="button" class="sw-opt" data-q="a1" data-v="nie" aria-pressed="false"><span class="sw-dot"></span>Noch nie</button>
+<button type="button" class="sw-opt" data-q="a1" data-v="alt" aria-pressed="false"><span class="sw-dot"></span>Vor über 2 Jahren</button>
+<button type="button" class="sw-opt" data-q="a1" data-v="neu" aria-pressed="false"><span class="sw-dot"></span>In den letzten 2 Jahren</button>
+</div>
+</fieldset>
+<fieldset style="position: relative; margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 12px">
+<legend style="padding: 0; margin-bottom: 14px; font-size: 21px; font-weight: 600; display: flex; align-items: center; gap: 12px"><span style="width: 32px; height: 32px; border-radius: 50%; background: #2F54EB; display: inline-flex; align-items: center; justify-content: center; font-size: 15px">2</span>Wissen Sie, was Ihr Direktvermarkter pro kWh behält?</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button type="button" class="sw-opt" data-q="a2" data-v="nein" aria-pressed="false"><span class="sw-dot"></span>Nein</button>
+<button type="button" class="sw-opt" data-q="a2" data-v="ungefaehr" aria-pressed="false"><span class="sw-dot"></span>Ungefähr</button>
+<button type="button" class="sw-opt" data-q="a2" data-v="ja" aria-pressed="false"><span class="sw-dot"></span>Ja, genau</button>
+</div>
+</fieldset>
+<div aria-live="polite" style="position: relative; border-radius: 16px; padding: 22px; background: #111116; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 22px; flex-wrap: wrap">
+<div aria-hidden="true" style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 999px; background: #000000; border: 1px solid rgba(255,255,255,0.08)">
+<span style="width: 18px; height: 18px; border-radius: 50%; background: #27272A" id="lamp-red"></span>
+<span style="width: 18px; height: 18px; border-radius: 50%; background: #27272A" id="lamp-amber"></span>
+<span style="width: 18px; height: 18px; border-radius: 50%; background: #27272A" id="lamp-green"></span>
+</div>
+<div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 4px">
+<strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 24px; font-weight: 600" id="check-title">Zwei Klicks, dann wissen Sie es.</strong>
+<span style="font-size: 15px; line-height: 1.5; color: #A1A1AA" id="check-text">Beantworten Sie die beiden Fragen oben.</span>
+</div>
+</div>
+</div>
 </section>
-</main>
 
-<footer>
-<div class="wrap">
-<span id="impressum"><strong style="color:#C9D3CC">Impressum:</strong> Switchwatt ist ein Service der WordAtech UG (haftungsbeschränkt) · Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe · Geschäftsführung: Kyra-Marilyn Blume · Amtsgericht Bad Homburg HRB 16752 · USt-IdNr.: DE369604900 · <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></span>
+<section id="faq" style="max-width: 820px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 40px">
+<div class="sw-reveal" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+<span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E4E4E7">FAQ</span>
+<h2 style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">Gute Fragen.</h2>
+</div>
+<div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
+<details class="sw-reveal" style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
+<summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Was kostet Switchwatt?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Nur dann etwas, wenn Sie durch den Wechsel mehr verdienen. Dann zahlen Sie einen Anteil Ihres Mehrerlöses aus dem ersten Jahr: [ANTEIL IN %]. Kein Mehrerlös, keine Kosten.</p>
+</details>
+<details class="sw-reveal" style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
+<summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Für welche Anlagen ist das?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Für Photovoltaik-Dachanlagen von etwa 100 bis 750 kWp in der Direktvermarktung, zum Beispiel auf Hallen, Höfen und Bürogebäuden.</p>
+</details>
+<details class="sw-reveal" style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
+<summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Muss ich selbst etwas unterschreiben oder kündigen?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Sie erteilen uns eine Vollmacht, damit wir Angebote einholen dürfen. Die Entscheidung für einen neuen Vertrag treffen immer Sie. Den Rest erledigen wir.</p>
+</details>
+<details class="sw-reveal" style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
+<summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Was passiert mit der Technik an meiner Anlage?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Der neue Direktvermarkter muss Ihre Anlage fernsteuern können. Die Anbindung organisieren wir mit unserem Technik-Partner, meist aus der Ferne.</p>
+</details>
+</div>
+</section>
+
+<section id="vormerken" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 120px">
+<div class="sw-reveal" style="position: relative; overflow: hidden; border-radius: 28px; padding: 64px 32px; background: #0A0A0D; border: 1px solid rgba(143,166,255,0.25); display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center">
+<div aria-hidden="true" class="sw-glow" style="position: absolute; left: 50%; bottom: -300px; width: 900px; height: 500px; margin-left: -450px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.5), rgba(47,84,235,0))"></div>
+<h2 style="position: relative; margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">Bereit zum Umschalten?</h2>
+<p style="position: relative; margin: 0; max-width: 520px; font-size: 17px; line-height: 1.55; color: #A1A1AA">Wir starten mit wenigen Pilotanlagen. Tragen Sie sich ein, wir melden uns persönlich.</p>
+<form id="sw-form" style="position: relative; width: 100%; max-width: 520px; display: flex; flex-wrap: wrap; gap: 10px">
+<label for="sw-mail" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">E-Mail-Adresse</label>
+<input id="sw-mail" name="email" type="email" required autocomplete="email" placeholder="name@firma.de" style="flex: 1 1 260px; min-height: 50px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.14); background: #000000; color: #FFFFFF; padding: 0 16px; font-size: 16px; font-family: Inter, system-ui, sans-serif">
+<button type="submit" style="min-height: 50px; padding: 0 24px; border-radius: 10px; border: 0; background: #2F54EB; color: #FFFFFF; font-weight: 600; font-size: 16px; cursor: pointer">Vormerken</button>
+</form>
+<p id="sw-thanks" hidden style="position: relative; margin: 0; font-size: 17px; line-height: 1.55; color: #C9D4FF">Danke! Ihr E-Mail-Programm öffnet sich mit einer vorbereiteten Nachricht. Einfach absenden, wir melden uns.</p>
+</div>
+</section>
+
+<footer style="border-top: 1px solid rgba(255,255,255,0.08)">
+<div style="max-width: 1080px; margin: 0 auto; box-sizing: border-box; padding: 28px 24px; display: flex; gap: 16px 32px; flex-wrap: wrap; justify-content: space-between; font-size: 13px; line-height: 1.6; color: #A1A1AA">
+<span><strong style="color: #E4E4E7">Impressum:</strong> Switchwatt ist ein Service der WordAtech UG (haftungsbeschränkt) · Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe · Geschäftsführung: Kyra-Marilyn Blume · Amtsgericht Bad Homburg HRB 16752 · USt-IdNr.: DE369604900 · <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></span>
 <a href="datenschutz.html">Datenschutz</a>
 </div>
 </footer>
+
 </div>
 <script>
 (function(){
-var sw=document.getElementById('sw'),area=document.getElementById('switchArea'),lbl=document.getElementById('lbl'),hint=document.getElementById('hint');
-sw.addEventListener('click',function(){
-var on=sw.getAttribute('aria-pressed')!=='true';
-sw.setAttribute('aria-pressed',on?'true':'false');
-area.classList.toggle('on',on);
-lbl.textContent=on?'Mehr Erlös. Null Stress.':'Alter Vertrag';
-hint.textContent=on?'Genau das machen wir für Sie.':'Klicken Sie mal auf den Schalter.';
+var st={};
+var lamps={red:document.getElementById('lamp-red'),amber:document.getElementById('lamp-amber'),green:document.getElementById('lamp-green')};
+var colors={red:'#F04438',amber:'#F5B70A',green:'#22C55E'},glows={red:'rgba(240,68,56,.8)',amber:'rgba(245,183,10,.8)',green:'rgba(34,197,94,.8)'};
+var T=document.getElementById('check-title'),X=document.getElementById('check-text');
+function render(){
+ for(var k in lamps){lamps[k].style.background='#27272A';lamps[k].style.boxShadow='none';}
+ if(!(st.a1&&st.a2))return;
+ var score=(st.a1==='neu'?0:2)+(st.a2==='ja'?0:st.a2==='ungefaehr'?1:2),on,t,x;
+ if(score>=3){on='red';t='Prüfen lohnt sich sehr wahrscheinlich.';x='Wer lange nicht verglichen hat und seine Kosten nicht kennt, lässt oft Geld liegen.';}
+ else if(score>=1){on='amber';t='Ein Check lohnt sich.';x='Die Konditionen haben sich zuletzt stark verändert. Wir sehen nach, ob Ihr Vertrag noch mithält.';}
+ else{on='green';t='Sie sind gut aufgestellt.';x='Wenn Sie möchten, prüfen wir trotzdem, ob es inzwischen noch bessere Angebote gibt.';}
+ lamps[on].style.background=colors[on];lamps[on].style.boxShadow='0 0 16px '+glows[on];T.textContent=t;X.textContent=x;
+}
+document.querySelectorAll('.sw-opt').forEach(function(b){b.addEventListener('click',function(){
+ var q=b.getAttribute('data-q');st[q]=b.getAttribute('data-v');
+ document.querySelectorAll('.sw-opt[data-q="'+q+'"]').forEach(function(o){o.setAttribute('aria-pressed',o===b?'true':'false');});
+ render();
+});});
+var f=document.getElementById('sw-form');
+f.addEventListener('submit',function(e){e.preventDefault();
+ var m=document.getElementById('sw-mail').value;
+ var body='Bitte merken Sie mich für den Switchwatt-Check vor.\n\nMeine E-Mail: '+m+(st.a1?'\nZuletzt verglichen: '+st.a1:'')+(st.a2?'\nKosten bekannt: '+st.a2:'');
+ window.location.href='mailto:angebote@switchwatt.de?subject='+encodeURIComponent('Vormerken: Switchwatt-Check')+'&body='+encodeURIComponent(body);
+ f.hidden=true;document.getElementById('sw-thanks').hidden=false;
 });
 })();
 </script>

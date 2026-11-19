@@ -76,3 +76,16 @@ td[style*="width:170px"]{width:auto!important;white-space:nowrap;font-size:12px}
 .sw-row>input,.sw-row>select{flex:1 1 100%!important}
 .sw-modal>div{padding:20px}
 }
+@media (max-width:700px){
+table.sw-stack,table.sw-stack tbody,table.sw-stack tr,table.sw-stack td{display:block;width:100%}
+table.sw-stack thead{display:none}
+table.sw-stack tr{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;margin-bottom:10px;background:#050507}
+table.sw-stack td{border:0;padding:4px 0;display:flex;gap:12px;justify-content:space-between;text-align:right}
+table.sw-stack td[data-l]::before{content:attr(data-l);color:#71717A;font-size:13px;text-align:left;flex:0 0 auto}
+table.sw-stack td:first-child{font-weight:600;font-size:16px;justify-content:flex-start;text-align:left}
+table.sw-stack td:first-child::before{display:none}
+.sw-hide-m{display:none}
+#topnav .sw-btn{padding:0 10px}
+.sw-dl{grid-template-columns:1fr 1fr!important}
+details summary{padding:6px 0}
+}

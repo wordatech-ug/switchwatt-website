@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kostenrechner Direktvermarktung: Was kostet mich mein Direktvermarkter? | Switchwatt</title>
+<meta name="description" content="Rechnen Sie Monatspauschale und Arbeitspreis Ihres Direktvermarkters in ct/kWh um und sehen Sie, wie Ihr Vertrag im Vergleich zum Markt liegt. Für PV-Dachanlagen ab 100 kWp, kostenlos und ohne Anmeldung.">
+<link rel="canonical" href="https://www.switchwatt.de/rechner.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.switchwatt.de/rechner.html">
+<meta property="og:title" content="Was kostet mich mein Direktvermarkter wirklich?">
+<meta property="og:description" content="Pauschale und Arbeitspreis in ct/kWh umrechnen und mit dem Markt vergleichen. Kostenlos, ohne Anmeldung.">
+<meta property="og:image" content="https://www.switchwatt.de/hero-poster.jpg">
+<meta property="og:locale" content="de_DE">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"Kostenrechner Direktvermarktung","url":"https://www.switchwatt.de/rechner.html","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"de","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"provider":{"@type":"Organization","name":"Switchwatt","url":"https://www.switchwatt.de/"},"description":"Rechnet die Kosten eines Direktvermarktungsvertrags für PV-Anlagen in Euro pro Jahr und ct/kWh um und ordnet sie im Markt ein."},
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Wie rechne ich eine Monatspauschale in ct/kWh um?","acceptedAnswer":{"@type":"Answer","text":"Pauschale pro Monat mal 12 ergibt die Kosten pro Jahr. Diese teilen Sie durch die eingespeiste Strommenge in kWh und nehmen das Ergebnis mal 100. Beispiel: 200 € pro Monat bei 155.000 kWh Einspeisung ergeben 2.400 € pro Jahr oder etwa 1,55 ct/kWh."}},
+{"@type":"Question","name":"Was kostet Direktvermarktung für Anlagen ab 100 kWp üblicherweise?","acceptedAnswer":{"@type":"Answer","text":"Nach unserer Marktrecherche (Stand November 2026) liegen Angebote für Dachanlagen ab 100 kWp häufig zwischen etwa 0,15 und 0,4 ct/kWh. Kleinere Anlagen bekommen oft feste Monatspauschalen, die umgerechnet deutlich teurer sein können."}},
+{"@type":"Question","name":"Worauf kommt es außer dem Preis an?","acceptedAnswer":{"@type":"Answer","text":"Auf Laufzeit und Kündigungsfrist, die Regelung bei negativen Strompreisen und Abregelung, die Kosten für die Fernsteuerbarkeit und darauf, ob der Direktvermarkter mit Ihrer vorhandenen Technik arbeiten kann."}}]}]</script>
+<style>
+@font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+@font-face{font-family:'Inter Display';src:url(fonts/InterDisplay-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#fff;font-family:Inter,system-ui,sans-serif;line-height:1.5}
+a{color:#8FA6FF}a:hover{color:#B7C6FF}
+.nav{position:sticky;top:16px;z-index:10;max-width:1080px;margin:16px auto 0;padding:0 16px}
+.nav>div{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(12,12,16,.82);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 10px 10px 18px;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:21px}
+.navr{display:flex;align-items:center;gap:4px}
+.navr a{padding:10px 14px;border-radius:10px;color:#E4E4E7;text-decoration:none;font-size:15px;font-weight:500}
+.navr a.cta{background:#2F54EB;color:#fff;font-weight:600;margin-left:6px}
+main{max-width:1080px;margin:0 auto;padding:0 24px 80px}
+.hero{text-align:center;padding:80px 0 36px;position:relative}
+.hero:before{content:"";position:absolute;left:50%;top:-40px;width:900px;height:500px;margin-left:-450px;border-radius:50%;background:radial-gradient(closest-side,rgba(47,84,235,.35),rgba(47,84,235,0));z-index:-1}
+.kicker{display:inline-block;font-size:13px;font-weight:600;color:#C9D4FF;background:rgba(47,84,235,.18);border:1px solid rgba(143,166,255,.3);padding:5px 12px;border-radius:999px;margin-bottom:18px}
+h1{font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:clamp(34px,5.5vw,60px);line-height:1.05;letter-spacing:-1.4px;margin:0 auto 16px;max-width:820px}
+.lead{color:#A1A1AA;font-size:18px;max-width:640px;margin:0 auto}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+.card{background:#0A0A0D;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:28px}
+.card.res{border-color:rgba(143,166,255,.3);position:sticky;top:100px}
+h2{font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.3px;margin:0 0 18px}
+label{display:block;font-size:14px;font-weight:500;color:#D4D4D8;margin:0 0 6px}
+.hint{font-size:13px;color:#71717A;margin-top:5px}
+.f{margin-bottom:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+input[type=number]{width:100%;min-height:50px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#000;color:#fff;padding:0 14px;font:inherit;font-size:17px}
+input:focus{outline:2px solid #8FA6FF;outline-offset:1px}
+.unit{position:relative}.unit span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#71717A;font-size:14px;pointer-events:none}
+.unit input{padding-right:70px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;min-height:50px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.seg button[aria-pressed=true]{background:#2F54EB;border-color:#8FA6FF}
+.big{font-family:'Inter Display',Inter,sans-serif;font-size:44px;font-weight:600;letter-spacing:-1px;line-height:1}
+.sub{color:#A1A1AA;font-size:15px;margin:6px 0 20px}
+.lamps{display:inline-flex;gap:8px;padding:8px 10px;border-radius:999px;background:#000;border:1px solid rgba(255,255,255,.08);margin-bottom:12px}
+.lamps i{width:16px;height:16px;border-radius:50%;background:#27272A;display:block}
+.verdict{font-family:'Inter Display',Inter,sans-serif;font-size:21px;font-weight:600;margin:0 0 6px}
+.bar{height:10px;border-radius:999px;background:linear-gradient(90deg,#22C55E 0%,#22C55E 25%,#F5B70A 45%,#F04438 75%);position:relative;margin:18px 0 6px}
+.bar b{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.6);transform:translateX(-2px);transition:left .3s}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:#71717A}
+.diff{margin-top:20px;padding:16px;border-radius:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);font-size:15px;color:#D4D4D8}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:20px;border-radius:12px;background:#2F54EB;color:#fff;font-weight:600;font-size:16px;text-decoration:none;box-shadow:0 8px 32px rgba(47,84,235,.4)}
+.btn:hover{background:#4466F0;color:#fff}
+.small{font-size:12px;color:#71717A;margin-top:14px}
+.info{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:60px}
+.info h3{font-family:'Inter Display',Inter,sans-serif;font-size:18px;font-weight:600;margin:0 0 8px}
+.info p{color:#A1A1AA;font-size:15px;margin:0}
+footer{border-top:1px solid rgba(255,255,255,.08);padding:28px 24px;text-align:center;font-size:13px;color:#71717A}
+footer a{color:#A1A1AA}
+@media (max-width:860px){.grid,.info{grid-template-columns:1fr}.card.res{position:static}}
+@media (max-width:700px){.navr .hide{display:none}.nav>div{padding:8px 8px 8px 12px}.brand{font-size:18px}.navr a{padding:10px 8px;font-size:14px}.navr a.cta{padding:10px 14px}main{padding:0 14px 60px}.hero{padding:56px 0 26px}.card{padding:20px}.big{font-size:38px}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><div>
+<a class="brand" href="index.html"><svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#FFFFFF"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#2F54EB"/><circle cx="23" cy="17" r="4" fill="#FFFFFF"/></svg>Switchwatt</a>
+<div class="navr"><a class="hide" href="index.html#ablauf">So geht's</a><a class="hide" href="index.html#faq">FAQ</a><a href="portal.html">Anmelden</a><a class="cta" href="portal.html">Jetzt starten</a></div>
+</div></nav>
+
+<main>
+<section class="hero">
+<span class="kicker">Kostenrechner · kostenlos, ohne Anmeldung</span>
+<h1>Was kostet mich mein Direktvermarkter wirklich?</h1>
+<p class="lead">Viele Verträge rechnen mit Monatspauschalen. Erst in Cent pro Kilowattstunde sieht man, ob der Preis noch zum Markt passt.</p>
+</section>
+
+<div class="grid">
+<section class="card" aria-labelledby="eing">
+<h2 id="eing">Ihre Anlage und Ihr Vertrag</h2>
+<div class="f"><label for="kwp">Leistung der Anlage</label><div class="unit"><input id="kwp" type="number" inputmode="decimal" min="1" step="any" value="250"><span>kWp</span></div></div>
+<div class="f"><label id="lart">Wie speist die Anlage ein?</label><div class="seg" role="group" aria-labelledby="lart"><button type="button" data-art="voll" aria-pressed="false">Volleinspeisung</button><button type="button" data-art="teil" aria-pressed="true">Mit Eigenverbrauch</button></div></div>
+<div class="f"><label for="kwh">Eingespeiste Strommenge pro Jahr (falls bekannt)</label><div class="unit"><input id="kwh" type="number" inputmode="numeric" min="0" step="any" placeholder="wird geschätzt"><span>kWh</span></div><div class="hint" id="kwhhint">Steht auf Ihrer Jahresabrechnung. Sonst schätzen wir mit 950 kWh pro kWp.</div></div>
+<div class="row2">
+<div class="f"><label for="fix">Pauschale pro Monat</label><div class="unit"><input id="fix" type="number" inputmode="decimal" min="0" step="any" value="150"><span>€</span></div></div>
+<div class="f"><label for="ct">Arbeitspreis</label><div class="unit"><input id="ct" type="number" inputmode="decimal" min="0" step="any" value="0"><span>ct/kWh</span></div></div>
+</div>
+<div class="f" style="margin-bottom:0"><label for="extra">Sonstige feste Kosten pro Jahr (optional)</label><div class="unit"><input id="extra" type="number" inputmode="decimal" min="0" step="any" value="0"><span>€</span></div><div class="hint">Zum Beispiel Miete für die Fernsteuerung, wenn der Direktvermarkter sie berechnet.</div></div>
+</section>
+
+<section class="card res" aria-live="polite" aria-labelledby="erg">
+<h2 id="erg">Ergebnis</h2>
+<div class="big" id="r_ct">–</div>
+<div class="sub" id="r_year">–</div>
+<div class="lamps" aria-hidden="true"><i id="l_g"></i><i id="l_y"></i><i id="l_r"></i></div>
+<p class="verdict" id="r_verdict">–</p>
+<div style="color:#A1A1AA;font-size:15px" id="r_text"></div>
+<div class="bar" aria-hidden="true"><b id="r_mark" style="left:0"></b></div>
+<div class="scale" aria-hidden="true"><span>0</span><span>0,25</span><span>0,5</span><span>0,75</span><span>1+ ct/kWh</span></div>
+<div class="diff" id="r_diff" hidden></div>
+<a class="btn" href="portal.html" id="r_btn">Angebote für meine Anlage einholen</a>
+<p class="small">Rechenbeispiel, kein Angebot. Marktspanne nach eigener Recherche, Stand November 2026: Angebote für Dachanlagen ab 100 kWp liegen häufig bei etwa 0,15 bis 0,4 ct/kWh. Ihr tatsächliches Angebot hängt von Anlage, Technik und Laufzeit ab.</p>
+</section>
+</div>
+
+<section class="info" aria-label="Hintergrund">
+<div class="card"><h3>So wird gerechnet</h3><p>Pauschale mal 12, plus Arbeitspreis mal eingespeiste Menge, plus sonstige Kosten. Das Ergebnis teilen wir durch die eingespeisten Kilowattstunden. Beispiel: 200 € im Monat bei 155.000 kWh sind 2.400 € im Jahr oder rund 1,55 ct/kWh.</p></div>
+<div class="card"><h3>Warum Pauschalen teuer werden</h3><p>Eine feste Monatsgebühr klingt harmlos. Bei kleineren Anlagen verteilt sie sich aber auf wenig Strom und ist pro Kilowattstunde oft ein Vielfaches dessen, was große Anlagen zahlen.</p></div>
+<div class="card"><h3>Nicht nur der Preis zählt</h3><p>Wichtig sind auch Laufzeit und Kündigungsfrist, die Regeln bei negativen Strompreisen, die Kosten der Fernsteuerung und ob Ihre vorhandene Technik passt. Genau das prüfen wir beim Vergleich mit.</p></div>
+</section>
+</main>
+
+<footer>© 2026 Switchwatt · ein Service der WordAtech UG (haftungsbeschränkt) · <a href="index.html">Startseite</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></footer>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);},art='teil';
+var nf=function(n,d){return n.toLocaleString('de-DE',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});};
+var num=function(id){var v=parseFloat(String($(id).value).replace(',','.'));return isNaN(v)||v<0?0:v;};
+document.querySelectorAll('[data-art]').forEach(function(b){b.onclick=function(){art=b.dataset.art;document.querySelectorAll('[data-art]').forEach(function(x){x.setAttribute('aria-pressed',x===b);});calc();};});
+['kwp','kwh','fix','ct','extra'].forEach(function(id){$(id).addEventListener('input',calc);});
+function lamp(c){['l_g','l_y','l_r'].forEach(function(i){$(i).style.background='#27272A';$(i).style.boxShadow='none';});var m={g:['l_g','#22C55E'],y:['l_y','#F5B70A'],r:['l_r','#F04438']}[c];$(m[0]).style.background=m[1];$(m[0]).style.boxShadow='0 0 14px '+m[1];}
+function calc(){
+  var kwp=num('kwp'),est=kwp*950*(art==='voll'?1:0.6),kwh=num('kwh')||est;
+  var small=kwp>0&&kwp<100;
+  $('kwhhint').textContent=(small?'Hinweis: Unter 100 kWp ist Direktvermarktung freiwillig, die Marktspanne gilt dann nur eingeschränkt. ':'')+(num('kwh')?'Wir rechnen mit Ihrer Angabe.':'Geschätzt: '+nf(est)+' kWh ('+(art==='voll'?'950 kWh pro kWp':'950 kWh pro kWp, davon 60 % eingespeist')+'). Genauer wird es mit Ihrer Jahresabrechnung.');
+  if(!kwh){$('r_ct').textContent='–';$('r_year').textContent='Bitte Leistung eingeben';$('r_verdict').textContent='–';$('r_text').textContent='';$('r_diff').hidden=true;return;}
+  var year=num('fix')*12+num('ct')/100*kwh+num('extra'),ct=year/kwh*100;
+  $('r_ct').textContent=nf(ct,2)+' ct/kWh';
+  $('r_year').textContent=nf(year)+' € pro Jahr bei '+nf(kwh)+' kWh Einspeisung';
+  $('r_mark').style.left=Math.min(100,ct/1*100)+'%';
+  var v,t;
+  if(ct<=0.3){lamp('g');v='Im marktüblichen Rahmen.';t='Ihr Vertrag liegt im Bereich dessen, was wir am Markt sehen. Ein Vergleich kann sich trotzdem lohnen, etwa bei Laufzeit oder Abregelung.';}
+  else if(ct<=0.6){lamp('y');v='Etwas über dem Markt.';t='Hier ist oft noch Luft. Ein Vergleich lohnt sich wahrscheinlich, vor allem vor dem nächsten Kündigungstermin.';}
+  else{lamp('r');v='Deutlich über dem Markt.';t='So hohe Kosten sehen wir meist bei Pauschalverträgen. Ein Wechsel kann sich hier spürbar lohnen.';}
+  $('r_verdict').textContent=v;$('r_text').textContent=t;
+  var ref=0.25,refYear=ref/100*kwh,d=year-refYear;
+  if(d>50){$('r_diff').hidden=false;$('r_diff').innerHTML='Zum Vergleich: Bei 0,25 ct/kWh, der Mitte der Spanne, die wir für Anlagen ab 100 kWp sehen, wären es rund <strong>'+nf(refYear)+' €</strong> pro Jahr, also etwa <strong style="color:#86EFAC">'+nf(d)+' € weniger</strong>. Ob Ihre Anlage diesen Preis bekommt, zeigt erst ein echtes Angebot.';}
+  else $('r_diff').hidden=true;
+  $('r_btn').textContent=ct>0.3?'Angebote für meine Anlage einholen':'Trotzdem vergleichen lassen';
+}
+calc();
+})();
+</script>
+</body>
+</html>

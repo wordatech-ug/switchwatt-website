@@ -1,0 +1,17 @@
+# Switchwatt
+
+> Switchwatt ist ein unabhängiger Wechselservice für Direktvermarktung in Deutschland. Wir vergleichen Angebote von Direktvermarktern für PV-Dachanlagen von 100 bis 750 kWp, bereiten Kündigung und neuen Vertrag vor und organisieren den Wechsel. Der Betreiber entscheidet, erst dann wird gewechselt. Switchwatt ist ein Service der WordAtech UG (haftungsbeschränkt), Bad Homburg v. d. Höhe.
+
+## Seiten
+
+- [Startseite](https://www.switchwatt.de/): Ablauf, 30-Sekunden-Check und häufige Fragen zum Direktvermarkter-Wechsel
+- [Kostenrechner](https://www.switchwatt.de/rechner.html): Rechnet Monatspauschale und Arbeitspreis eines Direktvermarktungsvertrags in Euro pro Jahr und ct/kWh um und ordnet das Ergebnis im Markt ein
+- [Impressum](https://www.switchwatt.de/impressum.html)
+- [Datenschutz](https://www.switchwatt.de/datenschutz.html)
+
+## Kurzfakten
+
+- Zielgruppe: Betreiber von PV-Dachanlagen mit 100 bis 750 kWp in Deutschland (Pflicht zur Direktvermarktung ab 100 kWp für Anlagen seit 2016)
+- Leistung: Vertrag prüfen, Angebote einholen und vergleichen, Kündigung vorbereiten, neuen Vertrag und technische Anbindung organisieren
+- Marktspanne nach eigener Recherche (Stand November 2026): Angebote für Dachanlagen ab 100 kWp häufig etwa 0,15 bis 0,4 ct/kWh; Pauschalverträge kleinerer Anlagen liegen umgerechnet oft deutlich darüber
+- Kontakt: angebote@switchwatt.de

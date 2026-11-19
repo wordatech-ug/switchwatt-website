@@ -85,7 +85,7 @@ table.sw-stack td[data-l]::before{content:attr(data-l);color:#71717A;font-size:1
 table.sw-stack td:first-child{font-weight:600;font-size:16px;justify-content:flex-start;text-align:left}
 table.sw-stack td:first-child::before{display:none}
 .sw-hide-m{display:none}
-#topnav .sw-btn{padding:0 10px}
+#topnav{flex-wrap:nowrap;gap:6px}#topnav .sw-btn{padding:0 10px;min-height:34px;font-size:13px;white-space:nowrap}
 .sw-dl{grid-template-columns:1fr 1fr!important}
 details summary{padding:6px 0}
 }

@@ -61,3 +61,4 @@ th{color:#A1A1AA;font-weight:500;font-size:13px}
 .sw-letter{max-width:210mm;margin:0 auto;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;padding:22mm 20mm;border-radius:4px}
 .sw-letter h1{font-family:Arial,sans-serif;font-size:13pt;margin:28px 0 14px;letter-spacing:0;color:#000}
 @media print{body>*:not(#sw-print){display:none!important}#sw-print{position:static;background:#fff;padding:0;overflow:visible}.sw-print-bar{display:none}.sw-letter{padding:0;max-width:none;border-radius:0}@page{margin:20mm}}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;-webkit-box-shadow:0 0 0 1000px #000 inset;caret-color:#fff;transition:background-color 9999s}

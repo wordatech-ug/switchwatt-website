@@ -37,7 +37,7 @@ async function renderList(){
   var dringend=an.filter(function(a){var d=SW.daysUntil(a.kuendigung_bis);return d!=null&&d<=45&&OPEN.indexOf(a.status)>=0;});
   if(dringend.length)h+=msg('err','Dringend: '+dringend.map(function(a){return a.name+' (bis '+SW.date(a.kuendigung_bis)+', '+SW.daysUntil(a.kuendigung_bis)+' Tage)';}).join(' · '));
   h+='<section class="sw-card"><table><thead><tr><th>Anlage</th><th>Kunde</th><th>kWp</th><th>Kündigen bis</th><th>Status</th><th>Stand</th></tr></thead><tbody>';
-  an.forEach(function(a){var u=users[a.owner]||{},d=SW.daysUntil(a.kuendigung_bis),docs=a.dokumente||[];
+  an.forEach(function(a){var u=users[a.owner]||{},d=SW.daysUntil(a.kuendigung_bis),docs=SW.arr(a.dokumente);a.angebote=SW.arr(a.angebote);a.freigaben=SW.arr(a.freigaben);
     var stand=[];if(!vm[a.owner])stand.push('<span class="sw-red">keine Vollmacht</span>');if(!docs.some(function(x){return x.art==='vertrag';}))stand.push('kein Vertrag');
     stand.push(a.angebote.length+' Angebot(e)');if(a.freigaben.length)stand.push('freigegeben');if(docs.some(function(x){return x.art==='kuendigung_unterschrieben';}))stand.push('Kündigung unterschrieben');
     h+='<tr><td><a href="#/a/'+a.id+'">'+E(a.name)+'</a></td><td>'+E(u.name||u.email||'?')+(u.firma?'<br><span class="sw-muted" style="font-size:13px">'+E(u.firma)+'</span>':'')+'</td><td>'+SW.num(a.kwp,1)+'</td><td>'+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?'<br><span class="sw-red">'+d+' Tage</span>':'')+'</td><td>'+SW.badge(a.status)+'</td><td style="font-size:13px">'+stand.join(' · ')+'</td></tr>';});

@@ -105,7 +105,7 @@ async function renderHome(){
   an.forEach(function(a){var dd=SW.daysUntil(a.kuendigung_bis);
     h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong> '+SW.badge(a.status)+'<div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(a.direktvermarkter||'Direktvermarkter noch offen')+
     (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
-    (a.angebote&&a.angebote.length&&!a.freigaben.length?' · <span style="color:#86EFAC">'+a.angebote.length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
+    (SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
   h+='</section><p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
   app.innerHTML=h;
   var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p class="sw-muted" style="font-size:14px">Fassung '+E(vm.version)+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};

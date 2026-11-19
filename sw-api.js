@@ -105,7 +105,7 @@
 
   /* kleine Helfer für die Seiten */
   SW.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  SW.date = function (d) { if (!d) return '–'; var x = new Date(d); return isNaN(x) ? SW.esc(d) : x.toLocaleDateString('de-DE'); };
+  SW.date = function (d) { if (!d) return '–'; var x = /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + 'T12:00:00') : new Date(d); return isNaN(x) ? SW.esc(d) : x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }); };
   SW.dateTime = function (d) { if (!d) return '–'; return new Date(d).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }); };
   SW.num = function (n, digits) { if (n == null || n === '') return '–'; return Number(n).toLocaleString('de-DE', { maximumFractionDigits: digits == null ? 0 : digits, minimumFractionDigits: digits || 0 }); };
   SW.STATUS = {
@@ -115,7 +115,8 @@
   };
   SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
   SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von Switchwatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges' };
-  SW.daysUntil = function (d) { if (!d) return null; return Math.ceil((new Date(d) - new Date(new Date().toDateString())) / 86400000); };
+  SW.daysUntil = function (d) { if (!d) return null; var t = new Date(); var a = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()); var p = String(d).slice(0, 10).split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - a) / 86400000); };
+  SW.arr = function (x) { return x == null ? [] : Array.isArray(x) ? x : [x]; };
   SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };
 
   /* Kündigungsschreiben als druckbare Seite */

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
+<title>Kundenkonto – Switchwatt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="sw-portal.css">
+</head>
+<body>
+<div class="sw-top"><div>
+<a class="sw-logo" href="index.html"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#2F54EB"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#fff"/><circle cx="23" cy="17" r="4" fill="#2F54EB"/></svg>Switchwatt</a>
+<div class="sw-row" id="topnav"></div>
+</div></div>
+<main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
+<div id="modal"></div>
+<script src="sw-api.js"></script>
+<script>
+(function(){
+var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
+var E=SW.esc, me=null, profile=null;
+function msg(type,text){return '<div class="sw-msg '+type+'" role="'+(type==='err'?'alert':'status')+'">'+E(text)+'</div>';}
+function $(s){return app.querySelector(s);}
+function busy(btn,on,label){if(!btn)return;btn.disabled=on;if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'Bitte warten …';}else if(btn.dataset.l){btn.textContent=btn.dataset.l;}}
+function go(h){if(location.hash===h)route();else location.hash=h;}
+
+/* ---------- Anmeldung ---------- */
+function renderAuth(mode,note){
+  nav.innerHTML='';
+  mode=mode||'login';
+  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr Switchwatt-Konto</h1>'+
+  '<p class="sw-muted">Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.</p>'+
+  (note||'')+
+  '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
+  '<form id="f" novalidate>'+
+  (mode==='signup'?'<div style="margin-bottom:14px"><label for="name">Ihr Name</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
+  '<div style="margin-bottom:14px"><label for="mail">E-Mail</label><input id="mail" type="email" required autocomplete="email"></div>'+
+  '<div style="margin-bottom:14px"><label for="pw">Passwort'+(mode==='signup'?' (mindestens 8 Zeichen)':'')+'</label><input id="pw" type="password" required minlength="8" autocomplete="'+(mode==='signup'?'new-password':'current-password')+'"></div>'+
+  (mode==='signup'?'<label class="sw-check" style="margin-bottom:16px"><input type="checkbox" id="ds" required><span>Ich habe die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen.</span></label>':'')+
+  '<div id="err"></div><button class="sw-btn" style="width:100%" type="submit">'+(mode==='signup'?'Konto anlegen':'Anmelden')+'</button></form>'+
+  (mode==='login'?'<p style="margin:16px 0 0;font-size:14px"><a href="#" id="forgot">Passwort vergessen?</a></p>':'')+
+  '</div></div>';
+  app.querySelectorAll('[data-m]').forEach(function(b){b.onclick=function(){renderAuth(b.dataset.m);};});
+  var fg=$('#forgot'); if(fg)fg.onclick=function(e){e.preventDefault();renderForgot();};
+  $('#f').onsubmit=async function(e){e.preventDefault();var btn=this.querySelector('button[type=submit]'),err=$('#err');err.innerHTML='';
+    var mail=$('#mail').value.trim(),pw=$('#pw').value;
+    if(!mail||pw.length<8){err.innerHTML=msg('err','Bitte E-Mail und ein Passwort mit mindestens 8 Zeichen eingeben.');return;}
+    busy(btn,true);
+    try{
+      if(mode==='signup'){
+        if(!$('#name').value.trim()){throw new Error('Bitte geben Sie Ihren Namen ein.');}
+        if(!$('#ds').checked){throw new Error('Bitte bestätigen Sie die Datenschutzerklärung.');}
+        var d=await SW.signUp(mail,pw,{name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim()});
+        if(!d||!d.access_token){renderAuth('login',msg('info','Fast geschafft: Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen geschickt haben. Danach können Sie sich anmelden.'));return;}
+      } else { await SW.signIn(mail,pw); }
+      await start();
+    }catch(x){err.innerHTML=msg('err',x.message);busy(btn,false);}
+  };
+}
+function renderForgot(){
+  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Passwort zurücksetzen</h1><div class="sw-card"><form id="f"><label for="mail">E-Mail</label><input id="mail" type="email" required autocomplete="email"><div id="err"></div><div class="sw-row" style="margin-top:16px"><button class="sw-btn" type="submit">Link senden</button><button class="sw-btn ghost" type="button" id="back">Zurück</button></div></form></div></div>';
+  $('#back').onclick=function(){renderAuth();};
+  $('#f').onsubmit=async function(e){e.preventDefault();var btn=this.querySelector('[type=submit]');busy(btn,true);
+    try{await SW.recover($('#mail').value.trim(),location.origin+location.pathname);$('#err').innerHTML=msg('ok','Wenn es ein Konto mit dieser E-Mail gibt, ist ein Link unterwegs.');}
+    catch(x){$('#err').innerHTML=msg('err',x.message);} busy(btn,false);};
+}
+function renderNewPassword(){
+  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Neues Passwort</h1><div class="sw-card"><form id="f"><label for="pw">Neues Passwort (mindestens 8 Zeichen)</label><input id="pw" type="password" minlength="8" required autocomplete="new-password"><div id="err"></div><button class="sw-btn" style="margin-top:16px" type="submit">Speichern</button></form></div></div>';
+  $('#f').onsubmit=async function(e){e.preventDefault();var pw=$('#pw').value;if(pw.length<8){$('#err').innerHTML=msg('err','Mindestens 8 Zeichen.');return;}
+    try{await SW.setPassword(pw);await start();}catch(x){$('#err').innerHTML=msg('err',x.message);}};
+}
+
+/* ---------- Daten ---------- */
+async function loadAll(){
+  var r=await Promise.all([
+    SW.rest('vollmachten?select=*&widerrufen_at=is.null&order=erteilt_at.desc'),
+    SW.rest('anlagen?select=*,angebote(id),freigaben(id)&order=created_at.asc')
+  ]);
+  return {vm:r[0][0]||null,anlagen:r[1]};
+}
+function steps(vm,anlagen){
+  var s=['Konto','Vollmacht','Anlage und Vertrag','Angebote','Freigabe','Kündigung und Wechsel'];
+  var best=1; if(vm)best=2;
+  if(vm&&anlagen.length)best=3;
+  anlagen.forEach(function(a){var lv={neu:3,in_pruefung:3,angebote:4,freigegeben:5,kuendigung:5,gewechselt:6}[a.status]||3;if(vm&&lv>best)best=lv;});
+  return '<ol class="sw-steps">'+s.map(function(t,i){return '<li class="'+(i<best?'done':i===best?'now':'')+'">'+t+'</li>';}).join('')+'</ol>';
+}
+
+/* ---------- Übersicht ---------- */
+async function renderHome(){
+  var d=await loadAll(),vm=d.vm,an=d.anlagen;
+  var h='<h1>Guten Tag'+(profile&&profile.name?', '+E(profile.name):'')+'</h1><p class="sw-muted">So weit sind Sie:</p>'+steps(vm,an);
+  if(!vm){
+    h+='<section class="sw-card hl"><h2>1. Vollmacht erteilen</h2><p class="sw-muted">Damit wir Angebote für Sie einholen dürfen. Verträge schließen oder kündigen wir nur, wenn Sie ein Angebot ausdrücklich freigeben.</p>'+
+    '<div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div>'+
+    '<form id="vmf" style="margin-top:16px"><div class="sw-grid"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
+    '<label class="sw-check" style="margin:16px 0"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben und bin berechtigt, für den Betreiber zu handeln.</span></label><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht erteilen</button></form></section>';
+  } else {
+    h+='<p class="sw-msg ok">Vollmacht erteilt am '+SW.dateTime(vm.erteilt_at)+' von '+E(vm.name_unterzeichner)+(vm.firma?' für '+E(vm.firma):'')+'. <a href="#" id="vmshow">Text ansehen</a></p>';
+  }
+  h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Ihre Anlagen</h2><a class="sw-btn" href="#/neu">+ Anlage hinzufügen</a></div>';
+  if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Noch keine Anlage. Legen Sie Ihre erste Anlage an und laden Sie den aktuellen Vertrag hoch.</p>';
+  an.forEach(function(a){var dd=SW.daysUntil(a.kuendigung_bis);
+    h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong> '+SW.badge(a.status)+'<div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(a.direktvermarkter||'Direktvermarkter noch offen')+
+    (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
+    (a.angebote&&a.angebote.length&&!a.freigaben.length?' · <span style="color:#86EFAC">'+a.angebote.length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
+  h+='</section><p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
+  app.innerHTML=h;
+  var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p class="sw-muted" style="font-size:14px">Fassung '+E(vm.version)+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
+  var f=$('#vmf'); if(f)f.onsubmit=async function(e){e.preventDefault();var btn=f.querySelector('[type=submit]'),n=$('#vmn').value.trim();
+    if(!n||!$('#vmc').checked){$('#vmerr').innerHTML=msg('err','Bitte Namen eingeben und das Kästchen ankreuzen.');return;}
+    busy(btn,true);
+    try{await SW.rest('vollmachten',{method:'POST',body:{version:SW.VOLLMACHT_VERSION,name_unterzeichner:n,firma:$('#vmfi').value.trim()||null}});renderHome();}
+    catch(x){$('#vmerr').innerHTML=msg('err',x.message);busy(btn,false);}};
+}
+
+/* ---------- Anlage anlegen / bearbeiten ---------- */
+var FIELDS=[
+ ['name','Name der Anlage','text','z. B. Kahl am Main',true],
+ ['betreiber','Betreiber (Firma wie im Vertrag)','text','z. B. Solar K & H eGbR'],
+ ['betreiber_anschrift','Anschrift des Betreibers','text','Straße, PLZ Ort'],
+ ['standort','Standort der Anlage','text','Straße, PLZ Ort'],
+ ['kwp','Leistung in kWp','number',''],
+ ['mastr','MaStR-Nummer der Einheit','text','SEE…'],
+ ['malo','Marktlokations-ID','text','11-stellig'],
+ ['netzbetreiber','Netzbetreiber','text',''],
+ ['direktvermarkter','Aktueller Direktvermarkter','text',''],
+ ['dv_anschrift','Anschrift des Direktvermarkters','text','für das Kündigungsschreiben'],
+ ['dv_vertragsnr','Vertrags- oder Kundennummer','text',''],
+ ['entgelt','Aktuelles Entgelt laut Vertrag','text','z. B. 49 € pro Monat + 0,29 ct/kWh'],
+ ['vertragsende','Vertrag läuft bis','date',''],
+ ['kuendigung_bis','Spätester Kündigungstermin','date',''],
+ ['notiz','Hinweise für uns','textarea','']
+];
+function formFields(a){a=a||{};return '<div class="sw-grid">'+FIELDS.map(function(f){var v=a[f[0]]==null?'':a[f[0]];
+  var inp=f[2]==='textarea'?'<textarea id="f_'+f[0]+'" placeholder="'+E(f[3])+'">'+E(v)+'</textarea>':'<input id="f_'+f[0]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="0.01" min="0"':'')+' placeholder="'+E(f[3])+'" value="'+E(v)+'"'+(f[4]?' required':'')+'>';
+  return '<div'+(f[2]==='textarea'?' style="grid-column:1/-1"':'')+'><label for="f_'+f[0]+'">'+E(f[1])+(f[4]?' *':'')+'</label>'+inp+'</div>';}).join('')+'</div>';}
+function readFields(){var o={};FIELDS.forEach(function(f){var v=$('#f_'+f[0]).value.trim();o[f[0]]=v===''?null:(f[2]==='number'?Number(v.replace(',','.')):v);});return o;}
+function uploadBlock(){return '<div class="sw-grid" style="margin-top:18px"><div><label for="up_vertrag">Aktueller Vertrag (PDF oder Foto)</label><input id="up_vertrag" type="file" accept="application/pdf,image/jpeg,image/png" multiple></div><div><label for="up_abrechnung">Letzte Abrechnung (optional)</label><input id="up_abrechnung" type="file" accept="application/pdf,image/jpeg,image/png" multiple></div></div><p class="sw-muted" style="font-size:13px">Höchstens 20 MB pro Datei. Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und Switchwatt sichtbar.</p>';}
+async function uploadFiles(anlage,input,art){
+  var files=input?Array.prototype.slice.call(input.files):[];
+  for(var i=0;i<files.length;i++){var f=files[i];if(f.size>20971520)throw new Error(f.name+' ist größer als 20 MB.');
+    var path=anlage.owner+'/'+anlage.id+'/'+Date.now()+'_'+SW.safeName(f.name);
+    await SW.upload(path,f);
+    await SW.rest('dokumente',{method:'POST',body:{anlage_id:anlage.id,owner:anlage.owner,art:art,pfad:path,dateiname:f.name}});
+    await SW.rest('verlauf',{method:'POST',body:{anlage_id:anlage.id,text:SW.ART[art]+' hochgeladen: '+f.name}});
+  }
+  return files.length;
+}
+function renderNew(){
+  app.innerHTML='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1><p class="sw-muted">Füllen Sie aus, was Sie wissen. Den Rest lesen wir aus dem Vertrag.</p><form class="sw-card" id="nf" novalidate>'+formFields()+uploadBlock()+'<div id="err"></div><button class="sw-btn" type="submit" style="margin-top:8px">Anlage speichern</button></form>';
+  $('#nf').onsubmit=async function(e){e.preventDefault();var btn=this.querySelector('[type=submit]'),o=readFields();
+    if(!o.name){$('#err').innerHTML=msg('err','Bitte geben Sie der Anlage einen Namen.');return;}
+    busy(btn,true,'Wird gespeichert …');
+    try{var a=(await SW.rest('anlagen',{method:'POST',body:o,prefer:'return=representation'}))[0];
+      await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Anlage angelegt'}});
+      await uploadFiles(a,$('#up_vertrag'),'vertrag');await uploadFiles(a,$('#up_abrechnung'),'abrechnung');
+      go('#/anlage/'+a.id);
+    }catch(x){$('#err').innerHTML=msg('err',x.message);busy(btn,false);}};
+}
+
+/* ---------- Anlage Detail ---------- */
+async function renderAnlage(id){
+  var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+encodeURIComponent(id)),SW.rest('dokumente?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),
+    SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
+    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null')]);
+  var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
+  var docs=r[1],offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0;
+  var editable=['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
+  var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+SW.badge(a.status)+'</div>';
+  if(a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
+  if(!hasVm)h+=msg('err','Bitte erteilen Sie zuerst die Vollmacht auf der Übersichtsseite, damit wir Angebote einholen dürfen.');
+  /* Angebote */
+  if(offers.length){
+    h+='<section class="sw-card hl"><h2>Angebote</h2>'+(fg?'':'<p class="sw-muted">Wählen Sie ein Angebot. Erst mit Ihrer Freigabe kündigen wir und schließen den neuen Vertrag ab.</p>');
+    offers.forEach(function(o){var chosen=fg&&fg.angebot_id===o.id;
+      h+='<div class="sw-offer'+(o.empfohlen?' best':'')+'"><div class="sw-row" style="justify-content:space-between"><h3 style="margin:0">'+E(o.anbieter)+'</h3>'+(o.empfohlen?'<span class="sw-badge" style="--c:#22C55E">Unsere Empfehlung</span>':'')+(chosen?'<span class="sw-badge" style="--c:#8FA6FF">Von Ihnen gewählt</span>':'')+'</div>'+
+      '<dl class="sw-grid sw-dl" style="margin:12px 0 0"><div><dt>Entgelt</dt><dd>'+E(o.entgelt_text||((o.ct_kwh!=null?SW.num(o.ct_kwh,2)+' ct/kWh':'')+(o.fix_monat?' + '+SW.num(o.fix_monat,2)+' €/Monat':'')))+'</dd></div>'+
+      '<div><dt>Ersparnis pro Jahr (geschätzt)</dt><dd>'+(o.ersparnis_jahr!=null?'<strong style="color:#86EFAC">'+SW.num(o.ersparnis_jahr)+' €</strong>':'–')+'</dd></div>'+
+      '<div><dt>Laufzeit</dt><dd>'+(o.laufzeit_monate?o.laufzeit_monate+' Monate':'–')+'</dd></div><div><dt>Kündigungsfrist</dt><dd>'+E(o.kuendigungsfrist||'–')+'</dd></div></dl>'+
+      (o.hinweise?'<p class="sw-muted" style="font-size:14px;margin:4px 0 0">'+E(o.hinweise)+'</p>':'')+
+      (!fg?'<button class="sw-btn small" style="margin-top:12px" data-pick="'+o.id+'">Dieses Angebot wählen</button>':'')+'</div>';});
+    if(fg)h+=msg('ok','Freigegeben am '+SW.dateTime(fg.freigegeben_at)+' von '+fg.name_unterzeichner+'.');
+    h+='</section>';
+  } else {
+    h+='<section class="sw-card"><h2>Angebote</h2><p class="sw-muted" style="margin:0">Noch keine Angebote. Sobald Ihr Vertrag geprüft ist, holen wir Angebote ein und stellen sie hier ein. Das dauert meist zwei bis drei Wochen.</p></section>';
+  }
+  /* Kündigung */
+  if(fg||['kuendigung','gewechselt'].indexOf(a.status)>=0){
+    var ents=docs.filter(function(x){return x.art==='kuendigung_entwurf';}),sig=docs.filter(function(x){return x.art==='kuendigung_unterschrieben';});
+    h+='<section class="sw-card hl"><h2>Kündigung</h2>'+(sig.length?msg('ok','Unterschriebene Kündigung liegt vor. Wir kümmern uns um den Versand und den Wechsel.'):'<p class="sw-muted">Ihr bisheriger Vertrag muss mit Ihrer Unterschrift gekündigt werden. So geht es:</p><ol><li>Kündigungsschreiben öffnen und prüfen'+(ents.length?' (oder unseren Entwurf unten verwenden)':'')+'</li><li>Unterschreiben: ausdrucken und unterschreiben, oder digital mit qualifizierter Signatur</li><li>Unterschriebene Kündigung hier hochladen</li></ol>')+
+    '<div class="sw-row"><button class="sw-btn ghost" id="kbtn">Kündigungsschreiben öffnen</button></div>'+
+    '<div style="margin-top:16px"><label for="up_k">Unterschriebene Kündigung hochladen</label><div class="sw-row"><input id="up_k" type="file" accept="application/pdf,image/jpeg,image/png" style="flex:1 1 260px"><button class="sw-btn" id="kup">Hochladen</button></div></div><div id="kerr"></div></section>';
+  }
+  /* Daten */
+  h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Daten der Anlage</h2>'+(editable?'<button class="sw-btn ghost small" id="edit">Bearbeiten</button>':'')+'</div><div id="data" style="margin-top:14px"><dl class="sw-grid sw-dl">'+
+    FIELDS.map(function(f){var v=a[f[0]];if(f[2]==='date')v=v?SW.date(v):'–';else if(f[0]==='kwp')v=v!=null?SW.num(v,2):'–';else v=E(v||'–');return '<div><dt>'+E(f[1])+'</dt><dd>'+v+'</dd></div>';}).join('')+'</dl></div></section>';
+  /* Dokumente */
+  h+='<section class="sw-card"><h2>Dokumente</h2>'+(docs.length?'<table><thead><tr><th>Datei</th><th>Art</th><th>Datum</th></tr></thead><tbody>'+docs.map(function(x){return '<tr><td><a href="#" data-file="'+E(x.pfad)+'">'+E(x.dateiname||'Datei')+'</a></td><td>'+E(SW.ART[x.art]||x.art)+'</td><td>'+SW.date(x.created_at)+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Noch keine Dokumente.</p>')+
+    '<div class="sw-row" style="margin-top:16px"><select id="up_art" style="flex:0 1 200px"><option value="vertrag">Vertrag</option><option value="abrechnung">Abrechnung</option><option value="sonstiges">Sonstiges</option></select><input id="up_more" type="file" accept="application/pdf,image/jpeg,image/png" multiple style="flex:1 1 240px"><button class="sw-btn ghost" id="upbtn">Hochladen</button></div><div id="uerr"></div></section>';
+  /* Verlauf */
+  h+='<section class="sw-card"><h2>Verlauf</h2>'+(log.length?'<table><tbody>'+log.map(function(l){return '<tr><td style="width:170px" class="sw-muted">'+SW.dateTime(l.created_at)+'</td><td>'+E(l.text)+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Noch keine Einträge.</p>')+'</section>';
+  app.innerHTML=h;
+
+  app.querySelectorAll('[data-file]').forEach(function(l){l.onclick=async function(e){e.preventDefault();try{window.open(await SW.fileUrl(l.dataset.file),'_blank','noopener');}catch(x){alertBox(x.message);}};});
+  $('#upbtn').onclick=async function(){var b=this;busy(b,true,'Lädt …');try{var n=await uploadFiles(a,$('#up_more'),$('#up_art').value);if(!n)throw new Error('Bitte zuerst eine Datei auswählen.');renderAnlage(id);}catch(x){$('#uerr').innerHTML=msg('err',x.message);busy(b,false);}};
+  var eb=$('#edit'); if(eb)eb.onclick=function(){$('#data').innerHTML='<form id="ef">'+formFields(a)+'<div id="eerr"></div><div class="sw-row" style="margin-top:12px"><button class="sw-btn" type="submit">Speichern</button><button class="sw-btn ghost" type="button" id="ecan">Abbrechen</button></div></form>';
+    $('#ecan').onclick=function(){renderAnlage(id);};
+    $('#ef').onsubmit=async function(e){e.preventDefault();var o=readFields();if(!o.name){$('#eerr').innerHTML=msg('err','Name fehlt.');return;}
+      try{await SW.rest('anlagen?id=eq.'+a.id,{method:'PATCH',body:o});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Daten geändert'}});renderAnlage(id);}catch(x){$('#eerr').innerHTML=msg('err',x.message);}};};
+  app.querySelectorAll('[data-pick]').forEach(function(b){b.onclick=function(){
+    if(!hasVm){alertBox('Bitte erteilen Sie zuerst die Vollmacht auf der Übersichtsseite.');return;}
+    var o=offers.filter(function(x){return x.id===b.dataset.pick;})[0];
+    showModal('<h2>Angebot freigeben</h2><p>Sie wählen <strong>'+E(o.anbieter)+'</strong> für die Anlage <strong>'+E(a.name)+'</strong>.</p><p class="sw-muted" style="font-size:15px">Damit darf Switchwatt nach Ihrer Vollmacht den bisherigen Vertrag kündigen (mit Ihrer Unterschrift) und den neuen Vertrag in Ihrem Namen abschließen.</p>'+
+      '<label for="fgn">Ihr Name</label><input id="fgn" value="'+E(profile&&profile.name||'')+'"><label class="sw-check" style="margin:14px 0"><input type="checkbox" id="fgc"><span>Ich gebe dieses Angebot verbindlich frei.</span></label><div id="fgerr"></div><div class="sw-row"><button class="sw-btn" id="fgok">Freigeben</button><button class="sw-btn ghost" data-close>Abbrechen</button></div>');
+    modal.querySelector('#fgok').onclick=async function(){var n=modal.querySelector('#fgn').value.trim();if(!n||!modal.querySelector('#fgc').checked){modal.querySelector('#fgerr').innerHTML=msg('err','Bitte Namen eingeben und ankreuzen.');return;}
+      busy(this,true);try{await SW.rest('freigaben',{method:'POST',body:{anlage_id:a.id,angebot_id:o.id,name_unterzeichner:n}});closeModal();renderAnlage(id);}catch(x){modal.querySelector('#fgerr').innerHTML=msg('err',x.message);busy(this,false);}};
+  };});
+  var kb=$('#kbtn'); if(kb)kb.onclick=function(){try{SW.kuendigung(a,profile&&profile.firma);}catch(x){alertBox(x.message);}};
+  var ku=$('#kup'); if(ku)ku.onclick=async function(){var b=this;busy(b,true,'Lädt …');try{var n=await uploadFiles(a,$('#up_k'),'kuendigung_unterschrieben');if(!n)throw new Error('Bitte zuerst die Datei auswählen.');renderAnlage(id);}catch(x){$('#kerr').innerHTML=msg('err',x.message);busy(b,false);}};
+}
+
+/* ---------- Modal ---------- */
+function showModal(inner){modal.innerHTML='<div class="sw-modal" role="dialog" aria-modal="true"><div>'+inner+'</div></div>';modal.querySelectorAll('[data-close]').forEach(function(b){b.onclick=closeModal;});var f=modal.querySelector('input,button');if(f)f.focus();}
+function closeModal(){modal.innerHTML='';}
+function alertBox(t){showModal('<p>'+E(t)+'</p><button class="sw-btn" data-close>OK</button>');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+/* ---------- Start ---------- */
+async function route(){
+  var h=location.hash||'#/';
+  try{
+    if(h==='#/neu')renderNew();
+    else if(h.indexOf('#/anlage/')===0)await renderAnlage(h.slice(9));
+    else await renderHome();
+  }catch(x){app.innerHTML=msg('err','Es ist ein Fehler aufgetreten: '+x.message)+'<p><a href="#/">Neu laden</a></p>';}
+  window.scrollTo(0,0);
+}
+async function start(){
+  me=await SW.me(); if(!me){await SW.signOut();renderAuth();return;}
+  var p=await SW.rest('profiles?select=*&id=eq.'+me.id); profile=p[0]||null;
+  nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted" style="font-size:14px">'+E(me.email)+'</span><button class="sw-btn ghost small" id="out">Abmelden</button>';
+  document.getElementById('out').onclick=async function(){await SW.signOut();location.hash='';renderAuth();};
+  route();
+}
+window.addEventListener('hashchange',function(){if(me)route();});
+(async function(){
+  var t=SW.fromHash();
+  if(t==='recovery'){renderNewPassword();return;}
+  if(!SW.user&&!t){renderAuth();return;}
+  try{await start();}catch(e){renderAuth();}
+})();
+})();
+</script>
+</body>
+</html>

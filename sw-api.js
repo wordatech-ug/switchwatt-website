@@ -1,0 +1,159 @@
+/* Switchwatt Portal – kleiner Client für Supabase (Auth, Datenbank, Dateien) ohne externe Bibliotheken */
+(function () {
+  var URL_ = 'https://fyseraoxefnwsayvqzps.supabase.co';
+  var KEY = 'sb_publishable_IRGqBkjaUa3_YnZ2HGDdSg_HU6m5ltO';
+  var STORE = 'sw-session';
+
+  function load() { try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
+  function save(s) { try { if (s) localStorage.setItem(STORE, JSON.stringify(s)); else localStorage.removeItem(STORE); } catch (e) {} }
+  var session = load();
+
+  function setSession(d) {
+    if (!d || !d.access_token) { session = null; save(null); return null; }
+    session = { access_token: d.access_token, refresh_token: d.refresh_token,
+      expires_at: d.expires_at || (Math.floor(Date.now() / 1000) + (d.expires_in || 3600)), user: d.user };
+    save(session); return session;
+  }
+
+  function errText(j, status) {
+    var m = (j && (j.msg || j.message || j.error_description || j.error)) || ('Fehler ' + status);
+    var map = {
+      'Invalid login credentials': 'E-Mail oder Passwort stimmt nicht.',
+      'User already registered': 'Für diese E-Mail gibt es schon ein Konto. Bitte melden Sie sich an.',
+      'Email not confirmed': 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.',
+      'Password should be at least 6 characters.': 'Das Passwort muss mindestens 8 Zeichen haben.'
+    };
+    return map[m] || m;
+  }
+
+  async function authCall(path, body, method) {
+    var r = await fetch(URL_ + '/auth/v1/' + path, {
+      method: method || 'POST',
+      headers: Object.assign({ apikey: KEY, 'Content-Type': 'application/json' },
+        session && method === 'PUT' ? { Authorization: 'Bearer ' + session.access_token } : {}),
+      body: JSON.stringify(body || {})
+    });
+    var j = null; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error(errText(j, r.status));
+    return j;
+  }
+
+  async function token() {
+    if (!session) return null;
+    if (session.expires_at - 60 < Date.now() / 1000) {
+      try { setSession(await authCall('token?grant_type=refresh_token', { refresh_token: session.refresh_token })); }
+      catch (e) { setSession(null); return null; }
+    }
+    return session.access_token;
+  }
+
+  async function headers(extra) {
+    var t = await token();
+    var h = { apikey: KEY };
+    if (t) h.Authorization = 'Bearer ' + t;
+    return Object.assign(h, extra || {});
+  }
+
+  var SW = {
+    get user() { return session && session.user; },
+    async signUp(email, password, meta) {
+      var d = await authCall('signup', { email: email, password: password, data: meta || {} });
+      if (d && d.access_token) setSession(d);
+      return d;
+    },
+    async signIn(email, password) { return setSession(await authCall('token?grant_type=password', { email: email, password: password })); },
+    async recover(email, redirect) { return authCall('recover?redirect_to=' + encodeURIComponent(redirect), { email: email }); },
+    async setPassword(pw) { await token(); return authCall('user', { password: pw }, 'PUT'); },
+    async signOut() { try { await fetch(URL_ + '/auth/v1/logout', { method: 'POST', headers: await headers() }); } catch (e) {} setSession(null); },
+    fromHash() {
+      if (!location.hash || location.hash.indexOf('access_token=') < 0) return null;
+      var p = new URLSearchParams(location.hash.slice(1));
+      var s = setSession({ access_token: p.get('access_token'), refresh_token: p.get('refresh_token'),
+        expires_in: +p.get('expires_in') || 3600, user: null });
+      history.replaceState(null, '', location.pathname);
+      return p.get('type');
+    },
+    async me() {
+      var r = await fetch(URL_ + '/auth/v1/user', { headers: await headers() });
+      if (!r.ok) return null;
+      var u = await r.json(); if (session) { session.user = u; save(session); } return u;
+    },
+    async rest(path, opt) {
+      opt = opt || {};
+      var h = await headers({ 'Content-Type': 'application/json' });
+      if (opt.prefer) h.Prefer = opt.prefer;
+      var r = await fetch(URL_ + '/rest/v1/' + path, { method: opt.method || 'GET', headers: h,
+        body: opt.body ? JSON.stringify(opt.body) : undefined });
+      var txt = await r.text(); var j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
+      if (!r.ok) throw new Error(errText(j, r.status));
+      return j;
+    },
+    async upload(path, file) {
+      var h = await headers({ 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false' });
+      var r = await fetch(URL_ + '/storage/v1/object/dokumente/' + path.split('/').map(encodeURIComponent).join('/'),
+        { method: 'POST', headers: h, body: file });
+      if (!r.ok) { var j = null; try { j = await r.json(); } catch (e) {} throw new Error(errText(j, r.status)); }
+      return true;
+    },
+    async fileUrl(path) {
+      var r = await fetch(URL_ + '/storage/v1/object/sign/dokumente/' + path.split('/').map(encodeURIComponent).join('/'),
+        { method: 'POST', headers: await headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ expiresIn: 300 }) });
+      var j = await r.json(); if (!r.ok) throw new Error(errText(j, r.status));
+      return URL_ + '/storage/v1' + j.signedURL;
+    }
+  };
+
+  /* kleine Helfer für die Seiten */
+  SW.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  SW.date = function (d) { if (!d) return '–'; var x = new Date(d); return isNaN(x) ? SW.esc(d) : x.toLocaleDateString('de-DE'); };
+  SW.dateTime = function (d) { if (!d) return '–'; return new Date(d).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }); };
+  SW.num = function (n, digits) { if (n == null || n === '') return '–'; return Number(n).toLocaleString('de-DE', { maximumFractionDigits: digits == null ? 0 : digits, minimumFractionDigits: digits || 0 }); };
+  SW.STATUS = {
+    neu: ['Eingereicht', '#8FA6FF'], in_pruefung: ['Wir prüfen', '#F5B70A'], angebote: ['Angebote liegen vor', '#22C55E'],
+    freigegeben: ['Freigegeben', '#22C55E'], kuendigung: ['Kündigung läuft', '#F5B70A'], gewechselt: ['Gewechselt', '#22C55E'],
+    abgebrochen: ['Abgebrochen', '#71717A']
+  };
+  SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
+  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von Switchwatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges' };
+  SW.daysUntil = function (d) { if (!d) return null; return Math.ceil((new Date(d) - new Date(new Date().toDateString())) / 86400000); };
+  SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };
+
+  /* Kündigungsschreiben als druckbare Seite */
+  SW.kuendigung = function (a, absender) {
+    var heute = new Date().toLocaleDateString('de-DE');
+    var html = '<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Kündigung ' + SW.esc(a.name) + '</title>' +
+      '<style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000;max-width:170mm;margin:20mm auto}' +
+      '.k{white-space:pre-line}h1{font-size:13pt;margin:28px 0 14px}.hint{font-family:Arial;background:#EEF2FF;border:1px solid #C7D2FE;padding:10px 14px;border-radius:6px;margin-bottom:24px}' +
+      '@media print{.hint{display:none}body{margin:0 auto}}</style></head><body>' +
+      '<div class="hint">Bitte prüfen, drucken oder als PDF speichern (Strg+P), unterschreiben und im Portal wieder hochladen. Alternativ digital mit qualifizierter Signatur unterschreiben.</div>' +
+      '<div class="k">' + SW.esc(a.betreiber || absender || '[Betreiber]') + '\n' + SW.esc(a.betreiber_anschrift || '[Anschrift Betreiber]') + '</div><br>' +
+      '<div class="k">' + SW.esc(a.direktvermarkter || '[Direktvermarkter]') + '\n' + SW.esc(a.dv_anschrift || '[Anschrift Direktvermarkter]') + '</div>' +
+      '<p style="text-align:right">' + heute + '</p>' +
+      '<h1>Kündigung des Direktvermarktungsvertrags</h1>' +
+      '<p>Anlage: ' + SW.esc(a.name) + (a.standort ? ', ' + SW.esc(a.standort) : '') + (a.kwp ? ', ' + SW.num(a.kwp, 2) + ' kWp' : '') + '<br>' +
+      (a.dv_vertragsnr ? 'Vertrags-/Kundennummer: ' + SW.esc(a.dv_vertragsnr) + '<br>' : '') +
+      (a.mastr ? 'MaStR-Nummer: ' + SW.esc(a.mastr) + '<br>' : '') +
+      (a.malo ? 'Marktlokation: ' + SW.esc(a.malo) + '<br>' : '') + '</p>' +
+      '<p>Sehr geehrte Damen und Herren,</p>' +
+      '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage fristgerecht zum ' +
+      (a.vertragsende ? SW.date(a.vertragsende) : 'nächstmöglichen Zeitpunkt') + ', hilfsweise zum nächstmöglichen Zeitpunkt.</p>' +
+      '<p>Bitte bestätigen Sie uns den Eingang der Kündigung und das Vertragsende schriftlich. Für Rückfragen erreichen Sie auch unseren Dienstleister Switchwatt (WordAtech UG) unter angebote@switchwatt.de.</p>' +
+      '<p>Mit freundlichen Grüßen</p><br><br><br>' +
+      '<p>_______________________________<br>Ort, Datum, Unterschrift, ggf. Firmenstempel<br>' + SW.esc(a.betreiber || '') + '</p>' +
+      '</body></html>';
+    var w = window.open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+    if (!w) throw new Error('Bitte erlauben Sie Pop-ups für diese Seite.');
+  };
+
+  SW.VOLLMACHT_VERSION = 'test-2026-11-19';
+  SW.VOLLMACHT_HTML =
+    '<p class="sw-muted" style="margin-top:0">Testfassung für die Pilotphase. Sie wird vor dem offiziellen Start anwaltlich geprüft.</p>' +
+    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter ihrer Marke Switchwatt, für die Anlagen, die ich in meinem Switchwatt-Konto anlege,</p>' +
+    '<ol><li>in meinem Namen bei Direktvermarktern Angebote für die Direktvermarktung anzufragen und dafür die nötigen Anlagen- und Vertragsdaten weiterzugeben,</li>' +
+    '<li>beim zuständigen Netz- und Messstellenbetreiber die Einspeisedaten (Lastgang) der letzten 36 Monate und die Stammdaten der Anlagen anzufordern,</li>' +
+    '<li>die Angebote auszuwerten und mir eine Empfehlung zu geben.</li></ol>' +
+    '<p>Gebe ich ein Angebot im Kundenkonto frei, ist die WordAtech UG außerdem bevollmächtigt, (4) meinen bisherigen Direktvermarktungsvertrag fristgerecht zu kündigen, soweit dafür nicht meine eigene Unterschrift nötig ist, (5) den Vertrag mit dem gewählten Direktvermarkter vorzubereiten und in meinem Namen abzuschließen und (6) die für den Wechsel nötigen Meldungen und die technische Anbindung zu veranlassen. <strong>Ohne Freigabe</strong> darf die WordAtech UG in meinem Namen keine Verträge abschließen oder kündigen.</p>' +
+    '<p>Die Vollmacht gilt bis auf Widerruf und kann jederzeit per E-Mail an angebote@switchwatt.de widerrufen werden. Meine Daten werden dafür nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
+
+  window.SW = SW;
+})();

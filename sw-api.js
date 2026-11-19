@@ -119,16 +119,11 @@
   SW.arr = function (x) { return x == null ? [] : Array.isArray(x) ? x : [x]; };
   SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };
 
-  /* Kündigungsschreiben als druckbare Seite */
+  /* Kündigungsschreiben: erscheint im Portal, druckbar als PDF */
   SW.kuendigung = function (a, absender) {
-    var heute = new Date().toLocaleDateString('de-DE');
-    var html = '<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Kündigung ' + SW.esc(a.name) + '</title>' +
-      '<style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000;max-width:170mm;margin:20mm auto}' +
-      '.k{white-space:pre-line}h1{font-size:13pt;margin:28px 0 14px}.hint{font-family:Arial;background:#EEF2FF;border:1px solid #C7D2FE;padding:10px 14px;border-radius:6px;margin-bottom:24px}' +
-      '@media print{.hint{display:none}body{margin:0 auto}}</style></head><body>' +
-      '<div class="hint">Bitte prüfen, drucken oder als PDF speichern (Strg+P), unterschreiben und im Portal wieder hochladen. Alternativ digital mit qualifizierter Signatur unterschreiben.</div>' +
-      '<div class="k">' + SW.esc(a.betreiber || absender || '[Betreiber]') + '\n' + SW.esc(a.betreiber_anschrift || '[Anschrift Betreiber]') + '</div><br>' +
-      '<div class="k">' + SW.esc(a.direktvermarkter || '[Direktvermarkter]') + '\n' + SW.esc(a.dv_anschrift || '[Anschrift Direktvermarkter]') + '</div>' +
+    var heute = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    var L = '<div class="k">' + SW.esc(a.betreiber || absender || '[Betreiber]') + '<br>' + SW.esc(a.betreiber_anschrift || '[Anschrift Betreiber]') + '</div><br>' +
+      '<div class="k">' + SW.esc(a.direktvermarkter || '[Direktvermarkter]') + '<br>' + SW.esc(a.dv_anschrift || '[Anschrift Direktvermarkter]') + '</div>' +
       '<p style="text-align:right">' + heute + '</p>' +
       '<h1>Kündigung des Direktvermarktungsvertrags</h1>' +
       '<p>Anlage: ' + SW.esc(a.name) + (a.standort ? ', ' + SW.esc(a.standort) : '') + (a.kwp ? ', ' + SW.num(a.kwp, 2) + ' kWp' : '') + '<br>' +
@@ -140,10 +135,14 @@
       (a.vertragsende ? SW.date(a.vertragsende) : 'nächstmöglichen Zeitpunkt') + ', hilfsweise zum nächstmöglichen Zeitpunkt.</p>' +
       '<p>Bitte bestätigen Sie uns den Eingang der Kündigung und das Vertragsende schriftlich. Für Rückfragen erreichen Sie auch unseren Dienstleister Switchwatt (WordAtech UG) unter angebote@switchwatt.de.</p>' +
       '<p>Mit freundlichen Grüßen</p><br><br><br>' +
-      '<p>_______________________________<br>Ort, Datum, Unterschrift, ggf. Firmenstempel<br>' + SW.esc(a.betreiber || '') + '</p>' +
-      '</body></html>';
-    var w = window.open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
-    if (!w) throw new Error('Bitte erlauben Sie Pop-ups für diese Seite.');
+      '<p>_______________________________<br>Ort, Datum, Unterschrift, ggf. Firmenstempel<br>' + SW.esc(a.betreiber || '') + '</p>';
+    var old = document.getElementById('sw-print'); if (old) old.remove();
+    var d = document.createElement('div'); d.id = 'sw-print';
+    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen. Dann drucken oder als PDF speichern, unterschreiben und im Portal hochladen. Alternativ digital mit qualifizierter Signatur unterschreiben.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
+    document.body.appendChild(d);
+    d.querySelector('[data-p=print]').onclick = function () { window.print(); };
+    d.querySelector('[data-p=close]').onclick = function () { d.remove(); };
+    return L;
   };
 
   SW.VOLLMACHT_VERSION = 'test-2026-11-19';

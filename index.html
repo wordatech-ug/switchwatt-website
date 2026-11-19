@@ -50,23 +50,35 @@ details[open] .sw-plus{transform:rotate(45deg)}
 .sw-dot{flex:0 0 auto;width:22px;height:22px;border-radius:50%;box-sizing:border-box;border:2px solid rgba(255,255,255,.35)}
 .sw-opt[aria-pressed=true] .sw-dot{border:6px solid #FFFFFF;background:#2F54EB}
 
+
+@media (max-width: 700px){
+.sw-navlink{display:none!important}
+.sw-navbar{flex-wrap:nowrap!important;padding:8px 8px 8px 12px!important;gap:8px!important}
+.sw-navbar svg{width:30px;height:30px}
+.sw-brand{font-size:18px!important}
+.sw-navright{flex-wrap:nowrap!important;gap:2px!important}
+.sw-navlogin{padding:10px 8px!important;font-size:14px!important}
+.sw-navcta{margin-left:2px!important;min-height:40px!important;padding:0 14px!important;font-size:14px!important;white-space:nowrap}
+.sw-trust{flex-direction:column!important;align-items:center;gap:6px!important;font-size:14px!important}
+.sw-trust span[aria-hidden]{display:none}
+}
 </style>
 </head>
 <body>
-<div style="min-height: 100vh; background: #000000; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; overflow: hidden; position: relative">
+<div style="min-height: 100vh; background: #000000; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; overflow-x: clip; position: relative">
 
 <nav style="position: sticky; top: 16px; z-index: 10; width: 100%; max-width: 1080px; margin: 16px auto 0; box-sizing: border-box; padding: 0 16px">
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: rgba(12,12,16,0.82); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 10px 10px 10px 18px; backdrop-filter: blur(12px)">
+<div class="sw-navbar" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: rgba(12,12,16,0.82); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 10px 10px 10px 18px; backdrop-filter: blur(12px)">
 <a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF">
 <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#FFFFFF"></rect><rect x="5" y="11" width="24" height="12" rx="6" fill="#2F54EB"></rect><circle cx="23" cy="17" r="4" fill="#FFFFFF"></circle></svg>
-<span style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: 21px; letter-spacing: -0.3px">Switchwatt</span>
+<span class="sw-brand" style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: 21px; letter-spacing: -0.3px">Switchwatt</span>
 </a>
-<div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap">
-<a href="#ablauf" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">So geht's</a>
-<a href="#check" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Check</a>
-<a href="#vorteile" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Vorteile</a>
-<a href="#faq" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">FAQ</a>
-<a href="portal.html" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Anmelden</a><a href="portal.html" style="margin-left: 6px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">Jetzt starten</a>
+<div class="sw-navright" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap">
+<a class="sw-navlink" href="#ablauf" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">So geht's</a>
+<a class="sw-navlink" href="#check" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Check</a>
+<a class="sw-navlink" href="#vorteile" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Vorteile</a>
+<a class="sw-navlink" href="#faq" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">FAQ</a>
+<a class="sw-navlogin" href="portal.html" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Anmelden</a><a class="sw-navcta" href="portal.html" style="margin-left: 6px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">Jetzt starten</a>
 </div>
 </div>
 </nav>
@@ -91,7 +103,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 </div>
 </header>
 
-<section style="position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px 40px; display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: center; font-size: 15px; color: #A1A1AA">
+<section class="sw-trust" style="position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px 40px; display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: center; font-size: 15px; color: #A1A1AA">
 <span>Für Dachanlagen von 100 bis 750 kWp</span>
 <span aria-hidden="true" style="color: #3F3F46">·</span>
 <span>Unabhängig, keine Provisionen</span>
@@ -207,7 +219,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <button type="button" class="sw-opt" data-q="a2" data-v="ja" aria-pressed="false"><span class="sw-dot"></span>Ja, genau</button>
 </div>
 </fieldset>
-<div aria-live="polite" style="position: relative; border-radius: 16px; padding: 22px; background: #111116; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 22px; flex-wrap: wrap">
+<div id="check-result" aria-live="polite" style="position: relative; border-radius: 16px; padding: 22px; background: #111116; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 22px; flex-wrap: wrap">
 <div aria-hidden="true" style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 999px; background: #000000; border: 1px solid rgba(255,255,255,0.08)">
 <span style="width: 18px; height: 18px; border-radius: 50%; background: #27272A" id="lamp-red"></span>
 <span style="width: 18px; height: 18px; border-radius: 50%; background: #27272A" id="lamp-amber"></span>
@@ -216,6 +228,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 4px">
 <strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 24px; font-weight: 600" id="check-title">Zwei Klicks für eine erste Einschätzung.</strong>
 <span style="font-size: 15px; line-height: 1.5; color: #A1A1AA" id="check-text">Beantworten Sie die beiden Fragen oben.</span>
+<a id="check-cta" hidden href="portal.html" style="align-self: flex-start; margin-top: 12px; display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none">Jetzt starten</a>
 </div>
 </div>
 </div>
@@ -277,6 +290,8 @@ function render(){
  else if(score>=1){on='amber';t='Ein Check lohnt sich.';x='Die Konditionen haben sich zuletzt stark verändert. Wir sehen nach, ob Ihr Vertrag noch mithält.';}
  else{on='green';t='Sie sind gut aufgestellt.';x='Wenn Sie möchten, prüfen wir trotzdem, ob es inzwischen noch bessere Angebote gibt.';}
  lamps[on].style.background=colors[on];lamps[on].style.boxShadow='0 0 16px '+glows[on];T.textContent=t;X.textContent=x;
+ var cta=document.getElementById('check-cta');var first=cta.hidden;cta.hidden=false;cta.textContent=on==='green'?'Trotzdem prüfen lassen':'Jetzt starten';
+ if(first&&window.matchMedia('(max-width: 700px)').matches){document.getElementById('check-result').scrollIntoView({behavior:'smooth',block:'center'});}
 }
 document.querySelectorAll('.sw-opt').forEach(function(b){b.addEventListener('click',function(){
  var q=b.getAttribute('data-q');st[q]=b.getAttribute('data-v');

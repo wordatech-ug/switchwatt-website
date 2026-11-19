@@ -62,3 +62,17 @@ th{color:#A1A1AA;font-weight:500;font-size:13px}
 .sw-letter h1{font-family:Arial,sans-serif;font-size:13pt;margin:28px 0 14px;letter-spacing:0;color:#000}
 @media print{body>*:not(#sw-print){display:none!important}#sw-print{position:static;background:#fff;padding:0;overflow:visible}.sw-print-bar{display:none}.sw-letter{padding:0;max-width:none;border-radius:0}@page{margin:20mm}}
 input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;-webkit-box-shadow:0 0 0 1000px #000 inset;caret-color:#fff;transition:background-color 9999s}
+@media (max-width:700px){
+.sw-wrap{padding:0 14px 60px}
+.sw-card{padding:18px;border-radius:14px}
+h1{font-size:28px;margin-top:26px}
+#topnav .sw-muted{display:none}
+.sw-top>div{padding:10px 14px}
+.sw-logo{font-size:17px}
+table{font-size:14px}
+th,td{padding:8px 4px}
+td[style*="width:170px"]{width:auto!important;white-space:nowrap;font-size:12px}
+.sw-list-item .sw-btn{width:100%}
+.sw-row>input,.sw-row>select{flex:1 1 100%!important}
+.sw-modal>div{padding:20px}
+}

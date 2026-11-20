@@ -233,7 +233,7 @@ async function renderAnlage(id){
   var editable=['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+SW.badge(a.status)+'</div>';
   if(a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
-  if(!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der <a href="#/">Übersicht</a> in einer Minute.');
+  if(!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
   /* Angebote */

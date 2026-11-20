@@ -83,6 +83,8 @@ details[open] .sw-plus{transform:rotate(45deg)}summary{list-style:none}summary::
 .chk li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);color:#D4D4D8}
 .chk li.g{background:rgba(245,183,10,.10)}.chk li b{color:#fff}
 .chk li span{flex:0 0 20px}
+.chk.res li:not(.g):not(.i) span{color:#22C55E;font-weight:700}
+.chk li.i{background:rgba(143,166,255,.08)}
 .tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(245,183,10,.15);color:#FCD34D;border:1px solid rgba(245,183,10,.35)}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
 .cards .card{padding:20px}
@@ -130,13 +132,13 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 <section class="card res">
 <p style="margin:0 0 12px;font-size:13px;color:#71717A">Beispiel aus einer echten Prüfung, anonymisiert</p>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2 style="margin:0">⚠️ Mai 2026</h2><span class="tag">Bitte ansehen</span></div>
-<ul class="chk">
+<ul class="chk res">
 <li><span>✓</span><div>Einspeisung stimmt überein: 59.513 kWh</div></li>
 <li><span>✓</span><div>Marktprämie richtig berechnet: 2.549,27 €</div></li>
 <li><span>✓</span><div>Pauschale wie im Vertrag, Umsatzsteuer richtig</div></li>
 <li class="g"><span>⚠️</span><div><b>Marktwert nachträglich korrigiert:</b> 79,15 € Nachzahlung vom Direktvermarkter stehen aus.</div></li>
 <li><span>✓</span><div>Ertrag 16 % unter Vorjahr, aber wetterbedingt: Die Sonne lag 9 % darunter.</div></li>
-<li><span>ℹ️</span><div>Betreibername beim Netzbetreiber veraltet. Anfragetext liegt bereit.</div></li>
+<li class="i"><span>ℹ️</span><div>Betreibername beim Netzbetreiber veraltet. Anfragetext liegt bereit.</div></li>
 </ul>
 <a class="btn" href="portal.html?bereich=check">Eigene Abrechnung prüfen lassen</a>
 <p class="small">Ein grüner Haken heißt: keine Auffälligkeit gefunden. Er ersetzt keine Steuer- oder Rechtsberatung.</p>

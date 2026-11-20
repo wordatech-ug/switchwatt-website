@@ -147,7 +147,7 @@
       '<p>Sehr geehrte Damen und Herren,</p>' +
       '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage ordentlich und fristgerecht ' +
       (a.vertragsende ? 'zum ' + SW.date(a.vertragsende) + ', hilfsweise zum nächstmöglichen Termin.' : 'zum nächstmöglichen Termin.') + '</p>' +
-      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich. Bitte melden Sie die Marktlokation zum Vertragsende aus Ihrem Bilanzkreis ab und senden Sie uns die Schlussabrechnung an die oben genannte Anschrift.</p>' +
+      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich.</p>' +
       '<p>Mit freundlichen Grüßen</p><br><br><br>' +
       '<p>_______________________________<br>Ort, Datum, Unterschrift, Name in Druckbuchstaben<br>' + E(a.betreiber || '') + '</p>';
     var old = document.getElementById('sw-print'); if (old) old.remove();

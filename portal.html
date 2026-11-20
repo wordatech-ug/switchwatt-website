@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=14">
+<link rel="stylesheet" href="sw-portal.css?v=15">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -101,6 +101,7 @@ async function renderHome(){
     (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
     (function(){var pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];return pc?' · Abrechnung '+monatName(pc.monat)+' '+(CK[pc.status]||CK.fehler)[0]:'';})()+(SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
   h+='</section>';
+  if(an.some(function(a){return SW.arr(a.pruefungen).length;}))h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><div><h2 style="margin:0 0 4px">Abrechnungs-Checks</h2><p class="sw-muted" style="margin:0;font-size:14px">Alle geprüften Monate und offenen Hinweise auf einen Blick.</p></div><a class="sw-btn ghost" href="#/abrechnungen">Übersicht öffnen</a></div></section>';
   if(!vm&&an.length){
     h+='<section class="sw-card hl"><h2>2. Vollmacht erteilen</h2>'+
     '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> kündigen wir den alten Vertrag und schließen den neuen ab. Vorher nicht.</li><li><strong>Widerruf</strong> jederzeit per E-Mail an angebote@switchwatt.de.</li></ul>'+
@@ -225,11 +226,12 @@ function mountReview(a,box){
 
 /* ---------- Anlage Detail ---------- */
 async function renderAnlage(id){
+  var ps=String(id).split('/');id=ps[0];var openM=ps[1]==='ck'?ps[2]:null;window._ckOpen=openM;
   var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+encodeURIComponent(id)),SW.rest('dokumente?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),
     SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
-    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc')]);
+    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id))]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
-  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0;}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[];
+  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0;}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null;
   var editable=['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+SW.badge(a.status)+'</div>';
   if(a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
@@ -259,7 +261,7 @@ async function renderAnlage(id){
     '<div style="margin-top:16px"><label for="up_k">Unterschriebene Kündigung hochladen</label><div class="sw-row"><input id="up_k" type="file" accept="application/pdf,image/jpeg,image/png" style="flex:1 1 260px"><button class="sw-btn" id="kup">Hochladen</button></div></div><div id="kerr"></div></section>';
   }
   /* Abrechnungs-Check */
-  h+=checkSection(a,checks,allDocs);
+  h+=checkSection(a,checks,allDocs,cf);
   /* Daten */
   if(!needReview)h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Daten der Anlage</h2>'+(editable?'<button class="sw-btn ghost small" id="edit">Bearbeiten</button>':'')+'</div><div id="data" style="margin-top:14px"><dl class="sw-grid sw-dl">'+
     FIELDS.map(function(f){var v=a[f[0]];if(f[2]==='date')v=v?SW.date(v):'–';else if(f[0]==='kwp')v=v!=null?SW.num(v,2):'–';else v=E(v||'–');return '<div><dt>'+E(f[1])+'</dt><dd>'+v+'</dd></div>';}).join('')+'</dl></div></section>';
@@ -308,19 +310,30 @@ function checkBody(e){
   if(ng)h+='<p class="sw-muted" style="font-size:12px;margin:8px 0 0">'+E(ng.quelle)+'</p>';
   return h;
 }
-function checkSection(a,checks,allDocs){
-  var h='<section class="sw-card" id="ck"><h2>Abrechnungs-Check</h2><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie vom Netzbetreiber hoch. Wir prüfen Mengen, Marktwert, Marktprämie, Kosten, Umsatzsteuer, Stammdaten und die Regeln bei negativen Preisen.</p>'+
+function checkSection(a,checks,allDocs,cf){
+  var frei=(profile&&profile.rolle==='admin')||(cf&&cf.frei_at);
+  var h='<section class="sw-card" id="ck"><h2>Abrechnungs-Check</h2><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie vom Netzbetreiber hoch. Wir prüfen Mengen, Marktwert, Marktprämie, Kosten, Umsatzsteuer, Stammdaten und die Regeln bei negativen Preisen.</p>';
+  if(!frei)h+=(cf&&cf.angefragt_at?msg('info','Sie haben den Abrechnungs-Check am '+SW.date(cf.angefragt_at)+' angefragt. Wir melden uns mit den Konditionen und schalten ihn dann frei.'):'<p style="margin:0 0 14px">Der Check ist in der Pilotphase auf Anfrage verfügbar. Wir nennen Ihnen die Konditionen vorab und schalten ihn dann für diese Anlage frei.</p><div class="sw-row"><button class="sw-btn" id="ck_req">Freischaltung anfragen</button></div>')+'<div id="ck_err"></div>';
+  else h+=
   '<div style="max-width:260px;margin-bottom:14px"><label for="ck_m">Monat</label><input id="ck_m" type="month" value="'+vormonat()+'"></div>'+
   '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" accept="application/pdf,image/jpeg,image/png"></div>'+
   '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" accept="application/pdf,image/jpeg,image/png"></div></div>'+
   '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_go">Hochladen und prüfen</button></div>';
   if(checks.length){
-    h+='<div class="sw-ck-months">'+checks.map(function(c,i){var s=CK[c.status]||CK.fehler,m=String(c.monat).slice(0,7);
+    var openM=window._ckOpen||String(checks[0].monat).slice(0,7);
+    h+='<h3 style="margin:28px 0 10px">Alle geprüften Monate</h3>'+ckTable(checks)+'<div class="sw-ck-months">'+checks.map(function(c,i){var s=CK[c.status]||CK.fehler,m=String(c.monat).slice(0,7);
       var files=allDocs.filter(function(d){return String(d.monat||'').slice(0,7)===m&&String(d.art).indexOf('gutschrift_')===0;});
-      return '<details class="sw-ck"'+(i===0?' open':'')+'><summary><span>'+s[0]+'</span><strong>'+monatName(m)+'</strong><span class="sw-badge" style="--c:'+s[2]+'">'+s[1]+'</span></summary>'+checkBody(c.ergebnis)+
+      return '<details class="sw-ck" id="ck-'+m+'"'+(m===openM?' open':'')+'><summary><span>'+s[0]+'</span><strong>'+monatName(m)+'</strong><span class="sw-badge" style="--c:'+s[2]+'">'+s[1]+'</span></summary>'+checkBody(c.ergebnis)+
       '<p style="font-size:14px;margin:12px 0 0">'+files.map(function(d){return '<a href="#" data-file="'+E(d.pfad)+'">'+E(SW.ART[d.art]||d.art)+'</a>';}).join(' · ')+' · <a href="#" data-recheck="'+m+'">Erneut prüfen</a></p></details>';}).join('')+'</div>';
   } else h+='<p class="sw-muted" style="margin:16px 0 0;font-size:14px">Noch keine Prüfung.</p>';
   return h+'</section>';
+}
+function hinweise(c){var p=(c.ergebnis&&c.ergebnis.punkte)||[],r=p.filter(function(x){return x.stufe==='rot';}).length,g=p.filter(function(x){return x.stufe==='gelb';}).length;return (r?r+' ❗ ':'')+(g?g+' ⚠️':'')||'–';}
+function ckTable(checks){
+  var jahre={};checks.forEach(function(c){var y=String(c.monat).slice(0,4),k=(c.ergebnis&&c.ergebnis.kennzahlen)||{};jahre[y]=jahre[y]||{kwh:0,netto:0,n:0};jahre[y].kwh+=k.menge_kwh||0;jahre[y].netto+=k.netto_eur||0;jahre[y].n++;});
+  return '<table class="sw-stack sw-ck-tab"><thead><tr><th>Monat</th><th>Ergebnis</th><th>Einspeisung</th><th>Netto nach Kosten</th><th>Hinweise</th></tr></thead><tbody>'+checks.map(function(c){var s=CK[c.status]||CK.fehler,k=(c.ergebnis&&c.ergebnis.kennzahlen)||{},m=String(c.monat).slice(0,7);
+    return '<tr data-ck="'+m+'"><td data-l="Monat"><a href="#" data-ck="'+m+'">'+monatName(m)+'</a></td><td data-l="Ergebnis">'+s[0]+' '+s[1]+'</td><td data-l="Einspeisung">'+(k.menge_kwh?SW.num(k.menge_kwh)+' kWh':'–')+'</td><td data-l="Netto">'+(k.netto_eur!=null?SW.num(k.netto_eur,2)+' €':'–')+'</td><td data-l="Hinweise">'+hinweise(c)+'</td></tr>';}).join('')+
+    Object.keys(jahre).sort().reverse().map(function(y){var j=jahre[y];return '<tr class="sw-ck-sum"><td data-l="Jahr"><strong>Summe '+y+'</strong></td><td data-l="Monate">'+j.n+' Monat'+(j.n>1?'e':'')+' geprüft</td><td data-l="Einspeisung"><strong>'+SW.num(j.kwh)+' kWh</strong></td><td data-l="Netto"><strong>'+SW.num(j.netto,2)+' €</strong></td><td></td></tr>';}).join('')+'</tbody></table>';
 }
 async function uploadCheck(a,file,art,monat){
   if(file.size>20971520)throw new Error(file.name+' ist größer als 20 MB.');
@@ -336,6 +349,8 @@ async function runCheck(a,id,monat,btn){
   renderAnlage(id);
 }
 function mountCheck(a,id){
+  app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
+  var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var go=$('#ck_go');if(!go)return;
   go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=$('#ck_dv').files[0],nb=$('#ck_nb').files[0];$('#ck_err').innerHTML='';
     if(!/^\d{4}-\d{2}$/.test(m)){$('#ck_err').innerHTML=msg('err','Bitte den Monat wählen.');return;}
@@ -344,6 +359,24 @@ function mountCheck(a,id){
     try{if(dv)await uploadCheck(a,dv,'gutschrift_dv',m);if(nb)await uploadCheck(a,nb,'gutschrift_nb',m);await runCheck(a,id,m,b);}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
   app.querySelectorAll('[data-recheck]').forEach(function(l){l.onclick=async function(e){e.preventDefault();try{await runCheck(a,id,l.dataset.recheck,go);}catch(x){alertBox(x.message);}};});
+}
+
+/* ---------- Übersicht aller Checks ---------- */
+async function renderChecks(){
+  var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc')]);
+  var an=r[0],pr=r[1]||[];
+  var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><h1>Abrechnungs-Checks</h1><p class="sw-muted">Alle geprüften Monate Ihrer Anlagen. Ein Klick öffnet das Ergebnis.</p>';
+  if(!pr.length){app.innerHTML=h+'<section class="sw-card"><p class="sw-muted" style="margin:0">Noch keine Prüfung.</p></section>';return;}
+  var monate=[];pr.forEach(function(c){var m=String(c.monat).slice(0,7);if(monate.indexOf(m)<0)monate.push(m);});monate=monate.sort().reverse().slice(0,12);
+  var by={};pr.forEach(function(c){by[c.anlage_id+'|'+String(c.monat).slice(0,7)]=c;});
+  var mit=an.filter(function(a){return pr.some(function(c){return c.anlage_id===a.id;});});
+  h+='<section class="sw-card"><div class="sw-scroll"><table class="sw-ck-mx"><thead><tr><th>Anlage</th>'+monate.map(function(m){return '<th>'+m.slice(5,7)+'/'+m.slice(2,4)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    mit.map(function(a){return '<tr><td><a href="#/anlage/'+a.id+'">'+E(a.name)+'</a></td>'+monate.map(function(m){var c=by[a.id+'|'+m];return '<td>'+(c?'<a href="#/anlage/'+a.id+'/ck/'+m+'" title="'+E(monatName(m)+': '+(CK[c.status]||CK.fehler)[1])+'">'+(CK[c.status]||CK.fehler)[0]+'</a>':'<span class="sw-muted">·</span>')+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>'+
+    '<p class="sw-muted" style="font-size:13px;margin:12px 0 0">✅ alles in Ordnung · ⚠️ bitte ansehen · ❗ Fehler gefunden · · nicht geprüft</p></section>';
+  var offen=pr.filter(function(c){return c.status==='rot'||c.status==='gelb';});
+  if(offen.length)h+='<section class="sw-card"><h2>Offene Hinweise</h2><ul class="sw-ck-list">'+offen.map(function(c){var a=an.find(function(x){return x.id===c.anlage_id;})||{},m=String(c.monat).slice(0,7),p=((c.ergebnis&&c.ergebnis.punkte)||[]).filter(function(x){return x.stufe==='rot'||x.stufe==='gelb';});
+    return p.map(function(x){return '<li class="'+x.stufe+'"><span aria-hidden="true">'+STUFE[x.stufe][0]+'</span><div><a href="#/anlage/'+c.anlage_id+'/ck/'+m+'">'+E(a.name||'Anlage')+' · '+monatName(m)+'</a><br><strong>'+E(x.titel)+'</strong></div></li>';}).join('');}).join('')+'</ul></section>';
+  app.innerHTML=h;
 }
 
 /* ---------- Modal ---------- */
@@ -357,10 +390,11 @@ async function route(){
   var h=location.hash||'#/';
   try{
     if(h==='#/neu')renderNew();
+    else if(h==='#/abrechnungen')await renderChecks();
     else if(h.indexOf('#/anlage/')===0)await renderAnlage(h.slice(9));
     else await renderHome();
   }catch(x){app.innerHTML=msg('err','Es ist ein Fehler aufgetreten: '+x.message)+'<p><a href="#/">Neu laden</a></p>';}
-  window.scrollTo(0,0);
+  var t=window._ckOpen&&$('#ck-'+window._ckOpen);if(t)t.scrollIntoView();else window.scrollTo(0,0);
 }
 async function start(){
   me=await SW.me(); if(!me){await SW.signOut();renderAuth();return;}

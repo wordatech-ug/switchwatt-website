@@ -4,3 +4,4 @@ Disallow: /portal.html
 Disallow: /admin.html
 
 Sitemap: https://www.switchwatt.de/sitemap.xml
+Disallow: /vorschau.html

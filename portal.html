@@ -196,6 +196,7 @@ function mountReview(a,box){
   var intro=a.auslesung?'Wir haben Ihr Dokument ausgelesen'+(pick?' und mit dem Marktstammdatenregister abgeglichen':'')+'. Bitte prüfen Sie alles kurz, gelb markierte Felder genau.':'Bitte ergänzen Sie die Daten Ihrer Anlage. Mit MaStR-Nummer oder PLZ und Leistung gleichen wir sie mit dem Marktstammdatenregister ab.';
   var h='<h2>Bitte prüfen Sie die Daten</h2><p class="sw-muted">'+intro+'</p>';
   if(reg.length>1&&a._pick==null){h+='<div class="sw-msg info">Im Register gibt es mehrere Anlagen in dieser Gegend. Welche ist Ihre?</div>'+reg.map(function(u,i){return '<button type="button" class="sw-pick" data-i="'+i+'"><strong>'+E(u.name||u.mastr)+'</strong><span>'+SW.num(u.kwp,2)+' kWp · '+E(u.standort)+' · '+E(u.betreiber||'')+'</span></button>';}).join('')+'<button type="button" class="sw-pick" data-i="-1"><strong>Keine davon</strong></button>';}
+  if(a.auslesung&&a.register&&!reg.length&&vals.mastr)h+='<div class="sw-msg info" style="font-size:14px">Die MaStR-Nummer '+E(vals.mastr)+' haben wir im Marktstammdatenregister nicht gefunden. Bitte prüfen Sie sie, oder klicken Sie unten auf „Im Register nachsehen“, dann suchen wir über PLZ und Leistung.</div>';
   if(pick)h+='<div class="sw-msg ok" style="font-size:14px">Im Marktstammdatenregister gefunden: '+E(pick.name||'')+', '+SW.num(pick.kwp,2)+' kWp, in Betrieb seit '+SW.date(pick.inbetriebnahme)+', '+E(pick.einspeisung||'')+'.</div>';
   h+='<form id="rf" novalidate>'+formFields(vals,badges)+'<div id="rerr"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" type="submit">Daten bestätigen</button><button class="sw-btn ghost" type="button" id="regchk">Im Register nachsehen</button></div></form>';
   box.innerHTML=h;
@@ -203,13 +204,15 @@ function mountReview(a,box){
   box.querySelectorAll('.sw-pick').forEach(function(b){b.onclick=function(){var i=+b.dataset.i;Object.assign(a,readFields());if(i<0){a.register=null;a._pick=null;}else a._pick=i;mountReview(a,box);};});
   $('#regchk').onclick=async function(){var btn=this,o=readFields();Object.assign(a,o);var plz=(String(o.standort||'').match(/\b\d{5}\b/)||[])[0];
     if(!o.mastr&&!(plz&&o.kwp)){$('#rerr').innerHTML=msg('err','Für den Abgleich brauchen wir die MaStR-Nummer oder den Standort mit PLZ und die Leistung.');return;}
-    busy(btn,true,'Suche im Register …');var r=await SW.fn('mastr',o.mastr?{mastr:o.mastr}:{plz:plz,kwp:o.kwp});busy(btn,false);
+    busy(btn,true,'Suche im Register …');var r=await SW.fn('mastr',o.mastr?{mastr:o.mastr}:{plz:plz,kwp:o.kwp});
+    if(r.ok&&!r.treffer&&o.mastr&&plz&&o.kwp){r=await SW.fn('mastr',{plz:plz,kwp:o.kwp});o.mastr=null;}
+    busy(btn,false);
     if(!r.ok){$('#rerr').innerHTML=msg('err',r.error||'Das Register ist gerade nicht erreichbar. Sie können trotzdem bestätigen.');return;}
     if(!r.treffer){$('#rerr').innerHTML=msg('info','Keine passende Anlage im Register gefunden. Prüfen Sie MaStR-Nummer, PLZ und Leistung, oder bestätigen Sie einfach.');return;}
     var str=norm(String(o.standort||'').split(',')[0]).replace(/\d+[a-z]?$/,'');
     r.einheiten.sort(function(x,y){var sx=str&&norm(x.standort).indexOf(str)>=0?0:1,sy=str&&norm(y.standort).indexOf(str)>=0?0:1;return sx-sy||Math.abs(x.kwp-o.kwp)-Math.abs(y.kwp-o.kwp);});
     r.einheiten=r.einheiten.slice(0,5);
-    a.register={suche:o.mastr?'nummer':'plz',einheiten:r.einheiten};a._pick=r.einheiten.length===1?0:null;mountReview(a,box);};
+    a.register={suche:o.mastr?'nummer':'plz',einheiten:r.einheiten};a._noAuto=true;a._pick=r.einheiten.length===1?0:null;mountReview(a,box);};
   $('#rf').onsubmit=async function(e){e.preventDefault();var o=readFields(),btn=this.querySelector('[type=submit]');
     if(!o.name){$('#rerr').innerHTML=msg('err','Bitte geben Sie der Anlage einen Namen.');return;}
     o.daten_bestaetigt_at=new Date().toISOString();o.register=a.register||null;busy(btn,true,'Wird gespeichert …');

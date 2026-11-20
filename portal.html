@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=12"></script>
+<script src="sw-api.js?v=13"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -236,7 +236,7 @@ async function renderAnlage(id,mode){
     SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
     SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id))]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
-  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0;}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null;
+  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null;
   var editable=mode==='check'||['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var CKM=mode==='check';
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>';
@@ -351,6 +351,8 @@ function anfrageKern(e,p,w){
   if(/abgeregelt|^Abgeregelt/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine größere abgeregelte Menge ausgewiesen. Bitte erläutern Sie uns, aus welchem Grund abgeregelt wurde und wie die entgangene Marktprämie ausgeglichen wird.';
   if(/^Marktprämie/.test(t))return 'die Marktprämie in Ihrer Gutschrift für '+m+' können wir nicht nachvollziehen. Bitte erläutern Sie uns die Berechnung.';
   if(/^Einspeisemengen/.test(t))return 'die Einspeisemenge in '+wer+' für '+m+' weicht von der Menge '+(w==='dv'?'des Netzbetreibers':'des Direktvermarkters')+' ab. Bitte prüfen Sie, welche Menge gilt.';
+  if(/^Einspeisung deutlich unter/.test(t))return 'die abgerechnete Einspeisemenge für '+m+' liegt deutlich unter der Erzeugung, die unser Monitoring für diesen Monat zeigt. Bitte prüfen Sie die Zählerwerte und teilen Sie uns die abgelesenen Stände mit.';
+  if(/^Mehr eingespeist/.test(t))return 'die abgerechnete Einspeisemenge für '+m+' liegt über der Erzeugung, die unser Monitoring für diesen Monat zeigt. Bitte prüfen Sie die Zählerwerte und teilen Sie uns die abgelesenen Stände mit.';
   if(/^Abrechnungszeitraum/.test(t))return 'der Abrechnungszeitraum in '+wer+' passt nicht zum Monat '+m+'. Bitte prüfen Sie das.';
   return null;
 }
@@ -381,12 +383,13 @@ function checkSection(a,checks,allDocs,cf){
   '<div style="max-width:260px;margin-bottom:14px"><label for="ck_m">Monat</label><input id="ck_m" type="month" value="'+vormonat()+'"></div>'+
   '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"></div>'+
   '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"><div class="sw-hint">Auch mehrere Dateien, zum Beispiel Gutschrift und Netznutzungsrechnung. Korrekturen einfach dazulegen, wir prüfen die neueste Fassung.</div></div></div>'+
+  '<div style="margin-top:14px"><label for="ck_mon">Monitoring-Auszug (freiwillig)</label><input id="ck_mon" class="sw-file" type="file" accept="application/pdf,image/jpeg,image/png,.csv,.txt,.xlsx,.xls,text/csv"><div class="sw-hint">Export aus Ihrem Monitoring-Portal (z. B. SMA, Solar-Log, meteocontrol, Fronius) als PDF, CSV, Excel oder Screenshot. Dann gleichen wir die erzeugte mit der abgerechneten Strommenge ab.</div></div>'+
   '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_go">Hochladen und prüfen</button></div>';
   window._ckChecks=checks;window._ckAnlage=a;
   if(checks.length){
     var openM=window._ckOpen||String(checks[0].monat).slice(0,7);
     h+='<h3 style="margin:28px 0 10px">Alle geprüften Monate</h3>'+ckTable(checks)+'<div class="sw-ck-months">'+checks.map(function(c,i){var s=CK[c.status]||CK.fehler,m=String(c.monat).slice(0,7);
-      var files=allDocs.filter(function(d){return String(d.monat||'').slice(0,7)===m&&String(d.art).indexOf('gutschrift_')===0;});
+      var files=allDocs.filter(function(d){return String(d.monat||'').slice(0,7)===m&&(String(d.art).indexOf('gutschrift_')===0||d.art==='monitoring');});
       return '<details class="sw-ck" id="ck-'+m+'"'+(m===openM?' open':'')+'><summary><span>'+s[0]+'</span><strong>'+monatName(m)+'</strong><span class="sw-badge" style="--c:'+s[2]+'">'+s[1]+'</span></summary>'+checkBody(c.ergebnis)+
       '<p style="font-size:14px;margin:12px 0 0">'+files.map(function(d){return '<a href="#" data-file="'+E(d.pfad)+'">'+E(SW.ART[d.art]||d.art)+'</a>';}).join(' · ')+' · <a href="#" data-recheck="'+m+'">Erneut prüfen</a> · <a href="#" data-print="'+m+'">Bericht drucken</a></p></details>';}).join('')+'</div><p style="font-size:14px;margin:14px 0 0"><a href="#" data-print="alle">Alle Monate als Bericht drucken oder als PDF speichern</a></p>';
   } else h+='<p class="sw-muted" style="margin:16px 0 0;font-size:14px">Noch keine Prüfung.</p>';
@@ -419,12 +422,12 @@ function mountCheck(a,id){
   app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var go=$('#ck_go');if(!go)return;
-  go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=Array.prototype.slice.call($('#ck_dv').files),nb=Array.prototype.slice.call($('#ck_nb').files);$('#ck_err').innerHTML='';
+  go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=Array.prototype.slice.call($('#ck_dv').files),nb=Array.prototype.slice.call($('#ck_nb').files);var mo=Array.prototype.slice.call(($('#ck_mon')||{}).files||[]);$('#ck_err').innerHTML='';
     if(!/^\d{4}-\d{2}$/.test(m)){$('#ck_err').innerHTML=msg('err','Bitte den Monat wählen.');return;}
-    if(!dv.length&&!nb.length){$('#ck_err').innerHTML=msg('err','Bitte mindestens eine Abrechnung auswählen, am besten beide.');return;}
-    if(dv.length+nb.length>6){$('#ck_err').innerHTML=msg('err','Bitte höchstens sechs Dateien auf einmal.');return;}
+    if(!dv.length&&!nb.length&&!mo.length){$('#ck_err').innerHTML=msg('err','Bitte mindestens eine Abrechnung auswählen, am besten beide.');return;}
+    if(dv.length+nb.length+mo.length>6){$('#ck_err').innerHTML=msg('err','Bitte höchstens sechs Dateien auf einmal.');return;}
     busy(b,true,'Wird hochgeladen …');
-    try{for(var i=0;i<dv.length;i++)await uploadCheck(a,dv[i],'gutschrift_dv',m);for(var k=0;k<nb.length;k++)await uploadCheck(a,nb[k],'gutschrift_nb',m);await runCheck(a,id,m,b);}
+    try{for(var i=0;i<dv.length;i++)await uploadCheck(a,dv[i],'gutschrift_dv',m);for(var k=0;k<nb.length;k++)await uploadCheck(a,nb[k],'gutschrift_nb',m);for(var q=0;q<mo.length;q++)await uploadCheck(a,mo[q],'monitoring',m);await runCheck(a,id,m,b);}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
   app.querySelectorAll('[data-recheck]').forEach(function(l){l.onclick=async function(e){e.preventDefault();try{await runCheck(a,id,l.dataset.recheck,go);}catch(x){alertBox(x.message);}};});
 }

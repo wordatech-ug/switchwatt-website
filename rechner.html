@@ -17,7 +17,7 @@
 <script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"Kostenrechner Direktvermarktung","url":"https://www.switchwatt.de/rechner.html","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"de","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"provider":{"@type":"Organization","name":"Switchwatt","url":"https://www.switchwatt.de/"},"description":"Rechnet die Kosten eines Direktvermarktungsvertrags für PV-Anlagen in Euro pro Jahr und ct/kWh um und ordnet sie im Markt ein."},
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"Wie rechne ich eine Monatspauschale in ct/kWh um?","acceptedAnswer":{"@type":"Answer","text":"Pauschale pro Monat mal 12 ergibt die Kosten pro Jahr. Diese teilen Sie durch die eingespeiste Strommenge in kWh und nehmen das Ergebnis mal 100. Beispiel: 200 € pro Monat bei 155.000 kWh Einspeisung ergeben 2.400 € pro Jahr oder etwa 1,55 ct/kWh."}},
-{"@type":"Question","name":"Was kostet Direktvermarktung für Anlagen ab 100 kWp üblicherweise?","acceptedAnswer":{"@type":"Answer","text":"Nach unserer Marktrecherche (Stand November 2026) liegen Angebote für Dachanlagen ab 100 kWp häufig zwischen etwa 0,15 und 0,4 ct/kWh. Kleinere Anlagen bekommen oft feste Monatspauschalen, die umgerechnet deutlich teurer sein können."}},
+{"@type":"Question","name":"Was kostet Direktvermarktung für Anlagen ab 100 kWp üblicherweise?","acceptedAnswer":{"@type":"Answer","text":"Nach Angeboten, die wir 2026 eingeholt haben, liegen günstige Angebote bei rund 0,3 ct/kWh für Anlagen um 750 kWp und bei etwa 0,5 bis 0,8 ct/kWh für 100 bis 200 kWp. Kleinere Anlagen bekommen oft feste Monatspauschalen, die umgerechnet deutlich teurer sein können."}},
 {"@type":"Question","name":"Worauf kommt es außer dem Preis an?","acceptedAnswer":{"@type":"Answer","text":"Auf Laufzeit und Kündigungsfrist, die Regelung bei negativen Strompreisen und Abregelung, die Kosten für die Fernsteuerbarkeit und darauf, ob der Direktvermarkter mit Ihrer vorhandenen Technik arbeiten kann."}}]}]</script>
 <style>
 @font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
@@ -108,10 +108,10 @@ footer a{color:#A1A1AA}
 <p class="verdict" id="r_verdict">–</p>
 <div style="color:#A1A1AA;font-size:15px" id="r_text"></div>
 <div class="bar" aria-hidden="true"><b id="r_mark" style="left:0"></b></div>
-<div class="scale" aria-hidden="true"><span>0</span><span>0,25</span><span>0,5</span><span>0,75</span><span>1+ ct/kWh</span></div>
+<div class="scale" aria-hidden="true"><span>günstig</span><span></span><span>+75 %</span><span></span><span>+150 %</span></div>
 <div class="diff" id="r_diff" hidden></div>
 <a class="btn" href="portal.html" id="r_btn">Angebote für meine Anlage einholen</a>
-<p class="small">Rechenbeispiel, kein Angebot. Marktspanne nach eigener Recherche, Stand November 2026: Angebote für Dachanlagen ab 100 kWp liegen häufig bei etwa 0,15 bis 0,4 ct/kWh. Ihr tatsächliches Angebot hängt von Anlage, Technik und Laufzeit ab.</p>
+<p class="small">Rechenbeispiel, kein Angebot. Vergleichswert aus Angeboten, die wir 2026 für Dachanlagen eingeholt haben: günstige Angebote liegen bei rund 0,3 ct/kWh für 750 kWp und bei 0,5 bis 0,8 ct/kWh für 100 bis 200 kWp, weil sich die Fixkosten bei kleinen Anlagen auf weniger Strom verteilen. Ihr tatsächliches Angebot hängt von Anlage, Technik und Laufzeit ab.</p>
 </section>
 </div>
 
@@ -140,14 +140,15 @@ function calc(){
   var year=num('fix')*12+num('ct')/100*kwh+num('extra'),ct=year/kwh*100;
   $('r_ct').textContent=nf(ct,2)+' ct/kWh';
   $('r_year').textContent=nf(year)+' € pro Jahr bei '+nf(kwh)+' kWh Einspeisung';
-  $('r_mark').style.left=Math.min(100,ct/1*100)+'%';
+  var best=400+0.0027*kwh,q=year/best;
+  $('r_mark').style.left=Math.max(0,Math.min(100,(q-1)/1.5*100))+'%';
   var v,t,cta;
-  if(ct<=0.3){lamp('g');v='Im marktüblichen Rahmen.';t='Ihr Vertrag liegt im Bereich dessen, was wir am Markt sehen. Ein Vergleich kann sich trotzdem lohnen, etwa bei Laufzeit oder Abregelung.';cta='Trotzdem vergleichen lassen';}
-  else if(ct<=0.6){lamp('y');v='Etwas über dem Markt.';t='Hier ist oft noch Luft. Ein Vergleich lohnt sich wahrscheinlich, vor allem vor dem nächsten Kündigungstermin.';cta='Vertrag prüfen lassen';}
+  if(q<=1.2){lamp('g');v='Nah an günstigen Angeboten.';t='Ihr Vertrag liegt nah an dem, was günstige Angebote für eine Anlage dieser Größe kosten. Ein Vergleich kann sich trotzdem lohnen, etwa bei Laufzeit oder Abregelung.';cta='Trotzdem vergleichen lassen';}
+  else if(q<=1.6){lamp('y');v='Etwas über dem Markt.';t='Hier ist oft noch Luft. Ein Vergleich lohnt sich wahrscheinlich, vor allem vor dem nächsten Kündigungstermin.';cta='Vertrag prüfen lassen';}
   else{lamp('r');v='Deutlich über dem Markt.';t='So hohe Kosten sehen wir meist bei Pauschalverträgen. Ein Wechsel kann sich hier spürbar lohnen. Lassen Sie uns prüfen, was für Ihre Anlage drin ist.';cta='Pilotplatz anfragen';}
   $('r_verdict').textContent=v;$('r_text').textContent=t;
-  var ref=0.25,refYear=ref/100*kwh,d=year-refYear;
-  if(d>50){$('r_diff').hidden=false;$('r_diff').innerHTML='Zum Vergleich: Bei 0,25 ct/kWh, der Mitte der Spanne, die wir für Anlagen ab 100 kWp sehen, wären es rund <strong>'+nf(refYear)+' €</strong> pro Jahr, also etwa <strong style="color:#86EFAC">'+nf(d)+' € weniger</strong>. Ob Ihre Anlage diesen Preis bekommt, zeigt erst ein echtes Angebot.';}
+  var refYear=best,d=year-refYear;
+  if(d>50){$('r_diff').hidden=false;$('r_diff').innerHTML='Zum Vergleich: Günstige Angebote, die wir 2026 für Anlagen dieser Größe eingeholt haben, liegen bei rund <strong>'+nf(refYear)+' €</strong> pro Jahr ('+nf(refYear/kwh*100,2)+' ct/kWh), also etwa <strong style="color:#86EFAC">'+nf(d)+' € weniger</strong>. Ob Ihre Anlage diesen Preis bekommt, zeigt erst ein echtes Angebot.';}
   else $('r_diff').hidden=true;
   $('r_btn').textContent=cta;
 }

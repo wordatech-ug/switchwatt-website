@@ -14,5 +14,5 @@
 
 - Zielgruppe: Betreiber von PV-Dachanlagen mit 100 bis 750 kWp in Deutschland (Pflicht zur Direktvermarktung ab 100 kWp für Anlagen seit 2016)
 - Leistung: Vertrag prüfen, Angebote einholen und vergleichen, Kündigung vorbereiten, neuen Vertrag und technische Anbindung organisieren
-- Marktspanne nach eigener Recherche (Stand November 2026): Angebote für Dachanlagen ab 100 kWp häufig etwa 0,15 bis 0,4 ct/kWh; Pauschalverträge kleinerer Anlagen liegen umgerechnet oft deutlich darüber
+- Vergleichswert aus 2026 eingeholten Angeboten: günstige Angebote rund 0,3 ct/kWh bei 750 kWp, 0,5 bis 0,8 ct/kWh bei 100 bis 200 kWp; Pauschalverträge kleinerer Anlagen liegen umgerechnet oft deutlich darüber
 - Kontakt: angebote@switchwatt.de

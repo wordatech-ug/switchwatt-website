@@ -324,8 +324,8 @@ function checkSection(a,checks,allDocs,cf){
   if(!frei)h+=(cf&&cf.angefragt_at?msg('info','Sie haben den Abrechnungs-Check am '+SW.date(cf.angefragt_at)+' angefragt. Wir melden uns mit den Konditionen und schalten ihn dann frei.'):'<p style="margin:0 0 14px">Der Check ist in der Pilotphase auf Anfrage verfügbar. Wir nennen Ihnen die Konditionen vorab und schalten ihn dann für diese Anlage frei.</p><div class="sw-row"><button class="sw-btn" id="ck_req">Freischaltung anfragen</button></div>')+'<div id="ck_err"></div>';
   else h+=
   '<div style="max-width:260px;margin-bottom:14px"><label for="ck_m">Monat</label><input id="ck_m" type="month" value="'+vormonat()+'"></div>'+
-  '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" accept="application/pdf,image/jpeg,image/png"></div>'+
-  '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" accept="application/pdf,image/jpeg,image/png"></div></div>'+
+  '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"></div>'+
+  '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"><div class="sw-hint">Auch mehrere Dateien, zum Beispiel Gutschrift und Netznutzungsrechnung. Korrekturen einfach dazulegen, wir prüfen die neueste Fassung.</div></div></div>'+
   '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_go">Hochladen und prüfen</button></div>';
   if(checks.length){
     var openM=window._ckOpen||String(checks[0].monat).slice(0,7);
@@ -360,11 +360,12 @@ function mountCheck(a,id){
   app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var go=$('#ck_go');if(!go)return;
-  go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=$('#ck_dv').files[0],nb=$('#ck_nb').files[0];$('#ck_err').innerHTML='';
+  go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=Array.prototype.slice.call($('#ck_dv').files),nb=Array.prototype.slice.call($('#ck_nb').files);$('#ck_err').innerHTML='';
     if(!/^\d{4}-\d{2}$/.test(m)){$('#ck_err').innerHTML=msg('err','Bitte den Monat wählen.');return;}
-    if(!dv&&!nb){$('#ck_err').innerHTML=msg('err','Bitte mindestens eine Abrechnung auswählen, am besten beide.');return;}
+    if(!dv.length&&!nb.length){$('#ck_err').innerHTML=msg('err','Bitte mindestens eine Abrechnung auswählen, am besten beide.');return;}
+    if(dv.length+nb.length>6){$('#ck_err').innerHTML=msg('err','Bitte höchstens sechs Dateien auf einmal.');return;}
     busy(b,true,'Wird hochgeladen …');
-    try{if(dv)await uploadCheck(a,dv,'gutschrift_dv',m);if(nb)await uploadCheck(a,nb,'gutschrift_nb',m);await runCheck(a,id,m,b);}
+    try{for(var i=0;i<dv.length;i++)await uploadCheck(a,dv[i],'gutschrift_dv',m);for(var k=0;k<nb.length;k++)await uploadCheck(a,nb[k],'gutschrift_nb',m);await runCheck(a,id,m,b);}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
   app.querySelectorAll('[data-recheck]').forEach(function(l){l.onclick=async function(e){e.preventDefault();try{await runCheck(a,id,l.dataset.recheck,go);}catch(x){alertBox(x.message);}};});
 }

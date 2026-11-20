@@ -184,7 +184,7 @@ function same(k,a,b){if(a==null||a===''||b==null||b==='')return null;
 function mountReview(a,box){
   var aus=a.auslesung&&a.auslesung.felder||{},reg=a.register&&a.register.einheiten||[],pick=a._pick!=null?reg[a._pick]:(reg.length===1?reg[0]:null);
   var vals={};FIELDS.forEach(function(f){var k=f[0];vals[k]=a[k];if((vals[k]==null||vals[k]==='')&&aus[k]&&aus[k].wert!=null)vals[k]=aus[k].wert;});
-  if(vals.name==='Neue Anlage'||!vals.name||vals.name===a._autoName){vals.name=(pick&&pick.name)||((String(vals.standort||'').match(/\d{5}\s+(.+)$/)||[])[1])||'';a._autoName=vals.name;}
+  if(vals.name==='Neue Anlage'||!vals.name||vals.name===a._autoName){vals.name=((String(vals.standort||'').match(/\d{5}\s+([^,]+)/)||[])[1]||'').trim()||(pick&&pick.name)||'';a._autoName=vals.name;}
   var badges={};
   FIELDS.forEach(function(f){var k=f[0],src=aus[k],rk=REGMAP[k],rv=pick&&rk?pick[rk]:null;
     if(rv!=null&&(vals[k]==null||vals[k]==='')){vals[k]=rv;badges[k]='<span class="sw-src ok">aus dem Marktstammdatenregister</span>';return;}

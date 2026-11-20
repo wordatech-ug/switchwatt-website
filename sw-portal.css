@@ -124,7 +124,7 @@ details summary{padding:6px 0}
 .sw-file{width:100%;box-sizing:border-box;padding:10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.03);color:#D4D4D8}
 
 .sw-ck-tab{margin-bottom:8px}.sw-ck-tab td a{color:#8FA6FF}.sw-ck-sum td{border-top:1px solid rgba(255,255,255,.18)}
-.sw-scroll{overflow-x:auto}.sw-ck-mx{min-width:100%;border-collapse:collapse}.sw-ck-mx th,.sw-ck-mx td{text-align:center;padding:10px 8px;white-space:nowrap}.sw-ck-mx th:first-child,.sw-ck-mx td:first-child{text-align:left;position:sticky;left:0;background:#121214}.sw-ck-mx td a{text-decoration:none;display:inline-block;min-width:32px;min-height:32px;line-height:32px}
+.sw-scroll{overflow-x:auto}.sw-ck-mx{min-width:100%;border-collapse:collapse}.sw-ck-mx th,.sw-ck-mx td{text-align:center;padding:10px 8px;white-space:nowrap}.sw-ck-mx th:first-child,.sw-ck-mx td:first-child{text-align:left;position:sticky;left:0;background:#0A0A0D}.sw-ck-mx td a{text-decoration:none;display:inline-block;min-width:32px;min-height:32px;line-height:32px}
 
 .sw-bereich{border-bottom:1px solid rgba(255,255,255,.08);background:rgba(10,10,12,.6)}
 .sw-bereich-in{max-width:980px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}

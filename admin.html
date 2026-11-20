@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; base-uri 'self'; form-action 'self'">
 <title>Verwaltung – Switchwatt</title>
-<link rel="stylesheet" href="sw-portal.css?v=12">
+<link rel="stylesheet" href="sw-portal.css?v=13">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -16,7 +16,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=8"></script>
+<script src="sw-api.js?v=9"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),E=SW.esc,me=null,users={};
@@ -31,7 +31,7 @@ function renderLogin(err){
 }
 
 async function renderList(){
-  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id),freigaben(id),dokumente(art)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at&widerrufen_at=is.null')]);
+  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id),freigaben(id),dokumente(art),pruefungen(monat,status)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at&widerrufen_at=is.null'),SW.rest('marktwerte?select=*&order=monat.desc&limit=14')]);
   var an=r[0]; users={}; r[1].forEach(function(p){users[p.id]=p;}); var vm={}; r[2].forEach(function(v){vm[v.owner]=v;});
   var kunden=r[1].filter(function(p){return p.rolle!=='admin';});
   var h='<h1>Anlagen</h1><p class="sw-muted">'+an.length+' Anlagen · '+kunden.length+' Kundenkonten. Sortiert nach Kündigungstermin.</p>';
@@ -40,16 +40,23 @@ async function renderList(){
   h+='<section class="sw-card"><table class="sw-stack"><thead><tr><th>Anlage</th><th>Kunde</th><th>kWp</th><th>Kündigen bis</th><th>Status</th><th>Stand</th></tr></thead><tbody>';
   an.forEach(function(a){var u=users[a.owner]||{},d=SW.daysUntil(a.kuendigung_bis),docs=SW.arr(a.dokumente);a.angebote=SW.arr(a.angebote);a.freigaben=SW.arr(a.freigaben);
     var stand=[];if(!vm[a.owner])stand.push('<span class="sw-red">keine Vollmacht</span>');if(!docs.length)stand.push('kein Dokument');else if(!docs.some(function(x){return x.art==='vertrag';}))stand.push('nur Abrechnung');
-    stand.push(a.angebote.length+' Angebot(e)');if(a.freigaben.length)stand.push('freigegeben');if(docs.some(function(x){return x.art==='kuendigung_unterschrieben';}))stand.push('Kündigung unterschrieben');
+    var pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];if(pc)stand.push('Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(0,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||'❗'));stand.push(a.angebote.length+' Angebot(e)');if(a.freigaben.length)stand.push('freigegeben');if(docs.some(function(x){return x.art==='kuendigung_unterschrieben';}))stand.push('Kündigung unterschrieben');
     h+='<tr><td data-l="Anlage"><a href="#/a/'+a.id+'">'+E(a.name)+'</a></td><td data-l="Kunde">'+E(u.name||u.email||'?')+(u.firma?'<br><span class="sw-muted" style="font-size:13px">'+E(u.firma)+'</span>':'')+'</td><td data-l="kWp">'+SW.num(a.kwp,1)+'</td><td data-l="Kündigen bis">'+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?'<br><span class="sw-red">'+d+' Tage</span>':'')+'</td><td>'+SW.badge(a.status)+'</td><td style="font-size:13px">'+stand.join(' · ')+'</td></tr>';});
   h+='</tbody></table>'+(an.length?'':'<p class="sw-muted">Noch keine Anlagen.</p>')+'</section>';
   h+='<section class="sw-card"><h2>Kundenkonten</h2><table class="sw-stack"><thead><tr><th>Name</th><th>E-Mail</th><th>Telefon</th><th>Vollmacht</th></tr></thead><tbody>'+kunden.map(function(p){return '<tr><td data-l="Name">'+E(p.name||'–')+(p.firma?' · '+E(p.firma):'')+'</td><td data-l="E-Mail"><a href="mailto:'+E(p.email)+'">'+E(p.email)+'</a></td><td data-l="Telefon">'+E(p.telefon||'–')+'</td><td data-l="Vollmacht">'+(vm[p.id]?SW.date(vm[p.id].erteilt_at):'<span class="sw-red">fehlt</span>')+'</td></tr>';}).join('')+'</tbody></table></section>';
+  var mws=r[3]||[];
+  h+='<section class="sw-card"><h2>Marktwerte Solar</h2><p class="sw-muted" style="font-size:14px">Offizielle Monatsmarktwerte von netztransparenz.de. Der Abrechnungs-Check rechnet damit. Neue Werte meldet das Markt-Briefing jeden Montag.</p>'+
+  '<table><thead><tr><th>Monat</th><th>ct/kWh</th><th>vorher</th></tr></thead><tbody>'+mws.map(function(m){return '<tr><td>'+String(m.monat).slice(5,7)+'/'+String(m.monat).slice(0,4)+'</td><td>'+SW.num(m.solar_ct,3)+'</td><td>'+(m.vorher_ct!=null?SW.num(m.vorher_ct,3):'–')+'</td></tr>';}).join('')+'</tbody></table>'+
+  '<form id="mwf" class="sw-row" style="margin-top:14px;align-items:flex-end"><div><label for="mw_m">Monat</label><input id="mw_m" type="month"></div><div><label for="mw_v">Wert ct/kWh</label><input id="mw_v" inputmode="decimal" placeholder="z. B. 6,359"></div><div><label for="mw_a">Korrektur: alter Wert (optional)</label><input id="mw_a" inputmode="decimal"></div><button class="sw-btn small" type="submit">Speichern</button></form><div id="mwerr"></div></section>';
   app.innerHTML=h;
+  var mf=$('#mwf');if(mf)mf.onsubmit=async function(e){e.preventDefault();var m=$('#mw_m').value,v=Number(String($('#mw_v').value).replace(',','.')),al=$('#mw_a').value?Number(String($('#mw_a').value).replace(',','.')):null;
+    if(!/^\d{4}-\d{2}$/.test(m)||!(v>-100&&v<100)){$('#mwerr').innerHTML=msg('err','Bitte Monat und Wert eingeben.');return;}
+    try{await SW.rest('marktwerte',{method:'POST',prefer:'resolution=merge-duplicates',body:{monat:m+'-01',solar_ct:v,vorher_ct:al}});renderList();}catch(x){$('#mwerr').innerHTML=msg('err',x.message);}};
 }
 
 async function renderOne(id){
   var q=encodeURIComponent(id);
-  var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+q),SW.rest('dokumente?select=*&anlage_id=eq.'+q+'&order=created_at.desc'),SW.rest('angebote?select=*&anlage_id=eq.'+q+'&order=created_at.asc'),SW.rest('freigaben?select=*&anlage_id=eq.'+q),SW.rest('verlauf?select=*&anlage_id=eq.'+q+'&order=created_at.desc'),SW.rest('profiles?select=*')]);
+  var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+q),SW.rest('dokumente?select=*&anlage_id=eq.'+q+'&order=created_at.desc'),SW.rest('angebote?select=*&anlage_id=eq.'+q+'&order=created_at.asc'),SW.rest('freigaben?select=*&anlage_id=eq.'+q),SW.rest('verlauf?select=*&anlage_id=eq.'+q+'&order=created_at.desc'),SW.rest('profiles?select=*'),SW.rest('pruefungen?select=*&anlage_id=eq.'+q+'&order=monat.desc')]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Nicht gefunden.');return;}
   r[5].forEach(function(p){users[p.id]=p;});
   var docs=r[1],offers=r[2],fg=r[3][0],log=r[4],u=users[a.owner]||{};
@@ -65,6 +72,12 @@ async function renderOne(id){
   h+='<section class="sw-card"><h2>Angebote</h2>'+(offers.length?'<table class="sw-stack"><thead><tr><th>Anbieter</th><th>Entgelt</th><th>Ersparnis/Jahr</th><th>Laufzeit</th><th></th></tr></thead><tbody>'+offers.map(function(o){return '<tr><td data-l="Anbieter">'+E(o.anbieter)+(o.empfohlen?' <span class="sw-badge" style="--c:#22C55E">Empfehlung</span>':'')+(fg&&fg.angebot_id===o.id?' <span class="sw-badge" style="--c:#8FA6FF">gewählt</span>':'')+'</td><td data-l="Entgelt">'+E(o.entgelt_text||((o.ct_kwh!=null?SW.num(o.ct_kwh,2)+' ct/kWh':'')+(o.fix_monat?' + '+SW.num(o.fix_monat,2)+' €/Monat':'')))+'</td><td data-l="Ersparnis/Jahr">'+SW.num(o.ersparnis_jahr)+' €</td><td data-l="Laufzeit">'+(o.laufzeit_monate||'–')+' Mon.</td><td>'+(fg?'':'<button class="sw-btn ghost small" data-del="'+o.id+'">Löschen</button>')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Noch keine.</p>')+
   (fg?msg('ok','Freigegeben am '+SW.dateTime(fg.freigegeben_at)+' von '+fg.name_unterzeichner):'')+
   (fg?'':'<h3 style="margin-top:20px">Angebot einstellen</h3><form id="of"><div class="sw-grid"><div><label for="o_anb">Anbieter *</label><input id="o_anb" required></div><div><label for="o_ct">ct/kWh</label><input id="o_ct" type="number" step="0.001"></div><div><label for="o_fix">€ pro Monat fix</label><input id="o_fix" type="number" step="0.01"></div><div><label for="o_txt">Entgelt als Text (optional)</label><input id="o_txt" placeholder="überschreibt die Anzeige"></div><div><label for="o_lz">Laufzeit (Monate)</label><input id="o_lz" type="number"></div><div><label for="o_kf">Kündigungsfrist</label><input id="o_kf" placeholder="z. B. 3 Monate zum Laufzeitende"></div><div><label for="o_ers">Ersparnis pro Jahr in €</label><input id="o_ers" type="number" step="1"><button type="button" class="sw-btn ghost small" id="calc" style="margin-top:6px">aus Daten schätzen</button></div><div><label for="o_bis">Angebot gültig bis</label><input id="o_bis" type="date"></div><div style="grid-column:1/-1"><label for="o_hin">Hinweise für den Kunden</label><textarea id="o_hin"></textarea></div></div><label class="sw-check" style="margin:12px 0"><input type="checkbox" id="o_emp"><span>Als Empfehlung markieren</span></label><button class="sw-btn">Angebot speichern</button><div id="oerr"></div></form>')+'</section>';
+  /* Abrechnungs-Check */
+  var pr=r[6]||[];
+  if(pr.length)h+='<section class="sw-card"><h2>Abrechnungs-Check</h2>'+pr.map(function(c,i){var e=c.ergebnis||{},ic={gruen:'✅',gelb:'⚠️',rot:'❗'}[c.status]||'❗',k=e.kennzahlen||{};
+    return '<details'+(i===0?' open':'')+' style="border-top:1px solid rgba(255,255,255,.08);padding:10px 0"><summary style="cursor:pointer"><strong>'+ic+' '+String(c.monat).slice(5,7)+'/'+String(c.monat).slice(0,4)+'</strong>'+(k.menge_kwh?' · '+SW.num(k.menge_kwh)+' kWh · netto '+SW.num(k.netto_eur,2)+' €':'')+'</summary><ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.5">'+
+    (e.punkte||[]).filter(function(p){return p.stufe!=='ok';}).map(function(p){return '<li><strong>'+({rot:'❗',gelb:'⚠️',info:'ℹ️'}[p.stufe]||'')+' '+E(p.titel)+':</strong> '+E(p.text)+'</li>';}).join('')+
+    '<li class="sw-muted">'+(e.punkte||[]).filter(function(p){return p.stufe==='ok';}).length+' Punkte in Ordnung</li></ul></details>';}).join('')+'</section>';
   /* Dokumente */
   h+='<section class="sw-card"><h2>Dokumente</h2>'+(docs.length?'<table><tbody>'+docs.map(function(x){return '<tr><td><a href="#" data-file="'+E(x.pfad)+'">'+E(x.dateiname)+'</a></td><td>'+E(SW.ART[x.art]||x.art)+'</td><td>'+SW.date(x.created_at)+'</td><td><button class="sw-btn ghost small" data-read="'+x.id+'">auslesen</button></td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Keine.</p>')+
   '<div class="sw-row" style="margin-top:14px"><select id="ua" style="flex:0 1 240px"><option value="kuendigung_entwurf">Kündigung (Entwurf)</option><option value="sonstiges">Sonstiges</option><option value="vertrag">Vertrag</option></select><input id="uf" type="file" style="flex:1 1 240px"><button class="sw-btn ghost" id="ub">Hochladen</button><button class="sw-btn ghost" id="kb">Kündigung erzeugen</button></div><div id="uerr"></div></section>';

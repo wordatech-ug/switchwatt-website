@@ -105,3 +105,18 @@ details summary{padding:6px 0}
 .sw-vmkurz{margin:12px 0 0;padding-left:20px;line-height:1.6}.sw-vmkurz li{margin-bottom:8px}
 .sw-vmdet{margin-top:8px}.sw-vmdet summary{cursor:pointer;color:#8FA6FF;padding:8px 0;min-height:44px;display:flex;align-items:center}.sw-vmdet .sw-vm{margin-top:8px}
 .sw-hint{font-size:13px;line-height:1.45;color:#A1A1AA;margin-top:6px}
+
+.sw-ck-months{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.sw-ck{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:0 16px}
+.sw-ck summary{cursor:pointer;min-height:52px;display:flex;align-items:center;gap:12px;list-style:none}
+.sw-ck summary::-webkit-details-marker{display:none}
+.sw-ck summary .sw-badge{margin-left:auto}
+.sw-ck[open]{padding-bottom:16px}
+.sw-ck-k{margin:4px 0 12px}
+.sw-ck-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.sw-ck-list li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03)}
+.sw-ck-list li.rot{background:rgba(240,68,56,.12)}
+.sw-ck-list li.gelb{background:rgba(245,183,10,.10)}
+.sw-ck-list li.ok>span{color:#22C55E;font-weight:700}
+.sw-ck-list li div{color:#D4D4D8}
+.sw-ck-list li strong{color:#fff}

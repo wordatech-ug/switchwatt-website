@@ -119,7 +119,7 @@
     abgebrochen: ['Abgebrochen', '#71717A']
   };
   SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
-  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von Switchwatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges' };
+  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von Switchwatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Gutschrift Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber' };
   SW.daysUntil = function (d) { if (!d) return null; var t = new Date(); var a = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()); var p = String(d).slice(0, 10).split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - a) / 86400000); };
   SW.arr = function (x) { return x == null ? [] : Array.isArray(x) ? x : [x]; };
   SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };

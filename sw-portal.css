@@ -120,3 +120,5 @@ details summary{padding:6px 0}
 .sw-ck-list li.ok>span{color:#22C55E;font-weight:700}
 .sw-ck-list li div{color:#D4D4D8}
 .sw-ck-list li strong{color:#fff}
+
+.sw-file{width:100%;box-sizing:border-box;padding:10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.03);color:#D4D4D8}

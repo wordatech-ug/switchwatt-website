@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=11">
+<link rel="stylesheet" href="sw-portal.css?v=12">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -83,8 +83,8 @@ async function loadAll(){
   return {vm:r[0][0]||null,anlagen:r[1]};
 }
 function steps(vm,anlagen){
-  var s=['Konto','Vollmacht','Anlage und Vertrag','Angebote','Freigabe','Kündigung und Wechsel'];
-  var best=1; if(vm)best=2;
+  var s=['Konto','Anlage und Vertrag','Vollmacht','Angebote','Freigabe','Kündigung und Wechsel'];
+  var best=1; if(anlagen.length)best=2;
   if(vm&&anlagen.length)best=3;
   anlagen.forEach(function(a){var lv={neu:3,in_pruefung:3,angebote:4,freigegeben:5,kuendigung:5,gewechselt:6}[a.status]||3;if(vm&&lv>best)best=lv;});
   return '<ol class="sw-steps">'+s.map(function(t,i){return '<li class="'+(i<best?'done':i===best?'now':'')+'">'+t+'</li>';}).join('')+'</ol>';
@@ -94,21 +94,23 @@ function steps(vm,anlagen){
 async function renderHome(){
   var d=await loadAll(),vm=d.vm,an=d.anlagen;
   var h='<h1>Guten Tag'+(profile&&profile.name?', '+E(profile.name):'')+'</h1><p class="sw-muted">So weit sind Sie:</p>'+steps(vm,an);
-  if(!vm){
-    h+='<section class="sw-card hl"><h2>1. Vollmacht erteilen</h2><p class="sw-muted">Damit wir Angebote für Sie einholen dürfen. Verträge schließen oder kündigen wir nur, wenn Sie ein Angebot ausdrücklich freigeben.</p>'+
-    '<div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div>'+
-    '<form id="vmf" style="margin-top:16px"><div class="sw-grid"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
-    '<label class="sw-check" style="margin:16px 0"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben und bin berechtigt, für den Betreiber zu handeln.</span></label><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht erteilen</button></form></section>';
-  } else {
-    h+='<p class="sw-msg ok">Vollmacht erteilt am '+SW.dateTime(vm.erteilt_at)+' von '+E(vm.name_unterzeichner)+(vm.firma?' für '+E(vm.firma):'')+'. <a href="#" id="vmshow">Text ansehen</a></p>';
-  }
-  h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Ihre Anlagen</h2><a class="sw-btn" href="#/neu">+ Anlage hinzufügen</a></div>';
-  if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Noch keine Anlage. Legen Sie Ihre erste Anlage an und laden Sie den aktuellen Vertrag hoch.</p>';
+  h+='<section class="sw-card'+(an.length?'':' hl')+'"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">'+(an.length?'Ihre Anlagen':'1. Anlage hinzufügen')+'</h2><a class="sw-btn" href="#/neu">+ Anlage hinzufügen</a></div>';
+  if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Laden Sie Ihren aktuellen Vertrag oder die letzte Gutschrift hoch, ein Handyfoto reicht. Wir lesen die Daten für Sie aus.</p>';
   an.forEach(function(a){var dd=SW.daysUntil(a.kuendigung_bis);
     h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong> '+SW.badge(a.status)+(!a.daten_bestaetigt_at&&['neu','in_pruefung'].indexOf(a.status)>=0?' <span class="sw-badge" style="--c:#F5B70A">Daten prüfen</span>':'')+'<div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(a.direktvermarkter||'Direktvermarkter noch offen')+
     (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
     (SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
-  h+='</section><p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
+  h+='</section>';
+  if(!vm&&an.length){
+    h+='<section class="sw-card hl"><h2>2. Vollmacht erteilen</h2>'+
+    '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> kündigen wir den alten Vertrag und schließen den neuen ab. Vorher nicht.</li><li><strong>Widerruf</strong> jederzeit per E-Mail an angebote@switchwatt.de.</li></ul>'+
+    '<details class="sw-vmdet"><summary>Vollständigen Text der Vollmacht lesen</summary><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div></details>'+
+    '<form id="vmf" style="margin-top:16px"><div class="sw-grid"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
+    '<label class="sw-check" style="margin:16px 0"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben und bin berechtigt, für den Betreiber zu handeln.</span></label><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht erteilen</button></form></section>';
+  } else if(vm){
+    h+='<p class="sw-msg ok">Vollmacht erteilt am '+SW.dateTime(vm.erteilt_at)+' von '+E(vm.name_unterzeichner)+(vm.firma?' für '+E(vm.firma):'')+'. <a href="#" id="vmshow">Text ansehen</a></p>';
+  }
+  h+='<p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
   app.innerHTML=h;
   var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p class="sw-muted" style="font-size:14px">Fassung '+E(vm.version)+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
   var f=$('#vmf'); if(f)f.onsubmit=async function(e){e.preventDefault();var btn=f.querySelector('[type=submit]'),n=$('#vmn').value.trim();
@@ -125,24 +127,24 @@ var FIELDS=[
  ['betreiber_anschrift','Anschrift des Betreibers','text','Straße, PLZ Ort'],
  ['standort','Standort der Anlage','text','Straße, PLZ Ort'],
  ['kwp','Leistung in kWp','number',''],
- ['mastr','MaStR-Nummer der Einheit','text','SEE…'],
- ['malo','Marktlokations-ID','text','11-stellig'],
+ ['mastr','MaStR-Nummer der Einheit','text','SEE…',false,'Beginnt mit SEE. Wenn Sie sie nicht kennen: unten auf „Im Register nachsehen“ klicken.'],
+ ['malo','Marktlokations-ID','text','11-stellig',false,'11 Ziffern, steht auf Ihrer Gutschrift oder der Abrechnung des Netzbetreibers.'],
  ['netzbetreiber','Netzbetreiber','text',''],
  ['direktvermarkter','Aktueller Direktvermarkter','text',''],
  ['dv_anschrift','Anschrift des Direktvermarkters','text','für das Kündigungsschreiben'],
  ['dv_vertragsnr','Vertrags- oder Kundennummer','text',''],
  ['entgelt','Aktuelles Entgelt laut Vertrag','text','z. B. 49 € pro Monat + 0,29 ct/kWh'],
  ['vertragsende','Vertrag läuft bis','date',''],
- ['kuendigungsfrist','Kündigungsfrist','text','z. B. 3 Monate zum Laufzeitende'],
- ['kuendigung_bis','Spätester Kündigungstermin','date',''],
- ['verlaengerung','Verlängerung ohne Kündigung','text','z. B. um 12 Monate'],
+ ['kuendigungsfrist','Kündigungsfrist','text','z. B. 3 Monate zum Laufzeitende',false,'Steht im Vertrag. Wenn Sie unsicher sind, lassen Sie das Feld leer, wir prüfen es.'],
+ ['kuendigung_bis','Spätester Kündigungstermin','date','',false,'Bis zu diesem Tag muss die Kündigung beim Direktvermarkter sein. Leer lassen, wenn unbekannt.'],
+ ['verlaengerung','Verlängerung ohne Kündigung','text','z. B. um 12 Monate',false,'Was passiert, wenn niemand kündigt.'],
  ['notiz','Hinweise für uns','textarea','']
 ];
 var REGMAP={kwp:'kwp',mastr:'mastr',standort:'standort',betreiber:'betreiber',netzbetreiber:'netzbetreiber'};
 function formFields(a,badges){a=a||{};badges=badges||{};return '<div class="sw-grid">'+FIELDS.map(function(f){var v=a[f[0]]==null?'':a[f[0]];
   var inp=f[2]==='textarea'?'<textarea id="f_'+f[0]+'" placeholder="'+E(f[3])+'">'+E(v)+'</textarea>':'<input id="f_'+f[0]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="0.01" min="0"':'')+' placeholder="'+E(f[3])+'" value="'+E(v)+'"'+(f[4]?' required':'')+'>';
   var b=badges[f[0]]||'';
-  return '<div'+(f[2]==='textarea'?' style="grid-column:1/-1"':'')+' class="sw-field'+(b.indexOf('sw-warn')>=0?' warn':'')+'"><label for="f_'+f[0]+'">'+E(f[1])+(f[4]?' *':'')+'</label>'+inp+b+'</div>';}).join('')+'</div>';}
+  return '<div'+(f[2]==='textarea'?' style="grid-column:1/-1"':'')+' class="sw-field'+(b.indexOf('sw-warn')>=0?' warn':'')+'"><label for="f_'+f[0]+'">'+E(f[1])+(f[4]?' *':'')+'</label>'+inp+b+(f[5]?'<div class="sw-hint">'+E(f[5])+'</div>':'')+'</div>';}).join('')+'</div>';}
 function readFields(){var o={};FIELDS.forEach(function(f){var v=$('#f_'+f[0]).value.trim();o[f[0]]=v===''?null:(f[2]==='number'?Number(v.replace(',','.')):v);});return o;}
 async function uploadFiles(anlage,input,art){
   var files=input?Array.prototype.slice.call(input.files):[],ids=[];
@@ -231,7 +233,7 @@ async function renderAnlage(id){
   var editable=['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+SW.badge(a.status)+'</div>';
   if(a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
-  if(!hasVm)h+=msg('err','Bitte erteilen Sie zuerst die Vollmacht auf der Übersichtsseite, damit wir Angebote einholen dürfen.');
+  if(!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der <a href="#/">Übersicht</a> in einer Minute.');
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
   /* Angebote */

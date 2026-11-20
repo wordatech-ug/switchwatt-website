@@ -57,9 +57,13 @@ details[open] .sw-plus{transform:rotate(45deg)}
 .sw-opt[aria-pressed=true] .sw-dot{border:6px solid #FFFFFF;background:#2F54EB}
 
 
+.sw-mnav{display:none}
 @media (max-width: 700px){
 .sw-navlink{display:none!important}
-.sw-navbar{flex-wrap:nowrap!important;padding:8px 8px 8px 12px!important;gap:8px!important}
+.sw-navbar{flex-wrap:wrap!important;padding:8px 8px 4px 12px!important;gap:4px 8px!important}
+.sw-mnav{display:flex!important;flex-basis:100%;justify-content:space-around;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px}
+.sw-mnav a{flex:1;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;color:#E4E4E7;text-decoration:none;font-size:14px;font-weight:500}
+.sw-foot a{display:inline-flex;min-height:44px;align-items:center}
 .sw-navbar svg{width:30px;height:30px}
 .sw-brand{font-size:18px!important}
 .sw-navright{flex-wrap:nowrap!important;gap:2px!important}
@@ -87,6 +91,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <a class="sw-navlink" href="#faq" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">FAQ</a>
 <a class="sw-navlogin" href="portal.html" style="padding: 10px 14px; border-radius: 10px; color: #E4E4E7; text-decoration: none; font-size: 15px; font-weight: 500">Anmelden</a><a class="sw-navcta" href="portal.html" style="margin-left: 6px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #2F54EB; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">Jetzt starten</a>
 </div>
+<div class="sw-mnav"><a href="#ablauf">So geht's</a><a href="rechner.html">Kostenrechner</a><a href="#faq">FAQ</a></div>
 </div>
 </nav>
 
@@ -113,7 +118,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <section class="sw-trust" style="position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px 40px; display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: center; font-size: 15px; color: #A1A1AA">
 <span>Für Dachanlagen von 100 bis 750 kWp</span>
 <span aria-hidden="true" style="color: #3F3F46">·</span>
-<span>Unabhängig, keine Provisionen</span>
+<span>Keine Provisionen von Direktvermarktern</span>
 <span aria-hidden="true" style="color: #3F3F46">·</span>
 <span>Kaum Aufwand für Sie</span>
 </section>
@@ -140,7 +145,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <div aria-hidden="true" style="position: absolute; right: -80px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,84,235,0.35), rgba(47,84,235,0))"></div>
 <span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8FA6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"></path></svg></span>
 <strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 26px; font-weight: 600">Unabhängig</strong>
-<span style="font-size: 16px; line-height: 1.55; color: #A1A1AA">Keine Provisionen von Direktvermarktern. Wir arbeiten nur für Sie und werden nur bezahlt, wenn Sie wechseln.</span>
+<span style="font-size: 16px; line-height: 1.55; color: #A1A1AA">Keine Provisionen von Direktvermarktern. Wir arbeiten nur für Sie und werden nur bezahlt, wenn Sie wechseln. Offen gesagt: Unsere Geschäftsführerin arbeitet auch für SolarBridge, unseren Technikpartner für die Anbindung. Bei der Wahl des Direktvermarkters spielt das keine Rolle.</span>
 </div>
 </div>
 </section>
@@ -279,7 +284,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <footer style="border-top: 1px solid rgba(255,255,255,0.08)">
 <div style="max-width: 1080px; margin: 0 auto; box-sizing: border-box; padding: 28px 24px; display: flex; gap: 16px 32px; flex-wrap: wrap; justify-content: space-between; font-size: 13px; line-height: 1.6; color: #A1A1AA">
 <span>© 2026 Switchwatt · ein Service der WordAtech UG (haftungsbeschränkt)</span>
-<span><a href="rechner.html" style="color: #A1A1AA">Kostenrechner</a> · <a href="impressum.html" style="color: #A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color: #A1A1AA">Datenschutz</a></span>
+<span class="sw-foot"><a href="rechner.html" style="color: #A1A1AA">Kostenrechner</a> · <a href="impressum.html" style="color: #A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color: #A1A1AA">Datenschutz</a></span>
 </div>
 </footer>
 

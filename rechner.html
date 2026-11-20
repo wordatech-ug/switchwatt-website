@@ -90,14 +90,14 @@ footer a{color:#A1A1AA}
 <div class="grid">
 <section class="card" aria-labelledby="eing">
 <h2 id="eing">Ihre Anlage und Ihr Vertrag</h2>
-<div class="f"><label for="kwp">Leistung der Anlage</label><div class="unit"><input id="kwp" type="number" inputmode="decimal" min="1" step="any" value="250"><span>kWp</span></div></div>
+<div class="f"><label for="kwp">Leistung der Anlage</label><div class="unit"><input id="kwp" type="number" inputmode="decimal" min="1" step="any" placeholder="z. B. 250"><span>kWp</span></div></div>
 <div class="f"><label id="lart">Wie speist die Anlage ein?</label><div class="seg" role="group" aria-labelledby="lart"><button type="button" data-art="voll" aria-pressed="false">Volleinspeisung</button><button type="button" data-art="teil" aria-pressed="true">Mit Eigenverbrauch</button></div></div>
 <div class="f"><label for="kwh">Eingespeiste Strommenge pro Jahr (falls bekannt)</label><div class="unit"><input id="kwh" type="number" inputmode="numeric" min="0" step="any" placeholder="wird geschätzt"><span>kWh</span></div><div class="hint" id="kwhhint">Steht auf Ihrer Jahresabrechnung. Sonst schätzen wir mit 950 kWh pro kWp.</div></div>
 <div class="row2">
-<div class="f"><label for="fix">Pauschale pro Monat</label><div class="unit"><input id="fix" type="number" inputmode="decimal" min="0" step="any" value="150"><span>€</span></div></div>
-<div class="f"><label for="ct">Arbeitspreis</label><div class="unit"><input id="ct" type="number" inputmode="decimal" min="0" step="any" value="0"><span>ct/kWh</span></div></div>
+<div class="f"><label for="fix">Pauschale pro Monat</label><div class="unit"><input id="fix" type="number" inputmode="decimal" min="0" step="any" placeholder="z. B. 150"><span>€</span></div><div class="hint">Steht auf Ihrer Gutschrift, oft als Dienstleistungs- oder Grundpauschale.</div></div>
+<div class="f"><label for="ct">Arbeitspreis</label><div class="unit"><input id="ct" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><span>ct/kWh</span></div></div>
 </div>
-<div class="f" style="margin-bottom:0"><label for="extra">Sonstige feste Kosten pro Jahr (optional)</label><div class="unit"><input id="extra" type="number" inputmode="decimal" min="0" step="any" value="0"><span>€</span></div><div class="hint">Zum Beispiel Miete für die Fernsteuerung, wenn der Direktvermarkter sie berechnet.</div></div>
+<div class="f" style="margin-bottom:0"><label for="extra">Sonstige feste Kosten pro Jahr (optional)</label><div class="unit"><input id="extra" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><span>€</span></div><div class="hint">Zum Beispiel Miete für die Fernsteuerung, wenn der Direktvermarkter sie berechnet.</div></div>
 </section>
 
 <section class="card res" aria-live="polite" aria-labelledby="erg">
@@ -135,8 +135,8 @@ function lamp(c){['l_g','l_y','l_r'].forEach(function(i){$(i).style.background='
 function calc(){
   var kwp=num('kwp'),est=kwp*950*(art==='voll'?1:0.6),kwh=num('kwh')||est;
   var small=kwp>0&&kwp<100;
-  $('kwhhint').textContent=(small?'Hinweis: Unter 100 kWp ist Direktvermarktung freiwillig, die Marktspanne gilt dann nur eingeschränkt. ':'')+(num('kwh')?'Wir rechnen mit Ihrer Angabe.':'Geschätzt: '+nf(est)+' kWh ('+(art==='voll'?'950 kWh pro kWp':'950 kWh pro kWp, davon 60 % eingespeist')+'). Genauer wird es mit Ihrer Jahresabrechnung.');
-  if(!kwh){$('r_ct').textContent='–';$('r_year').textContent='Bitte Leistung eingeben';$('r_verdict').textContent='–';$('r_text').textContent='';$('r_diff').hidden=true;return;}
+  $('kwhhint').textContent=!kwp&&!num('kwh')?'Steht auf Ihrer Jahresabrechnung. Sonst schätzen wir mit 950 kWh pro kWp.':(small?'Hinweis: Unter 100 kWp ist Direktvermarktung freiwillig, die Marktspanne gilt dann nur eingeschränkt. ':'')+(num('kwh')?'Wir rechnen mit Ihrer Angabe.':'Geschätzt: '+nf(est)+' kWh ('+(art==='voll'?'950 kWh pro kWp':'950 kWh pro kWp, davon 60 % eingespeist')+'). Genauer wird es mit Ihrer Jahresabrechnung.');
+  if(!kwh||!(num('fix')||num('ct')||num('extra'))){['l_g','l_y','l_r'].forEach(function(i){$(i).style.background='#27272A';$(i).style.boxShadow='none';});$('r_ct').textContent='–';$('r_year').textContent=kwh?'Jetzt noch Pauschale oder Arbeitspreis eintragen':'Tragen Sie zuerst die Leistung Ihrer Anlage ein';$('r_verdict').textContent='Noch keine Einschätzung.';$('r_text').textContent='Sobald Leistung und Kosten eingetragen sind, sehen Sie hier, was Sie pro Kilowattstunde zahlen.';$('r_mark').style.left='0';$('r_diff').hidden=true;$('r_btn').textContent='Angebote für meine Anlage einholen';return;}
   var year=num('fix')*12+num('ct')/100*kwh+num('extra'),ct=year/kwh*100;
   $('r_ct').textContent=nf(ct,2)+' ct/kWh';
   $('r_year').textContent=nf(year)+' € pro Jahr bei '+nf(kwh)+' kWh Einspeisung';

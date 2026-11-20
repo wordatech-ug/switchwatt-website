@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=9"></script>
+<script src="sw-api.js?v=10"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -296,7 +296,7 @@ async function renderAnlage(id,mode){
     modal.querySelector('#fgok').onclick=async function(){var n=modal.querySelector('#fgn').value.trim();if(!n||!modal.querySelector('#fgc').checked){modal.querySelector('#fgerr').innerHTML=msg('err','Bitte Namen eingeben und ankreuzen.');return;}
       busy(this,true);try{await SW.rest('freigaben',{method:'POST',body:{anlage_id:a.id,angebot_id:o.id,name_unterzeichner:n}});closeModal();renderAnlage(id);}catch(x){modal.querySelector('#fgerr').innerHTML=msg('err',x.message);busy(this,false);}};
   };});
-  var kb=$('#kbtn'); if(kb)kb.onclick=function(){try{SW.kuendigung(a,profile&&profile.firma);}catch(x){alertBox(x.message);}};
+  var kb=$('#kbtn'); if(kb)kb.onclick=function(){try{var ka=null;checks.some(function(c){var k=c.ergebnis&&c.ergebnis.kontakte&&c.ergebnis.kontakte.dv;if(k&&k.anschrift){ka=k;return true;}});SW.kuendigung(Object.assign({},a,{dv_anschrift:a.dv_anschrift||(ka&&ka.anschrift)||'',dv_vertragsnr:a.dv_vertragsnr||(ka&&ka.kundennummer)||''}),profile&&profile.firma);}catch(x){alertBox(x.message);}};
   var ku=$('#kup'); if(ku)ku.onclick=async function(){var b=this;busy(b,true,'Lädt …');try{var n=await uploadFiles(a,$('#up_k'),'kuendigung_unterschrieben');if(!n)throw new Error('Bitte zuerst die Datei auswählen.');renderAnlage(id);}catch(x){$('#kerr').innerHTML=msg('err',x.message);busy(b,false);}};
 }
 

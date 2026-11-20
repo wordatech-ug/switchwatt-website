@@ -136,9 +136,10 @@
       (a.mastr ? 'MaStR-Nummer: ' + SW.esc(a.mastr) + '<br>' : '') +
       (a.malo ? 'Marktlokation: ' + SW.esc(a.malo) + '<br>' : '') + '</p>' +
       '<p>Sehr geehrte Damen und Herren,</p>' +
-      '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage fristgerecht zum ' +
-      (a.vertragsende ? SW.date(a.vertragsende) : 'nächstmöglichen Zeitpunkt') + ', hilfsweise zum nächstmöglichen Zeitpunkt.</p>' +
-      '<p>Bitte bestätigen Sie uns den Eingang der Kündigung und das Vertragsende schriftlich. Für Rückfragen erreichen Sie auch unseren Dienstleister Switchwatt (WordAtech UG) unter angebote@switchwatt.de.</p>' +
+      '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage ordentlich und fristgerecht ' +
+      (a.vertragsende ? 'zum ' + SW.date(a.vertragsende) + ', hilfsweise zum nächstmöglichen Termin.' : 'zum nächstmöglichen Termin.') + '</p>' +
+      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich.</p>' +
+      '<p>Bei Rückfragen wenden Sie sich gern an uns oder an unseren Dienstleister Switchwatt (WordAtech UG), angebote@switchwatt.de.</p>' +
       '<p>Mit freundlichen Grüßen</p><br><br><br>' +
       '<p>_______________________________<br>Ort, Datum, Unterschrift, ggf. Firmenstempel<br>' + SW.esc(a.betreiber || '') + '</p>';
     var old = document.getElementById('sw-print'); if (old) old.remove();

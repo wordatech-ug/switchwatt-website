@@ -130,3 +130,5 @@ details summary{padding:6px 0}
 .sw-bereich-in{max-width:980px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}
 .sw-bereich a,.sw-bereich span{display:inline-flex;align-items:center;min-height:48px;padding:0 14px;color:#A1A1AA;text-decoration:none;font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
 .sw-bereich a:hover{color:#fff}.sw-bereich .on{color:#fff;border-bottom-color:#2F54EB}
+.sw-ck-next{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);font-size:14px}
+.sw-ck-next strong{color:#fff}

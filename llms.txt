@@ -6,7 +6,7 @@
 
 - [Startseite](https://www.switchwatt.de/): Überblick über beide Leistungen
 - [Direktvermarkter-Wechsel](https://www.switchwatt.de/direktvermarkter-wechsel.html): Ablauf, 30-Sekunden-Check und häufige Fragen zum Wechsel des Direktvermarkters
-- [Kostenrechner](https://www.switchwatt.de/rechner.html): Rechnet Monatspauschale und Arbeitspreis eines Direktvermarktungsvertrags in Euro pro Jahr und ct/kWh um und ordnet das Ergebnis im Markt ein
+- [Kostenrechner](https://www.switchwatt.de/direktvermarkter-wechsel.html#rechner): Rechnet Monatspauschale und Arbeitspreis eines Direktvermarktungsvertrags in Euro pro Jahr und ct/kWh um und ordnet das Ergebnis im Markt ein
 - [Abrechnungs-Check](https://www.switchwatt.de/abrechnungscheck.html): Monatliche Prüfung der Gutschrift des Direktvermarkters und der Marktprämie vom Netzbetreiber (Mengen, Marktwert, Marktprämie mit Staffel, Kosten, Umsatzsteuer, Stammdaten, negative Strompreise nach § 51 EEG)
 - [Impressum](https://www.switchwatt.de/impressum.html)
 - [Datenschutz](https://www.switchwatt.de/datenschutz.html)

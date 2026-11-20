@@ -453,7 +453,7 @@ async function renderChecks(){
   app.innerHTML=h+teaser();mountTeaser();
 }
 function teaser(){if(!nurCheck())return '';
-  return '<section class="sw-card" style="border-color:rgba(143,166,255,.35)"><h2 style="margin:0 0 6px">Kennen Sie schon unseren Wechsel-Service?</h2><p class="sw-muted" style="margin:0 0 14px">Wir holen Angebote bei mehreren Direktvermarktern ein, vergleichen sie für Sie und kümmern uns um Kündigung und Wechsel. Sie geben nur frei. Viele Anlagen zahlen heute deutlich mehr als nötig.</p><div class="sw-row"><button class="sw-btn ghost" id="tz_go">Wechsel-Service ansehen</button><a class="sw-btn ghost" href="rechner.html" target="_blank">Kosten vergleichen</a></div></section>';}
+  return '<section class="sw-card" style="border-color:rgba(143,166,255,.35)"><h2 style="margin:0 0 6px">Kennen Sie schon unseren Wechsel-Service?</h2><p class="sw-muted" style="margin:0 0 14px">Wir holen Angebote bei mehreren Direktvermarktern ein, vergleichen sie für Sie und kümmern uns um Kündigung und Wechsel. Sie geben nur frei. Viele Anlagen zahlen heute deutlich mehr als nötig.</p><div class="sw-row"><button class="sw-btn ghost" id="tz_go">Wechsel-Service ansehen</button><a class="sw-btn ghost" href="direktvermarkter-wechsel.html#rechner" target="_blank">Kosten vergleichen</a></div></section>';}
 function mountTeaser(){var b=$('#tz_go');if(b)b.onclick=async function(){busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';location.hash='#/';}catch(x){alertBox(x.message);busy(b,false);}};}
 
 /* ---------- Modal ---------- */

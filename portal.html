@@ -34,6 +34,7 @@ function renderAuth(mode,note){
   app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr Switchwatt-Konto</h1>'+
   '<p class="sw-muted">Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.</p>'+
   (note||'')+
+  (mode==='signup'&&!note?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
   '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
   '<form id="f" novalidate>'+
   (mode==='signup'?'<div style="margin-bottom:14px"><label for="name">Ihr Name</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+

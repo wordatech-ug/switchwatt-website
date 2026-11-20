@@ -141,15 +141,15 @@ function calc(){
   $('r_ct').textContent=nf(ct,2)+' ct/kWh';
   $('r_year').textContent=nf(year)+' € pro Jahr bei '+nf(kwh)+' kWh Einspeisung';
   $('r_mark').style.left=Math.min(100,ct/1*100)+'%';
-  var v,t;
-  if(ct<=0.3){lamp('g');v='Im marktüblichen Rahmen.';t='Ihr Vertrag liegt im Bereich dessen, was wir am Markt sehen. Ein Vergleich kann sich trotzdem lohnen, etwa bei Laufzeit oder Abregelung.';}
-  else if(ct<=0.6){lamp('y');v='Etwas über dem Markt.';t='Hier ist oft noch Luft. Ein Vergleich lohnt sich wahrscheinlich, vor allem vor dem nächsten Kündigungstermin.';}
-  else{lamp('r');v='Deutlich über dem Markt.';t='So hohe Kosten sehen wir meist bei Pauschalverträgen. Ein Wechsel kann sich hier spürbar lohnen.';}
+  var v,t,cta;
+  if(ct<=0.3){lamp('g');v='Im marktüblichen Rahmen.';t='Ihr Vertrag liegt im Bereich dessen, was wir am Markt sehen. Ein Vergleich kann sich trotzdem lohnen, etwa bei Laufzeit oder Abregelung.';cta='Trotzdem vergleichen lassen';}
+  else if(ct<=0.6){lamp('y');v='Etwas über dem Markt.';t='Hier ist oft noch Luft. Ein Vergleich lohnt sich wahrscheinlich, vor allem vor dem nächsten Kündigungstermin.';cta='Vertrag prüfen lassen';}
+  else{lamp('r');v='Deutlich über dem Markt.';t='So hohe Kosten sehen wir meist bei Pauschalverträgen. Ein Wechsel kann sich hier spürbar lohnen. Lassen Sie uns prüfen, was für Ihre Anlage drin ist.';cta='Pilotplatz anfragen';}
   $('r_verdict').textContent=v;$('r_text').textContent=t;
   var ref=0.25,refYear=ref/100*kwh,d=year-refYear;
   if(d>50){$('r_diff').hidden=false;$('r_diff').innerHTML='Zum Vergleich: Bei 0,25 ct/kWh, der Mitte der Spanne, die wir für Anlagen ab 100 kWp sehen, wären es rund <strong>'+nf(refYear)+' €</strong> pro Jahr, also etwa <strong style="color:#86EFAC">'+nf(d)+' € weniger</strong>. Ob Ihre Anlage diesen Preis bekommt, zeigt erst ein echtes Angebot.';}
   else $('r_diff').hidden=true;
-  $('r_btn').textContent=ct>0.3?'Angebote für meine Anlage einholen':'Trotzdem vergleichen lassen';
+  $('r_btn').textContent=cta;
 }
 calc();
 })();

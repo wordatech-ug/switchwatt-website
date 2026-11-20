@@ -73,6 +73,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 .sw-trust{flex-direction:column!important;align-items:center;gap:6px!important;font-size:14px!important}
 .sw-trust span[aria-hidden]{display:none}
 }
+.sw-abtabs{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.sw-abtabs button{min-height:44px;padding:0 18px;border:0;border-radius:9px;background:transparent;color:#A1A1AA;font:inherit;font-weight:600;cursor:pointer}.sw-abtabs button[aria-selected=true]{background:#2F54EB;color:#fff}
 </style>
 </head>
 <body>
@@ -184,9 +185,10 @@ details[open] .sw-plus{transform:rotate(45deg)}
 <section id="ablauf" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 48px">
 <div class="sw-reveal" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
 <span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E4E4E7">So geht's</span>
-<h2 style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">In drei Schritten umgeschaltet.</h2>
+<h2 id="ab-titel" style="margin: 0; font-family: 'Inter Display', Inter, system-ui, sans-serif; font-weight: 600; font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -1.2px">In drei Schritten umgeschaltet.</h2>
+<div class="sw-abtabs" role="tablist" aria-label="Ablauf"><button type="button" role="tab" aria-selected="true" data-ab="w">Direktvermarkter-Wechsel</button><button type="button" role="tab" aria-selected="false" data-ab="c">Abrechnungs-Check</button></div>
 </div>
-<div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
+<div id="ab-w" style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
 
 <div class="sw-card sw-reveal" style="border-radius: 20px; padding: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 20px">
 <div style="border-radius: 12px; background: #111116; border: 1px solid rgba(255,255,255,0.06); overflow: hidden">
@@ -236,6 +238,7 @@ details[open] .sw-plus{transform:rotate(45deg)}
 </div>
 
 </div>
+<div id="ab-c" hidden style="width: 100%"><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px"><div class="sw-card" style="border-radius: 20px; padding: 26px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; background: rgba(47,84,235,0.25); color: #C9D4FF; display: flex; align-items: center; justify-content: center; font-weight: 600">1</span><strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">Anlage anlegen</strong><span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Einmal mit Vertrag oder Gutschrift. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</span></div><div class="sw-card" style="border-radius: 20px; padding: 26px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; background: rgba(47,84,235,0.25); color: #C9D4FF; display: flex; align-items: center; justify-content: center; font-weight: 600">2</span><strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">Monatlich hochladen</strong><span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Gutschrift des Direktvermarkters und Abrechnung des Netzbetreibers, als PDF oder Handyfoto.</span></div><div class="sw-card" style="border-radius: 20px; padding: 26px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; background: rgba(47,84,235,0.25); color: #C9D4FF; display: flex; align-items: center; justify-content: center; font-weight: 600">3</span><strong style="font-family: 'Inter Display', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600">Ergebnis in einer Minute</strong><span style="font-size: 15px; line-height: 1.55; color: #A1A1AA">Grün, gelb oder rot, mit Begründung und den Beträgen, um die es geht. Alle Monate im Verlauf.</span></div></div><p style="text-align: center; margin: 28px 0 0"><a href="abrechnungscheck.html" style="color: #8FA6FF">Was der Check alles prüft →</a></p></div>
 </section>
 
 <section id="check" style="max-width: 1080px; margin: 0 auto; padding: 100px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 40px">
@@ -330,7 +333,7 @@ function render(){
  for(var k in lamps){lamps[k].style.background='#27272A';lamps[k].style.boxShadow='none';}
  if(!(st.a1&&st.a2))return;
  var score=(st.a1==='neu'?0:2)+(st.a2==='ja'?0:st.a2==='ungefaehr'?1:2),on,t,x;
- if(score>=3){on='red';t='Hier liegt wahrscheinlich Geld auf dem Tisch.';x='Wer lange nicht verglichen hat und seine Kosten nicht genau kennt, zahlt oft deutlich mehr als nötig. Wir holen Angebote ein und zeigen Ihnen schwarz auf weiß, was für Ihre Anlage drin ist.';}
+ if(score>=3){on='red';t='Ihr Vertrag gehört auf den Prüfstand.';x='Wer lange nicht verglichen hat und seine Kosten nicht genau kennt, zahlt oft deutlich mehr als nötig. Wir holen Angebote ein und zeigen Ihnen schwarz auf weiß, was für Ihre Anlage drin ist.';}
  else if(score>=1){on='amber';t='Ein Vergleich lohnt sich.';x='Die Konditionen haben sich zuletzt stark verändert. Wir sehen nach, ob Ihr Vertrag noch mithält.';}
  else{on='green';t='Gut aufgestellt. Geht noch mehr?';x='Die Preise haben sich zuletzt stark bewegt. Wir holen aktuelle Angebote ein, Sie entscheiden. Und mit dem Abrechnungs-Check sehen Sie jeden Monat, ob Ihre Gutschriften stimmen.';}
  lamps[on].style.background=colors[on];lamps[on].style.boxShadow='0 0 16px '+glows[on];T.textContent=t;X.textContent=x;
@@ -345,5 +348,6 @@ document.querySelectorAll('.sw-opt').forEach(function(b){b.addEventListener('cli
 
 })();
 </script>
+<script>(function(){var b=document.querySelectorAll('[data-ab]');b.forEach(function(x){x.onclick=function(){var c=x.dataset.ab==='c';b.forEach(function(y){y.setAttribute('aria-selected',y===x)});document.getElementById('ab-w').hidden=c;document.getElementById('ab-w').style.display=c?'none':'grid';document.getElementById('ab-c').hidden=!c;document.getElementById('ab-titel').textContent=c?'Jeden Monat in einer Minute geprüft.':'In drei Schritten umgeschaltet.';};});})();</script>
 </body>
 </html>

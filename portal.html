@@ -130,6 +130,7 @@ var FIELDS=[
  ['betreiber_anschrift','Anschrift des Betreibers','text','Straße, PLZ Ort'],
  ['standort','Standort der Anlage','text','Straße, PLZ Ort'],
  ['kwp','Leistung in kWp','number',''],
+ ['einspeiseart','Wie speist die Anlage ein?','select',[['','Weiß ich nicht (wir nehmen das Register)'],['voll','Volleinspeisung'],['ueberschuss','Überschuss, Rest wird selbst verbraucht'],['speicher','Überschuss, mit Batteriespeicher'],['dritte','Lieferung an Dritte (z. B. Mieter, Nachbarbetrieb)'],['dritte_speicher','Lieferung an Dritte, mit Batteriespeicher']],false,'Wichtig für den Abrechnungs-Check: Bei Teileinspeisung schwankt die Einspeisung auch mit dem Verbrauch.'],
  ['mastr','MaStR-Nummer der Einheit','text','SEE…',false,'Beginnt mit SEE. Wenn Sie sie nicht kennen: unten auf „Im Register nachsehen“ klicken.'],
  ['malo','Marktlokations-ID','text','11-stellig',false,'11 Ziffern, steht auf Ihrer Gutschrift oder der Abrechnung des Netzbetreibers.'],
  ['netzbetreiber','Netzbetreiber','text',''],
@@ -146,7 +147,7 @@ var FIELDS=[
 ];
 var REGMAP={kwp:'kwp',mastr:'mastr',standort:'standort',betreiber:'betreiber',netzbetreiber:'netzbetreiber'};
 function formFields(a,badges){a=a||{};badges=badges||{};return '<div class="sw-grid">'+FIELDS.map(function(f){var v=a[f[0]]==null?'':a[f[0]];
-  var inp=f[2]==='textarea'?'<textarea id="f_'+f[0]+'" placeholder="'+E(f[3])+'">'+E(v)+'</textarea>':'<input id="f_'+f[0]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="0.01" min="0"':'')+' placeholder="'+E(f[3])+'" value="'+E(v)+'"'+(f[4]?' required':'')+'>';
+  var inp=f[2]==='select'?'<select id="f_'+f[0]+'">'+f[3].map(function(o){return '<option value="'+E(o[0])+'"'+(String(v)===o[0]?' selected':'')+'>'+E(o[1])+'</option>';}).join('')+'</select>':f[2]==='textarea'?'<textarea id="f_'+f[0]+'" placeholder="'+E(f[3])+'">'+E(v)+'</textarea>':'<input id="f_'+f[0]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="0.01" min="0"':'')+' placeholder="'+E(f[3])+'" value="'+E(v)+'"'+(f[4]?' required':'')+'>';
   var b=badges[f[0]]||'';
   return '<div'+(f[2]==='textarea'?' style="grid-column:1/-1"':'')+' class="sw-field'+(b.indexOf('sw-warn')>=0?' warn':'')+'"><label for="f_'+f[0]+'">'+E(f[1])+(f[4]?' *':'')+'</label>'+inp+b+(f[5]?'<div class="sw-hint">'+E(f[5])+'</div>':'')+'</div>';}).join('')+'</div>';}
 function readFields(){var o={};FIELDS.forEach(function(f){var v=$('#f_'+f[0]).value.trim();o[f[0]]=v===''?null:(f[2]==='number'?Number(v.replace(',','.')):v);});return o;}

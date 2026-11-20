@@ -20,7 +20,7 @@
 {"@type":"Question","name":"Wie wird die Marktprämie berechnet?","acceptedAnswer":{"@type":"Answer","text":"Die Marktprämie ist der anzulegende Wert Ihrer Anlage minus dem Marktwert Solar des Monats, multipliziert mit der eingespeisten Menge. Bei Anlagen mit gestaffelter Vergütung wird die Menge anteilig nach Leistung auf die Stufen verteilt."}},
 {"@type":"Question","name":"Wann entfällt die Marktprämie bei negativen Strompreisen?","acceptedAnswer":{"@type":"Answer","text":"Das regelt § 51 EEG und hängt von Inbetriebnahme und Größe der Anlage ab. Für ältere Anlagen gilt eine Mindestdauer negativer Preise in Folge und eine Leistungsgrenze, für neue Anlagen ab dem 25.02.2025 entfällt die Marktprämie in jeder Viertelstunde mit negativem Preis."}},
 {"@type":"Question","name":"Was prüft der Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Mengen, Marktwert, Marktprämie, die Kosten des Direktvermarkters, die Umsatzsteuer, die Regeln bei negativen Strompreisen und Abregelungen. Außerdem vergleichen wir Ihren Ertrag mit der gemessenen Sonneneinstrahlung des Deutschen Wetterdienstes an Ihrem Standort."}},
-{"@type":"Question","name":"Welche Unterlagen brauche ich?","acceptedAnswer":{"@type":"Answer","text":"Jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht. Kommt eine Korrektur, legen Sie sie einfach dazu."}},
+{"@type":"Question","name":"Welche Unterlagen brauche ich?","acceptedAnswer":{"@type":"Answer","text":"Jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht. Kommt eine Korrektur, legen Sie sie einfach dazu. Freiwillig, aber empfohlen: ein Export aus Ihrem Monitoring (zum Beispiel SMA, Solar-Log, meteocontrol oder Fronius) als PDF, CSV oder Excel. Damit vergleichen wir die tatsächlich erzeugte Strommenge mit der abgerechneten, das ist genauer als der Abgleich mit dem Wetter. Ohne Export prüfen wir alles andere genauso."}},
 {"@type":"Question","name":"Was kostet der Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Der Check ist ein monatliches Abo. In der Pilotphase nennen wir Ihnen die Konditionen vorab, bevor wir ihn für Ihre Anlage freischalten."}},
 {"@type":"Question","name":"Ist das eine Rechts- oder Steuerberatung?","acceptedAnswer":{"@type":"Answer","text":"Nein. Der Check ist eine automatische Plausibilitätsprüfung Ihrer Abrechnungen. Wir zeigen, was auffällt, und schlagen einen nächsten Schritt vor. Steuerfragen klären Sie mit Ihrem Steuerberater, und was Sie unternehmen, entscheiden Sie selbst."}}]}]</script>
 <style>
@@ -111,7 +111,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 <section class="hero">
 <span class="kicker">Abrechnungs-Check · Pilotphase</span>
 <h1>Stimmen Ihre Gutschriften?</h1>
-<p class="lead">Jeden Monat zwei Abrechnungen voller Zahlen. Laden Sie die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie hoch. Wir prüfen beide automatisch und zeigen Ihnen in einer Minute, ob alles stimmt.</p>
+<p class="lead">Jeden Monat zwei Abrechnungen voller Zahlen. Laden Sie die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie hoch. Wir prüfen beide automatisch und zeigen Ihnen in einer Minute, ob alles stimmt. Wenn Sie mögen, legen Sie einen Export aus Ihrem Monitoring dazu, dann wird der Abgleich noch genauer.</p>
 </section>
 
 <div class="grid">
@@ -126,6 +126,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 <li><span>✓</span><div><b>Negative Strompreise:</b> Galt in diesem Monat ein Abzug nach § 51 EEG, und wurde er richtig angesetzt?</div></li>
 <li><span>✓</span><div><b>Stammdaten:</b> Name, Anschrift, Marktlokation und Konten bei beiden gleich?</div></li>
 <li><span>✓</span><div><b>Ertrag:</b> Passt er zur gemessenen Sonneneinstrahlung an Ihrem Standort?</div></li>
+<li><span>✓</span><div><b>Erzeugung (freiwillig):</b> Mit einem Export aus Ihrem Monitoring gleichen wir die erzeugte mit der abgerechneten Strommenge ab.</div></li>
 </ul>
 </section>
 
@@ -154,17 +155,11 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 <h2 class="sec" id="ablauf">So läuft es</h2>
 <div class="steps">
 <div class="card"><span class="n">1</span><h3 style="margin:0 0 6px;font-size:17px">Anlage anlegen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Einmal mit Vertrag oder Gutschrift. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</p></div>
-<div class="card"><span class="n">2</span><h3 style="margin:0 0 6px;font-size:17px">Monatlich hochladen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Gutschrift des Direktvermarkters und Abrechnung des Netzbetreibers, als PDF oder Handyfoto.</p></div>
+<div class="card"><span class="n">2</span><h3 style="margin:0 0 6px;font-size:17px">Monatlich hochladen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Gutschrift des Direktvermarkters und Abrechnung des Netzbetreibers, als PDF oder Handyfoto. Empfohlen, aber freiwillig: ein Export aus Ihrem Monitoring.</p></div>
 <div class="card"><span class="n">3</span><h3 style="margin:0 0 6px;font-size:17px">Ergebnis ansehen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Grün, gelb oder rot, mit Begründung und den Beträgen, um die es geht.</p></div>
 </div>
 
-<figure class="card" style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:40px">
-<span aria-hidden="true" style="flex:0 0 56px;width:56px;height:56px;border-radius:50%;background:rgba(47,84,235,.25);color:#C9D4FF;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px">KB</span>
-<div style="flex:1 1 280px">
-<blockquote style="margin:0;font-size:clamp(18px,2.2vw,23px);line-height:1.5;color:#fff">„Ich betreue beruflich ein Portfolio von rund 8 MW PV-Dachanlagen in ganz Deutschland und habe die Gutschriften von Direktvermarktern und Netzbetreibern jeden Monat von Hand geprüft. Der Abrechnungs-Check macht genau das automatisch, auch bei den Fehlern, die man von Hand leicht übersieht.“</blockquote>
-<figcaption style="margin-top:14px;font-size:15px;color:#A1A1AA">Kyra-Marilyn Blume, Geschäftsführerin der WordAtech, Bad Homburg</figcaption>
-</div>
-</figure>
+
 
 <h2 class="sec" id="faq">Häufige Fragen</h2>
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -174,7 +169,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </details>
 <details style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
 <summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Welche Unterlagen brauche ich?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
-<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht. Kommt eine Korrektur, legen Sie sie einfach dazu.</p>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht. Kommt eine Korrektur, legen Sie sie einfach dazu. Freiwillig, aber empfohlen: ein Export aus Ihrem Monitoring (zum Beispiel SMA, Solar-Log, meteocontrol oder Fronius) als PDF, CSV oder Excel. Damit vergleichen wir die tatsächlich erzeugte Strommenge mit der abgerechneten, das ist genauer als der Abgleich mit dem Wetter. Ohne Export prüfen wir alles andere genauso.</p>
 </details>
 <details style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
 <summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Was kostet der Abrechnungs-Check?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>

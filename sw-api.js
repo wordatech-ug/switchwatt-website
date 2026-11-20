@@ -95,6 +95,11 @@
       if (!r.ok) { var j = null; try { j = await r.json(); } catch (e) {} throw new Error(errText(j, r.status)); }
       return true;
     },
+    async fn(name, body) {
+      var r = await fetch(URL_ + '/functions/v1/' + name, { method: 'POST', headers: await headers({ 'Content-Type': 'application/json' }), body: JSON.stringify(body || {}) });
+      var j = null; try { j = await r.json(); } catch (e) {}
+      return j || { ok: false, error: 'Fehler ' + r.status };
+    },
     async fileUrl(path) {
       var r = await fetch(URL_ + '/storage/v1/object/sign/dokumente/' + path.split('/').map(encodeURIComponent).join('/'),
         { method: 'POST', headers: await headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ expiresIn: 300 }) });

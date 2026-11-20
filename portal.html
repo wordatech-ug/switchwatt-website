@@ -326,6 +326,7 @@ function besterKontakt(k){if(!k||k.email||k.telefon)return k;var alt=(window._ck
 function kontaktZeile(k){if(!k)return '';var t=[k.name,k.telefon?'Tel. '+k.telefon:'',k.email].filter(Boolean);return t.length?E(t.join(' · ')):'';}
 function naechster(e,p){
   if(!p.tun)return '';
+  if(/^Negative Preise: Abzug fehlt/.test(p.titel))p={titel:p.titel,text:p.text,an:[],tun:'Für diese Zeiten eine Rücklage bilden. Ob Sie beim Netzbetreiber nachfragen, entscheiden Sie selbst. Eine Nachfrage kann eine Rückforderung auslösen.'}; // bis zum nächsten Deploy von pruefen
   var ko=e.kontakte||{},h='<div class="sw-ck-next"><strong>Nächster Schritt:</strong> '+E(p.tun);
   (p.an||[]).forEach(function(w){var k=besterKontakt(ko[w]);if(w==='dv'||w==='nb'){var z=kontaktZeile(k);h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>'+(k&&k.email?' · <a href="'+anfrageLink(e,p,k)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');}});
   return h+'</div>';
@@ -342,6 +343,7 @@ function druckBericht(a,checks){
   h+='<h1>Prüfbericht Abrechnungs-Check</h1><div class="m">'+E(a.name||'')+(a.standort?' · '+E(a.standort):'')+(a.kwp?' · '+SW.num(a.kwp,2)+' kWp':'')+(a.malo?' · MaLo '+E(a.malo):'')+'<br>Erstellt am '+new Date().toLocaleDateString('de-DE')+' mit switchwatt.de</div>';
   h+='<table><tr><th>Monat</th><th>Ergebnis</th><th>Einspeisung</th><th>Netto nach Kosten</th></tr>'+checks.map(function(c){var k=(c.ergebnis&&c.ergebnis.kennzahlen)||{};return '<tr><td>'+monatName(c.monat)+'</td><td>'+(CK[c.status]||CK.fehler)[1]+'</td><td>'+(k.menge_kwh?SW.num(k.menge_kwh)+' kWh':'–')+'</td><td>'+(k.netto_eur!=null?SW.num(k.netto_eur,2)+' €':'–')+'</td></tr>';}).join('')+'</table>';
   checks.forEach(function(c){var e=c.ergebnis||{},ko=e.kontakte||{};var pts=(e.punkte||[]).slice().sort(function(x,y){return STUFE[x.stufe][1]-STUFE[y.stufe][1];});
+    pts=pts.map(function(p){return /^Negative Preise: Abzug fehlt/.test(p.titel)?{stufe:p.stufe,titel:p.titel,text:p.text,an:[],tun:'Für diese Zeiten eine Rücklage bilden. Ob Sie beim Netzbetreiber nachfragen, entscheiden Sie selbst. Eine Nachfrage kann eine Rückforderung auslösen.'}:p;});
     h+='<h2>'+monatName(c.monat)+': '+(CK[c.status]||CK.fehler)[1]+'</h2><ul>'+pts.map(function(p){var n='';if(p.tun){n='<div class="n"><b>Nächster Schritt:</b> '+E(p.tun)+(p.an||[]).filter(function(w){return w==='dv'||w==='nb';}).map(function(w){var z=kontaktZeile(besterKontakt(ko[w]));return '<br>'+AN[w]+': '+(z||'siehe Abrechnung');}).join('')+'</div>';}return '<li class="'+p.stufe+'"><b>'+E(p.titel)+'</b><br>'+E(p.text)+n+'</li>';}).join('')+'</ul>';
     if(e.negativpreise)h+='<div class="m">'+E(e.negativpreise.quelle)+'</div>';if(e.sonne&&e.sonne.quelle)h+='<div class="m">'+E(e.sonne.quelle)+'</div>';});
   h+='<p class="m" style="margin-top:28px">'+HAFTUNG+'</p></body></html>';

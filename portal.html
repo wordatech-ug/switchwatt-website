@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=15">
+<link rel="stylesheet" href="sw-portal.css?v=16">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -21,7 +21,9 @@
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
-var E=SW.esc, me=null, profile=null;
+var E=SW.esc, me=null, profile=null, modus='wechsel';
+var WUNSCH=(new URLSearchParams(location.search).get('bereich')==='check')?'check':null;
+function nurCheck(){return profile&&profile.bereich==='check'&&profile.rolle!=='admin';}
 function msg(type,text){return '<div class="sw-msg '+type+'" role="'+(type==='err'?'alert':'status')+'">'+E(text)+'</div>';}
 function $(s){return app.querySelector(s);}
 function busy(btn,on,label){if(!btn)return;btn.disabled=on;if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'Bitte warten …';}else if(btn.dataset.l){btn.textContent=btn.dataset.l;}}
@@ -32,9 +34,10 @@ function renderAuth(mode,note){
   nav.innerHTML='';
   mode=mode||'login';
   app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr Switchwatt-Konto</h1>'+
-  '<p class="sw-muted">Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.</p>'+
+  '<p class="sw-muted">'+(WUNSCH==='check'?'Hier laden Sie jeden Monat Ihre Abrechnungen hoch und sehen sofort, ob alles stimmt.':'Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.')+'</p>'+
   (note||'')+
-  (mode==='signup'&&!note?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
+  (mode==='signup'&&!note&&WUNSCH==='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Der Abrechnungs-Check wird nach Ihrer Anfrage freigeschaltet. Wir nennen Ihnen die Konditionen vorab und melden uns persönlich.</div>':'')+
+  (mode==='signup'&&!note&&WUNSCH!=='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
   '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
   '<form id="f" novalidate>'+
   (mode==='signup'?'<div style="margin-bottom:14px"><label for="name">Ihr Name</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
@@ -54,7 +57,7 @@ function renderAuth(mode,note){
       if(mode==='signup'){
         if(!$('#name').value.trim()){throw new Error('Bitte geben Sie Ihren Namen ein.');}
         if(!$('#ds').checked){throw new Error('Bitte bestätigen Sie die Datenschutzerklärung.');}
-        var d=await SW.signUp(mail,pw,{name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim()});
+        var d=await SW.signUp(mail,pw,{name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:WUNSCH||'wechsel'});
         if(!d||!d.access_token){renderAuth('login',msg('info','Fast geschafft: Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen geschickt haben. Danach können Sie sich anmelden.'));return;}
       } else { await SW.signIn(mail,pw); }
       await start();
@@ -99,9 +102,8 @@ async function renderHome(){
   an.forEach(function(a){var dd=SW.daysUntil(a.kuendigung_bis);
     h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong> '+SW.badge(a.status)+(!a.daten_bestaetigt_at&&['neu','in_pruefung'].indexOf(a.status)>=0?' <span class="sw-badge" style="--c:#F5B70A">Daten prüfen</span>':'')+'<div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(a.direktvermarkter||'Direktvermarkter noch offen')+
     (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
-    (function(){var pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];return pc?' · Abrechnung '+monatName(pc.monat)+' '+(CK[pc.status]||CK.fehler)[0]:'';})()+(SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
+(SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
   h+='</section>';
-  if(an.some(function(a){return SW.arr(a.pruefungen).length;}))h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><div><h2 style="margin:0 0 4px">Abrechnungs-Checks</h2><p class="sw-muted" style="margin:0;font-size:14px">Alle geprüften Monate und offenen Hinweise auf einen Blick.</p></div><a class="sw-btn ghost" href="#/abrechnungen">Übersicht öffnen</a></div></section>';
   if(!vm&&an.length){
     h+='<section class="sw-card hl"><h2>2. Vollmacht erteilen</h2>'+
     '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> kündigen wir den alten Vertrag und schließen den neuen ab. Vorher nicht.</li><li><strong>Widerruf</strong> jederzeit per E-Mail an angebote@switchwatt.de.</li></ul>'+
@@ -135,6 +137,7 @@ var FIELDS=[
  ['dv_anschrift','Anschrift des Direktvermarkters','text','für das Kündigungsschreiben'],
  ['dv_vertragsnr','Vertrags- oder Kundennummer','text',''],
  ['entgelt','Aktuelles Entgelt laut Vertrag','text','z. B. 49 € pro Monat + 0,29 ct/kWh'],
+ ['abschaltung','Marktdienliche Abschaltung','text','z. B. ja, mit Ausgleich der Marktprämie',false,'Regelt Ihr Direktvermarkter die Anlage bei negativen Strompreisen ab, und was bekommen Sie dafür? Steht meist im Vertrag.'],
  ['vertragsende','Vertrag läuft bis','date',''],
  ['kuendigungsfrist','Kündigungsfrist','text','z. B. 3 Monate zum Laufzeitende',false,'Steht im Vertrag. Wenn Sie unsicher sind, lassen Sie das Feld leer, wir prüfen es.'],
  ['kuendigung_bis','Spätester Kündigungstermin','date','',false,'Bis zu diesem Tag muss die Kündigung beim Direktvermarkter sein. Leer lassen, wenn unbekannt.'],
@@ -159,7 +162,8 @@ async function uploadFiles(anlage,input,art){
   return ids;
 }
 function renderNew(){
-  app.innerHTML='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
+  var ziel=modus==='check'?'#/check/':'#/anlage/';
+  app.innerHTML='<p style="margin-top:28px"><a href="'+(modus==='check'?'#/check':'#/')+'">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
   '<p class="sw-muted">Laden Sie Ihren aktuellen Vertrag oder die letzte Abrechnung hoch. Wir lesen die Daten für Sie aus und gleichen sie mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch.</p>'+
   '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag oder Abrechnung auswählen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
@@ -168,14 +172,14 @@ function renderNew(){
   '<p class="sw-muted" style="font-size:13px;margin-bottom:0">Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und Switchwatt sichtbar. Zum Auslesen wird das Dokument kurz an unseren KI-Dienstleister übermittelt, siehe <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p></section>';
   $('#up_doc').onchange=function(){var n=Array.prototype.map.call(this.files,function(f){return f.name;}).join(', ');$('#fname').textContent=n?'Ausgewählt: '+n:'';};
   async function create(){return (await SW.rest('anlagen',{method:'POST',body:{name:'Neue Anlage'},prefer:'return=representation'}))[0];}
-  $('#manual').onclick=async function(){busy(this,true);try{var a=await create();go('#/anlage/'+a.id);}catch(x){$('#err').innerHTML=msg('err',x.message);busy(this,false);}};
+  $('#manual').onclick=async function(){busy(this,true);try{var a=await create();go(ziel+a.id);}catch(x){$('#err').innerHTML=msg('err',x.message);busy(this,false);}};
   $('#go').onclick=async function(){var btn=this;if(!$('#up_doc').files.length){$('#err').innerHTML=msg('err','Bitte zuerst ein Dokument auswählen, oder ohne Dokument weiter.');return;}
     busy(btn,true,'Wird hochgeladen …');$('#manual').disabled=true;
     try{var a=await create();var ids=await uploadFiles(a,$('#up_doc'),$('#up_art').value);
       btn.textContent='Wir lesen Ihr Dokument aus … (bis zu 30 Sekunden)';
       $('#err').innerHTML=msg('info','Einen Moment bitte. Wir lesen das Dokument aus und gleichen es mit dem Marktstammdatenregister ab.');
       try{await SW.fn('auslesen',{dokument_id:ids[0]});}catch(e){}
-      go('#/anlage/'+a.id);
+      go(ziel+a.id);
     }catch(x){$('#err').innerHTML=msg('err',x.message);busy(btn,false);$('#manual').disabled=false;}};
 }
 
@@ -225,21 +229,25 @@ function mountReview(a,box){
 }
 
 /* ---------- Anlage Detail ---------- */
-async function renderAnlage(id){
-  var ps=String(id).split('/');id=ps[0];var openM=ps[1]==='ck'?ps[2]:null;window._ckOpen=openM;
+async function renderAnlage(id,mode){
+  mode=mode||'wechsel';
+  var ps=String(id).split('/');id=ps[0];var openM=ps[1]==='ck'?ps[2]:(mode==='check'&&/^\d{4}-\d{2}$/.test(ps[1]||'')?ps[1]:null);window._ckOpen=openM;
   var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+encodeURIComponent(id)),SW.rest('dokumente?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),
     SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
     SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id))]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
   var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0;}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null;
-  var editable=['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
-  var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+SW.badge(a.status)+'</div>';
-  if(a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
-  if(!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');
+  var editable=mode==='check'||['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
+  var CKM=mode==='check';
+  var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>';
+  if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
+  if(!CKM&&!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
+  if(CKM)h+=checkSection(a,checks,allDocs,cf);
   /* Angebote */
-  if(offers.length){
+  if(CKM){}
+  else if(offers.length){
     h+='<section class="sw-card hl"><h2>Angebote</h2>'+(fg?'':'<p class="sw-muted">Wählen Sie ein Angebot. Erst mit Ihrer Freigabe kündigen wir und schließen den neuen Vertrag ab.</p>');
     offers.forEach(function(o){var chosen=fg&&fg.angebot_id===o.id;
       h+='<div class="sw-offer'+(o.empfohlen?' best':'')+'"><div class="sw-row" style="justify-content:space-between"><h3 style="margin:0">'+E(o.anbieter)+'</h3>'+(o.empfohlen?'<span class="sw-badge" style="--c:#22C55E">Unsere Empfehlung</span>':'')+(chosen?'<span class="sw-badge" style="--c:#8FA6FF">Von Ihnen gewählt</span>':'')+'</div>'+
@@ -254,14 +262,14 @@ async function renderAnlage(id){
     h+='<section class="sw-card"><h2>Angebote</h2><p class="sw-muted" style="margin:0">Noch keine Angebote. Sobald Ihr Vertrag geprüft ist, holen wir Angebote ein und stellen sie hier ein. Das dauert meist zwei bis drei Wochen.</p></section>';
   }
   /* Kündigung */
-  if(fg||['kuendigung','gewechselt'].indexOf(a.status)>=0){
+  if(!CKM&&(fg||['kuendigung','gewechselt'].indexOf(a.status)>=0)){
     var ents=docs.filter(function(x){return x.art==='kuendigung_entwurf';}),sig=docs.filter(function(x){return x.art==='kuendigung_unterschrieben';});
     h+='<section class="sw-card hl"><h2>Kündigung</h2>'+(sig.length?msg('ok','Unterschriebene Kündigung liegt vor. Wir kümmern uns um den Versand und den Wechsel.'):'<p class="sw-muted">Ihr bisheriger Vertrag muss mit Ihrer Unterschrift gekündigt werden. So geht es:</p><ol><li>Kündigungsschreiben öffnen und prüfen'+(ents.length?' (oder unseren Entwurf unten verwenden)':'')+'</li><li>Unterschreiben: ausdrucken und unterschreiben, oder digital mit qualifizierter Signatur</li><li>Unterschriebene Kündigung hier hochladen</li></ol>')+
     '<div class="sw-row"><button class="sw-btn ghost" id="kbtn">Kündigungsschreiben öffnen</button></div>'+
     '<div style="margin-top:16px"><label for="up_k">Unterschriebene Kündigung hochladen</label><div class="sw-row"><input id="up_k" type="file" accept="application/pdf,image/jpeg,image/png" style="flex:1 1 260px"><button class="sw-btn" id="kup">Hochladen</button></div></div><div id="kerr"></div></section>';
   }
-  /* Abrechnungs-Check */
-  h+=checkSection(a,checks,allDocs,cf);
+  /* Abrechnungs-Check: Verweis */
+  if(!CKM){var lc=checks[0];h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><div><h2 style="margin:0 0 4px">Abrechnungs-Check</h2><p class="sw-muted" style="margin:0;font-size:14px">'+(lc?'Zuletzt geprüft: '+monatName(lc.monat)+' '+(CK[lc.status]||CK.fehler)[0]+' '+(CK[lc.status]||CK.fehler)[1]:'Gutschriften jeden Monat automatisch prüfen lassen.')+'</p></div><a class="sw-btn ghost" href="#/check/'+a.id+'">Zum Check</a></div></section>';}
   /* Daten */
   if(!needReview)h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Daten der Anlage</h2>'+(editable?'<button class="sw-btn ghost small" id="edit">Bearbeiten</button>':'')+'</div><div id="data" style="margin-top:14px"><dl class="sw-grid sw-dl">'+
     FIELDS.map(function(f){var v=a[f[0]];if(f[2]==='date')v=v?SW.date(v):'–';else if(f[0]==='kwp')v=v!=null?SW.num(v,2):'–';else v=E(v||'–');return '<div><dt>'+E(f[1])+'</dt><dd>'+v+'</dd></div>';}).join('')+'</dl></div></section>';
@@ -272,7 +280,7 @@ async function renderAnlage(id){
   h+='<section class="sw-card"><h2>Verlauf</h2>'+(log.length?'<table><tbody>'+log.map(function(l){return '<tr><td style="width:170px" class="sw-muted">'+SW.dateTime(l.created_at)+'</td><td>'+E(l.text)+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Noch keine Einträge.</p>')+'</section>';
   app.innerHTML=h;
   if(needReview)mountReview(a,$('#review'));
-  mountCheck(a,id);
+  if(CKM)mountCheck(a,id);
 
   app.querySelectorAll('[data-file]').forEach(function(l){l.onclick=async function(e){e.preventDefault();try{window.open(await SW.fileUrl(l.dataset.file),'_blank','noopener');}catch(x){alertBox(x.message);}};});
   $('#upbtn').onclick=async function(){var b=this;busy(b,true,'Lädt …');try{var n=await uploadFiles(a,$('#up_more'),$('#up_art').value);if(!n)throw new Error('Bitte zuerst eine Datei auswählen.');renderAnlage(id);}catch(x){$('#uerr').innerHTML=msg('err',x.message);busy(b,false);}};
@@ -363,21 +371,30 @@ function mountCheck(a,id){
 
 /* ---------- Übersicht aller Checks ---------- */
 async function renderChecks(){
-  var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc')]);
+  var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp,direktvermarkter,check_frei(frei_at,angefragt_at)&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc')]);
   var an=r[0],pr=r[1]||[];
-  var h='<p style="margin-top:28px"><a href="#/">← Zur Übersicht</a></p><h1>Abrechnungs-Checks</h1><p class="sw-muted">Alle geprüften Monate Ihrer Anlagen. Ein Klick öffnet das Ergebnis.</p>';
-  if(!pr.length){app.innerHTML=h+'<section class="sw-card"><p class="sw-muted" style="margin:0">Noch keine Prüfung.</p></section>';return;}
+  var h='<h1>'+(profile&&profile.name?'Guten Tag, '+E(profile.name):'Abrechnungs-Check')+'</h1><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung des Netzbetreibers hoch. Wir prüfen beide und zeigen Ihnen, ob alles stimmt.</p>';
+  h+='<section class="sw-card'+(an.length?'':' hl')+'"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">'+(an.length?'Ihre Anlagen':'Anlage hinzufügen')+'</h2><a class="sw-btn" href="#/check/neu">+ Anlage hinzufügen</a></div>';
+  if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Einmal mit Vertrag oder einer Gutschrift anlegen. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</p>';
+  an.forEach(function(a){var cf=SW.arr(a.check_frei)[0],pc=pr.filter(function(c){return c.anlage_id===a.id;})[0];
+    var st=pc?(CK[pc.status]||CK.fehler)[0]+' '+monatName(pc.monat)+': '+(CK[pc.status]||CK.fehler)[1]:(cf&&cf.frei_at?'Freigeschaltet, noch keine Prüfung':cf&&cf.angefragt_at?'Freischaltung angefragt':'Noch nicht freigeschaltet');
+    h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong><div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(st)+'</div></div><a class="sw-btn ghost small" href="#/check/'+a.id+'">Öffnen</a></div>';});
+  h+='</section>';
+  if(!pr.length){app.innerHTML=h+teaser();mountTeaser();return;}
   var monate=[];pr.forEach(function(c){var m=String(c.monat).slice(0,7);if(monate.indexOf(m)<0)monate.push(m);});monate=monate.sort().reverse().slice(0,12);
   var by={};pr.forEach(function(c){by[c.anlage_id+'|'+String(c.monat).slice(0,7)]=c;});
   var mit=an.filter(function(a){return pr.some(function(c){return c.anlage_id===a.id;});});
-  h+='<section class="sw-card"><div class="sw-scroll"><table class="sw-ck-mx"><thead><tr><th>Anlage</th>'+monate.map(function(m){return '<th>'+m.slice(5,7)+'/'+m.slice(2,4)+'</th>';}).join('')+'</tr></thead><tbody>'+
-    mit.map(function(a){return '<tr><td><a href="#/anlage/'+a.id+'">'+E(a.name)+'</a></td>'+monate.map(function(m){var c=by[a.id+'|'+m];return '<td>'+(c?'<a href="#/anlage/'+a.id+'/ck/'+m+'" title="'+E(monatName(m)+': '+(CK[c.status]||CK.fehler)[1])+'">'+(CK[c.status]||CK.fehler)[0]+'</a>':'<span class="sw-muted">·</span>')+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>'+
+  h+='<section class="sw-card"><h2>Alle geprüften Monate</h2><div class="sw-scroll"><table class="sw-ck-mx"><thead><tr><th>Anlage</th>'+monate.map(function(m){return '<th>'+m.slice(5,7)+'/'+m.slice(2,4)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    mit.map(function(a){return '<tr><td><a href="#/check/'+a.id+'">'+E(a.name)+'</a></td>'+monate.map(function(m){var c=by[a.id+'|'+m];return '<td>'+(c?'<a href="#/check/'+a.id+'/'+m+'" title="'+E(monatName(m)+': '+(CK[c.status]||CK.fehler)[1])+'">'+(CK[c.status]||CK.fehler)[0]+'</a>':'<span class="sw-muted">·</span>')+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>'+
     '<p class="sw-muted" style="font-size:13px;margin:12px 0 0">✅ alles in Ordnung · ⚠️ bitte ansehen · ❗ Fehler gefunden · · nicht geprüft</p></section>';
   var offen=pr.filter(function(c){return c.status==='rot'||c.status==='gelb';});
   if(offen.length)h+='<section class="sw-card"><h2>Offene Hinweise</h2><ul class="sw-ck-list">'+offen.map(function(c){var a=an.find(function(x){return x.id===c.anlage_id;})||{},m=String(c.monat).slice(0,7),p=((c.ergebnis&&c.ergebnis.punkte)||[]).filter(function(x){return x.stufe==='rot'||x.stufe==='gelb';});
-    return p.map(function(x){return '<li class="'+x.stufe+'"><span aria-hidden="true">'+STUFE[x.stufe][0]+'</span><div><a href="#/anlage/'+c.anlage_id+'/ck/'+m+'">'+E(a.name||'Anlage')+' · '+monatName(m)+'</a><br><strong>'+E(x.titel)+'</strong></div></li>';}).join('');}).join('')+'</ul></section>';
-  app.innerHTML=h;
+    return p.map(function(x){return '<li class="'+x.stufe+'"><span aria-hidden="true">'+STUFE[x.stufe][0]+'</span><div><a href="#/check/'+c.anlage_id+'/'+m+'">'+E(a.name||'Anlage')+' · '+monatName(m)+'</a><br><strong>'+E(x.titel)+'</strong></div></li>';}).join('');}).join('')+'</ul></section>';
+  app.innerHTML=h+teaser();mountTeaser();
 }
+function teaser(){if(!nurCheck())return '';
+  return '<section class="sw-card" style="border-color:rgba(143,166,255,.35)"><h2 style="margin:0 0 6px">Kennen Sie schon unseren Wechsel-Service?</h2><p class="sw-muted" style="margin:0 0 14px">Wir holen Angebote bei mehreren Direktvermarktern ein, vergleichen sie für Sie und kümmern uns um Kündigung und Wechsel. Sie geben nur frei. Viele Anlagen zahlen heute deutlich mehr als nötig.</p><div class="sw-row"><button class="sw-btn ghost" id="tz_go">Wechsel-Service ansehen</button><a class="sw-btn ghost" href="rechner.html" target="_blank">Kosten vergleichen</a></div></section>';}
+function mountTeaser(){var b=$('#tz_go');if(b)b.onclick=async function(){busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';location.hash='#/';}catch(x){alertBox(x.message);busy(b,false);}};}
 
 /* ---------- Modal ---------- */
 function showModal(inner){modal.innerHTML='<div class="sw-modal" role="dialog" aria-modal="true"><div>'+inner+'</div></div>';modal.querySelectorAll('[data-close]').forEach(function(b){b.onclick=closeModal;});var f=modal.querySelector('input,button');if(f)f.focus();}
@@ -385,22 +402,36 @@ function closeModal(){modal.innerHTML='';}
 function alertBox(t){showModal('<p>'+E(t)+'</p><button class="sw-btn" data-close>OK</button>');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
 
+/* ---------- Bereiche ---------- */
+function tabsBar(){
+  var bar=document.getElementById('bereich');
+  if(!bar){bar=document.createElement('nav');bar.id='bereich';bar.className='sw-bereich';bar.setAttribute('aria-label','Bereich');app.parentNode.insertBefore(bar,app);}
+  if(nurCheck()){bar.innerHTML='<div class="sw-bereich-in"><span class="on">Abrechnungs-Check</span></div>';return;}
+  bar.innerHTML='<div class="sw-bereich-in"><a href="#/" class="'+(modus==='wechsel'?'on':'')+'"'+(modus==='wechsel'?' aria-current="page"':'')+'>Direktvermarkter-Wechsel</a><a href="#/check" class="'+(modus==='check'?'on':'')+'"'+(modus==='check'?' aria-current="page"':'')+'>Abrechnungs-Check</a></div>';
+}
+
 /* ---------- Start ---------- */
 async function route(){
   var h=location.hash||'#/';
   try{
-    if(h==='#/neu')renderNew();
-    else if(h==='#/abrechnungen')await renderChecks();
-    else if(h.indexOf('#/anlage/')===0)await renderAnlage(h.slice(9));
+    if(nurCheck()&&h.indexOf('#/check')!==0)h=(h.indexOf('#/anlage/')===0?'#/check/'+h.slice(9):'#/check');
+    if(h==='#/abrechnungen')h='#/check';
+    modus=h.indexOf('#/check')===0?'check':'wechsel';
+    tabsBar();
+    if(h==='#/neu'||h==='#/check/neu')renderNew();
+    else if(h==='#/check')await renderChecks();
+    else if(h.indexOf('#/check/')===0)await renderAnlage(h.slice(8),'check');
+    else if(h.indexOf('#/anlage/')===0)await renderAnlage(h.slice(9),'wechsel');
     else await renderHome();
   }catch(x){app.innerHTML=msg('err','Es ist ein Fehler aufgetreten: '+x.message)+'<p><a href="#/">Neu laden</a></p>';}
-  var t=window._ckOpen&&$('#ck-'+window._ckOpen);if(t)t.scrollIntoView();else window.scrollTo(0,0);
+  var t=modus==='check'&&window._ckOpen&&$('#ck-'+window._ckOpen);if(t)t.scrollIntoView();else window.scrollTo(0,0);
 }
 async function start(){
   me=await SW.me(); if(!me){await SW.signOut();renderAuth();return;}
   var p=await SW.rest('profiles?select=*&id=eq.'+me.id); profile=p[0]||null;
   nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted" style="font-size:14px">'+E(me.email)+'</span><button class="sw-btn ghost small" id="out">Abmelden</button>';
-  document.getElementById('out').onclick=async function(){await SW.signOut();location.hash='';renderAuth();};
+  document.getElementById('out').onclick=async function(){await SW.signOut();location.hash='';var b=document.getElementById('bereich');if(b)b.remove();renderAuth();};
+  if(WUNSCH==='check'&&(!location.hash||location.hash==='#/')){location.hash='#/check';return;}
   route();
 }
 window.addEventListener('hashchange',function(){if(me)route();});

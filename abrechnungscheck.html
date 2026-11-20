@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abrechnungs-Check: Gutschrift Direktvermarkter und Marktprämie prüfen | Switchwatt</title>
+<meta name="description" content="Stimmen Ihre Gutschriften? Der Abrechnungs-Check prüft jeden Monat die Gutschrift Ihres Direktvermarkters und die Marktprämie vom Netzbetreiber: Mengen, Marktwert, Kosten, Umsatzsteuer und negative Strompreise nach § 51 EEG.">
+<link rel="canonical" href="https://www.switchwatt.de/abrechnungscheck.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.switchwatt.de/abrechnungscheck.html">
+<meta property="og:title" content="Stimmen Ihre Gutschriften? Der Abrechnungs-Check für PV-Anlagen">
+<meta property="og:description" content="Gutschrift des Direktvermarkters und Marktprämie automatisch prüfen lassen, inklusive negativer Strompreise nach § 51 EEG.">
+<meta property="og:image" content="https://www.switchwatt.de/hero-poster.jpg">
+<meta property="og:locale" content="de_DE">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"Service","name":"Abrechnungs-Check für PV-Anlagen in der Direktvermarktung","serviceType":"Prüfung von Gutschriften des Direktvermarkters und der Marktprämie","provider":{"@type":"Organization","name":"Switchwatt","url":"https://www.switchwatt.de/"},"areaServed":"DE","url":"https://www.switchwatt.de/abrechnungscheck.html"},
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Welche Abrechnungen brauche ich für den Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Die monatliche Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht."}},
+{"@type":"Question","name":"Wie wird die Marktprämie berechnet?","acceptedAnswer":{"@type":"Answer","text":"Die Marktprämie ist der anzulegende Wert Ihrer Anlage minus dem Marktwert Solar des Monats, multipliziert mit der eingespeisten Menge. Bei Anlagen mit gestaffelter Vergütung wird die Menge anteilig nach Leistung auf die Stufen verteilt."}},
+{"@type":"Question","name":"Wann entfällt die Marktprämie bei negativen Strompreisen?","acceptedAnswer":{"@type":"Answer","text":"Das regelt § 51 EEG und hängt von Inbetriebnahme und Größe der Anlage ab. Für ältere Anlagen gilt eine Mindestdauer negativer Preise in Folge und eine Leistungsgrenze, für neue Anlagen ab dem 25.02.2025 entfällt die Marktprämie in jeder Viertelstunde mit negativem Preis."}}]}]</script>
+<style>
+@font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+@font-face{font-family:'Inter Display';src:url(fonts/InterDisplay-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#fff;font-family:Inter,system-ui,sans-serif;line-height:1.5;overflow-x:clip}
+a{color:#8FA6FF}a:hover{color:#B7C6FF}
+.nav{position:sticky;top:16px;z-index:10;max-width:1080px;margin:16px auto 0;padding:0 16px}
+.nav>div{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(12,12,16,.82);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 10px 10px 18px;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:21px}
+.navr{display:flex;align-items:center;gap:4px}
+.navr a{padding:10px 14px;border-radius:10px;color:#E4E4E7;text-decoration:none;font-size:15px;font-weight:500}
+.navr a.cta{background:#2F54EB;color:#fff;font-weight:600;margin-left:6px;white-space:nowrap}
+main{max-width:1080px;margin:0 auto;padding:0 24px 80px}
+.hero{text-align:center;padding:80px 0 36px;position:relative}
+.hero:before{content:"";position:absolute;left:50%;top:-40px;width:900px;height:500px;margin-left:-450px;border-radius:50%;background:radial-gradient(closest-side,rgba(47,84,235,.35),rgba(47,84,235,0));z-index:-1}
+.kicker{display:inline-block;font-size:13px;font-weight:600;color:#C9D4FF;background:rgba(47,84,235,.18);border:1px solid rgba(143,166,255,.3);padding:5px 12px;border-radius:999px;margin-bottom:18px}
+h1{font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:clamp(34px,5.5vw,60px);line-height:1.05;letter-spacing:-1.4px;margin:0 auto 16px;max-width:820px}
+.lead{color:#A1A1AA;font-size:18px;max-width:640px;margin:0 auto}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+.card{background:#0A0A0D;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:28px}
+.card.res{border-color:rgba(143,166,255,.3);position:sticky;top:100px}
+h2{font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.3px;margin:0 0 18px}
+label{display:block;font-size:14px;font-weight:500;color:#D4D4D8;margin:0 0 6px}
+.hint{font-size:13px;color:#71717A;margin-top:5px}
+.f{margin-bottom:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+input[type=number]{width:100%;min-height:50px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#000;color:#fff;padding:0 14px;font:inherit;font-size:17px}
+input:focus{outline:2px solid #8FA6FF;outline-offset:1px}
+.unit{position:relative}.unit span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#71717A;font-size:14px;pointer-events:none}
+.unit input{padding-right:70px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;min-height:50px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.seg button[aria-pressed=true]{background:#2F54EB;border-color:#8FA6FF}
+.big{font-family:'Inter Display',Inter,sans-serif;font-size:44px;font-weight:600;letter-spacing:-1px;line-height:1}
+.sub{color:#A1A1AA;font-size:15px;margin:6px 0 20px}
+.lamps{display:inline-flex;gap:8px;padding:8px 10px;border-radius:999px;background:#000;border:1px solid rgba(255,255,255,.08);margin-bottom:12px}
+.lamps i{width:16px;height:16px;border-radius:50%;background:#27272A;display:block}
+.verdict{font-family:'Inter Display',Inter,sans-serif;font-size:21px;font-weight:600;margin:0 0 6px}
+.bar{height:10px;border-radius:999px;background:linear-gradient(90deg,#22C55E 0%,#22C55E 25%,#F5B70A 45%,#F04438 75%);position:relative;margin:18px 0 6px}
+.bar b{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.6);transform:translateX(-2px);transition:left .3s}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:#71717A}
+.diff{margin-top:20px;padding:16px;border-radius:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);font-size:15px;color:#D4D4D8}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:20px;border-radius:12px;background:#2F54EB;color:#fff;font-weight:600;font-size:16px;text-decoration:none;box-shadow:0 8px 32px rgba(47,84,235,.4)}
+.btn:hover{background:#4466F0;color:#fff}
+.small{font-size:12px;color:#71717A;margin-top:14px}
+.info{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:60px}
+.info h3{font-family:'Inter Display',Inter,sans-serif;font-size:18px;font-weight:600;margin:0 0 8px}
+.info p{color:#A1A1AA;font-size:15px;margin:0}
+footer{border-top:1px solid rgba(255,255,255,.08);padding:28px 24px;text-align:center;font-size:13px;color:#71717A}
+footer a{color:#A1A1AA}
+@media (max-width:860px){.grid,.info{grid-template-columns:1fr}.card.res{position:static}}
+@media (max-width:700px){.navr .hide{display:none}.nav>div{padding:8px 8px 8px 12px}.brand{font-size:18px}.navr a{padding:10px 8px;font-size:14px}.navr a.cta{padding:10px 14px}main{padding:0 14px 60px}.hero{padding:56px 0 26px}.card{padding:20px}.big{font-size:38px}.row2{grid-template-columns:1fr}}
+</style>
+<style>
+.chk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.chk li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);color:#D4D4D8}
+.chk li.g{background:rgba(245,183,10,.10)}.chk li b{color:#fff}
+.chk li span{flex:0 0 20px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(245,183,10,.15);color:#FCD34D;border:1px solid rgba(245,183,10,.35)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+.cards .card{padding:20px}
+.cards h3{font-family:'Inter Display',Inter,sans-serif;font-size:17px;font-weight:600;margin:0 0 6px}
+.cards p{color:#A1A1AA;font-size:14px;margin:0}
+.neg{margin-top:60px;border-color:rgba(143,166,255,.3)}
+.neg p{color:#D4D4D8;font-size:16px;margin:0 0 10px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.steps .n{display:inline-flex;width:34px;height:34px;border-radius:50%;background:rgba(47,84,235,.25);color:#C9D4FF;font-weight:600;align-items:center;justify-content:center;margin-bottom:10px}
+h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
+.cta2{text-align:center;margin-top:60px}
+.cta2 .btn{width:auto;padding:0 28px}
+@media (max-width:860px){.cards{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}}
+@media (max-width:520px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><div>
+<a class="brand" href="index.html"><svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#FFFFFF"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#2F54EB"/><circle cx="23" cy="17" r="4" fill="#FFFFFF"/></svg>Switchwatt</a>
+<div class="navr"><a class="hide" href="index.html#ablauf">So geht's</a><a class="hide" href="rechner.html">Kostenrechner</a><a href="portal.html">Anmelden</a><a class="cta" href="portal.html">Jetzt starten</a></div>
+</div></nav>
+
+<main>
+<section class="hero">
+<span class="kicker">Abrechnungs-Check · Pilotphase</span>
+<h1>Stimmen Ihre Gutschriften?</h1>
+<p class="lead">Jeden Monat zwei Abrechnungen voller Zahlen. Laden Sie die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie hoch. Wir prüfen beide automatisch und zeigen Ihnen in einer Minute, ob alles stimmt.</p>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>Was wir jeden Monat prüfen</h2>
+<ul class="chk">
+<li><span>✓</span><div><b>Mengen:</b> Rechnen Direktvermarkter und Netzbetreiber mit derselben Einspeisung?</div></li>
+<li><span>✓</span><div><b>Marktwert:</b> Stimmt er mit dem offiziellen Marktwert Solar überein, auch nach nachträglichen Korrekturen?</div></li>
+<li><span>✓</span><div><b>Marktprämie:</b> Anzulegender Wert, Staffel nach Anlagengröße, Abzug des Marktwerts.</div></li>
+<li><span>✓</span><div><b>Kosten:</b> Entsprechen Pauschale und Arbeitspreis Ihrem Vertrag?</div></li>
+<li><span>✓</span><div><b>Umsatzsteuer:</b> Richtig auf den Marktwert, keine auf die Marktprämie.</div></li>
+<li><span>✓</span><div><b>Negative Strompreise:</b> Galt in diesem Monat ein Abzug nach § 51 EEG, und wurde er richtig angesetzt?</div></li>
+<li><span>✓</span><div><b>Stammdaten:</b> Name, Anschrift, Marktlokation und Konten bei beiden gleich?</div></li>
+<li><span>✓</span><div><b>Ertrag:</b> Auffällig weniger als im Vorjahresmonat?</div></li>
+</ul>
+</section>
+
+<section class="card res">
+<p style="margin:0 0 12px;font-size:13px;color:#71717A">Beispiel aus einer echten Prüfung, anonymisiert</p>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2 style="margin:0">⚠️ Mai 2026</h2><span class="tag">Bitte ansehen</span></div>
+<ul class="chk">
+<li><span>✓</span><div>Einspeisung stimmt überein: 59.513 kWh</div></li>
+<li><span>✓</span><div>Marktprämie richtig berechnet: 2.549,27 €</div></li>
+<li><span>✓</span><div>Pauschale wie im Vertrag, Umsatzsteuer richtig</div></li>
+<li class="g"><span>⚠️</span><div><b>Marktwert nachträglich korrigiert:</b> 79,15 € Nachzahlung vom Direktvermarkter stehen aus.</div></li>
+<li class="g"><span>⚠️</span><div><b>Betreibername nicht einheitlich</b> bei Direktvermarkter und Netzbetreiber.</div></li>
+<li class="g"><span>⚠️</span><div><b>16 % weniger Ertrag</b> als im Vorjahresmonat.</div></li>
+</ul>
+<a class="btn" href="portal.html">Eigene Abrechnung prüfen lassen</a>
+<p class="small">Ein grüner Haken heißt: keine Auffälligkeit gefunden. Er ersetzt keine Steuer- oder Rechtsberatung.</p>
+</section>
+</div>
+
+<section class="card neg">
+<h2>Negative Strompreise: das prüft kaum jemand</h2>
+<p>Bei negativen Preisen entfällt die Marktprämie, aber nicht für jede Anlage und nicht ab derselben Dauer. Das hängt davon ab, wann Ihre Anlage in Betrieb ging und wie groß sie ist.</p>
+<p>Wir ermitteln die Regel für Ihre Anlage, gleichen sie Viertelstunde für Viertelstunde mit den Börsenpreisen ab und schätzen, wie viel Marktprämie betroffen ist. Fehlt der Abzug in der Abrechnung oder ist er zu hoch, sagen wir es Ihnen, bevor der Netzbetreiber Monate später nachfordert.</p>
+</section>
+
+<h2 class="sec">So läuft es</h2>
+<div class="steps">
+<div class="card"><span class="n">1</span><h3 style="margin:0 0 6px;font-size:17px">Anlage anlegen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Einmal mit Vertrag oder Gutschrift. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</p></div>
+<div class="card"><span class="n">2</span><h3 style="margin:0 0 6px;font-size:17px">Monatlich hochladen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Gutschrift des Direktvermarkters und Abrechnung des Netzbetreibers, als PDF oder Handyfoto.</p></div>
+<div class="card"><span class="n">3</span><h3 style="margin:0 0 6px;font-size:17px">Ergebnis ansehen</h3><p style="color:#A1A1AA;margin:0;font-size:15px">Grün, gelb oder rot, mit Begründung und den Beträgen, um die es geht.</p></div>
+</div>
+
+<div class="cta2">
+<p style="color:#A1A1AA;margin:0 0 4px">Pilotphase: Die Konditionen für das Abo nennen wir Ihnen vorab.</p>
+<a class="btn" href="portal.html">Konto anlegen und Abrechnung prüfen</a>
+</div>
+</main>
+
+<footer>© 2026 Switchwatt · ein Service der WordAtech UG (haftungsbeschränkt) · <a href="index.html">Startseite</a> · <a href="rechner.html">Kostenrechner</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></footer>
+</body>
+</html>

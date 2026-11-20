@@ -322,11 +322,12 @@ function checkBody(e){
 }
 var HAFTUNG='Automatische Plausibilitätsprüfung auf Grundlage Ihrer Unterlagen und öffentlicher Daten. Schätzungen sind als solche gekennzeichnet. Keine Rechts- oder Steuerberatung, ohne Gewähr.';
 var AN={dv:'Direktvermarkter',nb:'Netzbetreiber',steuer:'Steuerberater',monitoring:'Monitoring / Installateur'};
+function besterKontakt(k){if(!k||k.email||k.telefon)return k;var alt=(window._ckChecks||[]).map(function(c){var x=c.ergebnis&&c.ergebnis.kontakte;return x&&(x.dv&&x.dv.name===k.name?x.dv:x.nb&&x.nb.name===k.name?x.nb:null);}).filter(function(x){return x&&(x.email||x.telefon);})[0];return alt?Object.assign({},alt,{malo:k.malo||alt.malo}):k;}
 function kontaktZeile(k){if(!k)return '';var t=[k.name,k.telefon?'Tel. '+k.telefon:'',k.email].filter(Boolean);return t.length?E(t.join(' · ')):'';}
 function naechster(e,p){
   if(!p.tun)return '';
   var ko=e.kontakte||{},h='<div class="sw-ck-next"><strong>Nächster Schritt:</strong> '+E(p.tun);
-  (p.an||[]).forEach(function(w){var k=ko[w];if(w==='dv'||w==='nb'){var z=kontaktZeile(k);h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>'+(k&&k.email?' · <a href="'+anfrageLink(e,p,k)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');}});
+  (p.an||[]).forEach(function(w){var k=besterKontakt(ko[w]);if(w==='dv'||w==='nb'){var z=kontaktZeile(k);h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>'+(k&&k.email?' · <a href="'+anfrageLink(e,p,k)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');}});
   return h+'</div>';
 }
 function anfrageText(e,p,k){
@@ -341,7 +342,7 @@ function druckBericht(a,checks){
   h+='<h1>Prüfbericht Abrechnungs-Check</h1><div class="m">'+E(a.name||'')+(a.standort?' · '+E(a.standort):'')+(a.kwp?' · '+SW.num(a.kwp,2)+' kWp':'')+(a.malo?' · MaLo '+E(a.malo):'')+'<br>Erstellt am '+new Date().toLocaleDateString('de-DE')+' mit switchwatt.de</div>';
   h+='<table><tr><th>Monat</th><th>Ergebnis</th><th>Einspeisung</th><th>Netto nach Kosten</th></tr>'+checks.map(function(c){var k=(c.ergebnis&&c.ergebnis.kennzahlen)||{};return '<tr><td>'+monatName(c.monat)+'</td><td>'+(CK[c.status]||CK.fehler)[1]+'</td><td>'+(k.menge_kwh?SW.num(k.menge_kwh)+' kWh':'–')+'</td><td>'+(k.netto_eur!=null?SW.num(k.netto_eur,2)+' €':'–')+'</td></tr>';}).join('')+'</table>';
   checks.forEach(function(c){var e=c.ergebnis||{},ko=e.kontakte||{};var pts=(e.punkte||[]).slice().sort(function(x,y){return STUFE[x.stufe][1]-STUFE[y.stufe][1];});
-    h+='<h2>'+monatName(c.monat)+': '+(CK[c.status]||CK.fehler)[1]+'</h2><ul>'+pts.map(function(p){var n='';if(p.tun){n='<div class="n"><b>Nächster Schritt:</b> '+E(p.tun)+(p.an||[]).filter(function(w){return w==='dv'||w==='nb';}).map(function(w){var z=kontaktZeile(ko[w]);return '<br>'+AN[w]+': '+(z||'siehe Abrechnung');}).join('')+'</div>';}return '<li class="'+p.stufe+'"><b>'+E(p.titel)+'</b><br>'+E(p.text)+n+'</li>';}).join('')+'</ul>';
+    h+='<h2>'+monatName(c.monat)+': '+(CK[c.status]||CK.fehler)[1]+'</h2><ul>'+pts.map(function(p){var n='';if(p.tun){n='<div class="n"><b>Nächster Schritt:</b> '+E(p.tun)+(p.an||[]).filter(function(w){return w==='dv'||w==='nb';}).map(function(w){var z=kontaktZeile(besterKontakt(ko[w]));return '<br>'+AN[w]+': '+(z||'siehe Abrechnung');}).join('')+'</div>';}return '<li class="'+p.stufe+'"><b>'+E(p.titel)+'</b><br>'+E(p.text)+n+'</li>';}).join('')+'</ul>';
     if(e.negativpreise)h+='<div class="m">'+E(e.negativpreise.quelle)+'</div>';if(e.sonne&&e.sonne.quelle)h+='<div class="m">'+E(e.sonne.quelle)+'</div>';});
   h+='<p class="m" style="margin-top:28px">'+HAFTUNG+'</p></body></html>';
   w.document.open();w.document.write(h);w.document.close();setTimeout(function(){w.focus();w.print();},400);
@@ -388,7 +389,7 @@ async function runCheck(a,id,monat,btn){
 function mountCheck(a,id){
   var cks=window._ckChecks||[];
   app.querySelectorAll('a[data-print]').forEach(function(l){l.onclick=function(ev){ev.preventDefault();var m=l.dataset.print;druckBericht(a,m==='alle'?cks:cks.filter(function(c){return String(c.monat).slice(0,7)===m;}));};});
-  app.querySelectorAll('a[data-anfrage]').forEach(function(l){l.onclick=async function(ev){ev.preventDefault();var d=JSON.parse(l.dataset.anfrage),det=l.closest('details.sw-ck'),m=det?det.id.slice(3):null,c=cks.find(function(x){return String(x.monat).slice(0,7)===m;});if(!c)return;var e=c.ergebnis,p=(e.punkte||[]).find(function(x){return x.titel===d.t;});try{await navigator.clipboard.writeText(anfrageText(e,p,(e.kontakte||{})[d.w]));l.textContent='Text kopiert ✓';}catch(x){alertBox(anfrageText(e,p,(e.kontakte||{})[d.w]));}};});
+  app.querySelectorAll('a[data-anfrage]').forEach(function(l){l.onclick=async function(ev){ev.preventDefault();var d=JSON.parse(l.dataset.anfrage),det=l.closest('details.sw-ck'),m=det?det.id.slice(3):null,c=cks.find(function(x){return String(x.monat).slice(0,7)===m;});if(!c)return;var e=c.ergebnis,p=(e.punkte||[]).find(function(x){return x.titel===d.t;});try{await navigator.clipboard.writeText(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w])));l.textContent='Text kopiert ✓';}catch(x){alertBox(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w])));}};});
   app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var go=$('#ck_go');if(!go)return;

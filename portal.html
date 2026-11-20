@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=10"></script>
+<script src="sw-api.js?v=11"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -326,16 +326,40 @@ function besterKontakt(k){if(!k||k.email||k.telefon)return k;var alt=(window._ck
 function kontaktZeile(k){if(!k)return '';var t=[k.name,k.telefon?'Tel. '+k.telefon:'',k.email].filter(Boolean);return t.length?E(t.join(' · ')):'';}
 function naechster(e,p){
   if(!p.tun)return '';
-  if(/^Negative Preise: Abzug fehlt/.test(p.titel))p={titel:p.titel,text:p.text,an:[],tun:'Für diese Zeiten eine Rücklage bilden. Ob Sie beim Netzbetreiber nachfragen, entscheiden Sie selbst. Eine Nachfrage kann eine Rückforderung auslösen.'}; // bis zum nächsten Deploy von pruefen
+  if(/^Negative Preise: Abzug fehlt/.test(p.titel))p={titel:p.titel,text:p.text,an:[],tun:'Für diese Zeiten eine Rücklage bilden. Ob Sie beim Netzbetreiber nachfragen, entscheiden Sie selbst. Eine Nachfrage kann eine Rückforderung auslösen.'};
   var ko=e.kontakte||{},h='<div class="sw-ck-next"><strong>Nächster Schritt:</strong> '+E(p.tun);
-  (p.an||[]).forEach(function(w){var k=besterKontakt(ko[w]);if(w==='dv'||w==='nb'){var z=kontaktZeile(k);h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>'+(k&&k.email?' · <a href="'+anfrageLink(e,p,k)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');}});
+  (p.an||[]).forEach(function(w){if(w!=='dv'&&w!=='nb')return;var k=besterKontakt(ko[w]),z=kontaktZeile(k),t=anfrageText(e,p,k,w);
+    h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>';
+    if(t)h+=(k&&k.email?' · <a href="'+anfrageLink(e,p,k,w)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');});
   return h+'</div>';
 }
-function anfrageText(e,p,k){
-  k=k||{};var m=monatName(e.monat);
-  return 'Sehr geehrte Damen und Herren,\n\nbei der Durchsicht Ihrer Abrechnung für '+m+(k.malo?' (Marktlokation '+k.malo+')':'')+(k.kundennummer?', Kunden-/Vertragsnummer '+k.kundennummer:'')+' ist uns Folgendes aufgefallen:\n\n'+p.titel+': '+p.text+'\n\nWir bitten Sie, das zu prüfen, und um eine kurze Rückmeldung bzw. gegebenenfalls eine korrigierte Abrechnung.\n\nMit freundlichen Grüßen\n'+((profile&&profile.firma)||'');
+/* Anfragetexte: eigene Formulierung je Thema, geschrieben vom Anlagenbetreiber an die jeweilige Stelle.
+   Für Umsatzsteuer und negative Preise gibt es bewusst keinen Text (erst Steuerberater bzw. Entscheidung des Betreibers). */
+function anfrageKern(e,p,w){
+  var m=monatName(e.monat),t=p.titel,v=p.werte||{},wer=w==='dv'?'Ihrer Abrechnung':'Ihrer Gutschrift';
+  if(/^Umsatzsteuer|^Negative Preise/.test(t))return null;
+  if(/^Anschrift/.test(t))return v[w]&&v.eigen?'bitte aktualisieren Sie unsere Anschrift. Bei Ihnen ist noch hinterlegt: '+v[w]+'. Unsere richtige Anschrift lautet: '+v.eigen+'.':null;
+  if(/^Betreibername/.test(t))return v[w]&&v.eigen?'bitte aktualisieren Sie den Namen des Anlagenbetreibers. Bei Ihnen ist hinterlegt: „'+v[w]+'“. Richtig ist: „'+v.eigen+'“.':null;
+  if(/^Gutschrift des Netzbetreibers fehlt/.test(t))return 'uns liegt für '+m+' noch keine Gutschrift über die Marktprämie vor. Bitte senden Sie uns diese zu.';
+  if(/^Gutschrift des Direktvermarkters fehlt/.test(t))return 'uns liegt für '+m+' noch keine Abrechnung vor. Bitte senden Sie uns diese zu.';
+  if(/^Marktwert wurde nachträglich korrigiert/.test(t))return 'der Marktwert Solar für '+m+' wurde nachträglich korrigiert. '+(w==='dv'?'Ihre Abrechnung':'Ihre Gutschrift')+' für diesen Monat beruht noch auf dem ursprünglichen Wert. Bitte senden Sie uns eine Korrektur.';
+  if(/^Marktwert weicht ab/.test(t))return 'der in '+wer+' für '+m+' angesetzte Marktwert entspricht nicht dem veröffentlichten Marktwert Solar. Bitte prüfen Sie das und senden Sie uns gegebenenfalls eine Korrektur.';
+  if(/^Pauschale höher/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine höhere Vermarktungspauschale angesetzt, als in unserem Vertrag vereinbart ist. Bitte prüfen Sie das und korrigieren Sie die Abrechnung gegebenenfalls.';
+  if(/^Auszahlung Direktvermarkter/.test(t))return 'die einzelnen Positionen Ihrer Abrechnung für '+m+' ergeben nach unserer Nachrechnung nicht den ausgewiesenen Auszahlungsbetrag. Bitte erläutern Sie uns die Berechnung.';
+  if(/^Marktwert-Betrag/.test(t))return 'in Ihrer Abrechnung für '+m+' passt der Betrag für den Marktwert nicht zu Menge und Preis. Bitte prüfen Sie die Berechnung.';
+  if(/^Abregelung ohne Entschädigung/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine abgeregelte Menge ausgewiesen, aber kein Ausgleich. Bitte erläutern Sie uns, wie die Abregelung vergütet wird.';
+  if(/abgeregelt|^Abgeregelt/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine größere abgeregelte Menge ausgewiesen. Bitte erläutern Sie uns, aus welchem Grund abgeregelt wurde und wie die entgangene Marktprämie ausgeglichen wird.';
+  if(/^Marktprämie/.test(t))return 'die Marktprämie in Ihrer Gutschrift für '+m+' können wir nicht nachvollziehen. Bitte erläutern Sie uns die Berechnung.';
+  if(/^Einspeisemengen/.test(t))return 'die Einspeisemenge in '+wer+' für '+m+' weicht von der Menge '+(w==='dv'?'des Netzbetreibers':'des Direktvermarkters')+' ab. Bitte prüfen Sie, welche Menge gilt.';
+  if(/^Abrechnungszeitraum/.test(t))return 'der Abrechnungszeitraum in '+wer+' passt nicht zum Monat '+m+'. Bitte prüfen Sie das.';
+  return null;
 }
-function anfrageLink(e,p,k){return 'mailto:'+encodeURIComponent(k.email)+'?subject='+encodeURIComponent('Rückfrage zur Abrechnung '+monatName(e.monat)+(k.malo?' – MaLo '+k.malo:''))+'&body='+encodeURIComponent(anfrageText(e,p,k));}
+function anfrageText(e,p,k,w){
+  var kern=anfrageKern(e,p,w);if(!kern)return null;k=k||{};var a=window._ckAnlage||{};
+  var bezug=['Anlage: '+(a.name||'')+(a.standort?', '+a.standort:''),(k.malo||a.malo)?'Marktlokation: '+(k.malo||a.malo):'',k.kundennummer?'Kunden-/Vertragsnummer: '+k.kundennummer:''].filter(Boolean).join('\n');
+  return bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+kern+'\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber,a.betreiber_anschrift].filter(Boolean).join('\n');
+}
+function anfrageLink(e,p,k,w){var a=window._ckAnlage||{};return 'mailto:'+encodeURIComponent(k.email)+'?subject='+encodeURIComponent((a.name?a.name+': ':'')+'Abrechnung '+monatName(e.monat))+'&body='+encodeURIComponent(anfrageText(e,p,k,w));}
 function druckBericht(a,checks){
   var w=window.open('','_blank');if(!w){alertBox('Bitte Pop-ups für switchwatt.de erlauben, dann öffnet sich der Bericht.');return;}
   var css='body{font:14px/1.5 -apple-system,Segoe UI,Arial,sans-serif;color:#111;margin:32px;max-width:820px}h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px}table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #ddd;padding:5px 8px;text-align:left;font-size:13px}ul{padding-left:0;list-style:none}li{margin:0 0 10px;padding:8px 10px;border-left:4px solid #ccc;background:#fafafa}li.rot{border-color:#D92D20}li.gelb{border-color:#DC9A00}li.ok{border-color:#16A34A}li.info{border-color:#888}.m{color:#555;font-size:12px}.n{margin-top:4px;font-size:13px}@media print{h2{break-after:avoid}li{break-inside:avoid}}';
@@ -358,7 +382,7 @@ function checkSection(a,checks,allDocs,cf){
   '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"></div>'+
   '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"><div class="sw-hint">Auch mehrere Dateien, zum Beispiel Gutschrift und Netznutzungsrechnung. Korrekturen einfach dazulegen, wir prüfen die neueste Fassung.</div></div></div>'+
   '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_go">Hochladen und prüfen</button></div>';
-  window._ckChecks=checks;
+  window._ckChecks=checks;window._ckAnlage=a;
   if(checks.length){
     var openM=window._ckOpen||String(checks[0].monat).slice(0,7);
     h+='<h3 style="margin:28px 0 10px">Alle geprüften Monate</h3>'+ckTable(checks)+'<div class="sw-ck-months">'+checks.map(function(c,i){var s=CK[c.status]||CK.fehler,m=String(c.monat).slice(0,7);
@@ -391,7 +415,7 @@ async function runCheck(a,id,monat,btn){
 function mountCheck(a,id){
   var cks=window._ckChecks||[];
   app.querySelectorAll('a[data-print]').forEach(function(l){l.onclick=function(ev){ev.preventDefault();var m=l.dataset.print;druckBericht(a,m==='alle'?cks:cks.filter(function(c){return String(c.monat).slice(0,7)===m;}));};});
-  app.querySelectorAll('a[data-anfrage]').forEach(function(l){l.onclick=async function(ev){ev.preventDefault();var d=JSON.parse(l.dataset.anfrage),det=l.closest('details.sw-ck'),m=det?det.id.slice(3):null,c=cks.find(function(x){return String(x.monat).slice(0,7)===m;});if(!c)return;var e=c.ergebnis,p=(e.punkte||[]).find(function(x){return x.titel===d.t;});try{await navigator.clipboard.writeText(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w])));l.textContent='Text kopiert ✓';}catch(x){alertBox(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w])));}};});
+  app.querySelectorAll('a[data-anfrage]').forEach(function(l){l.onclick=async function(ev){ev.preventDefault();var d=JSON.parse(l.dataset.anfrage),det=l.closest('details.sw-ck'),m=det?det.id.slice(3):null,c=cks.find(function(x){return String(x.monat).slice(0,7)===m;});if(!c)return;var e=c.ergebnis,p=(e.punkte||[]).find(function(x){return x.titel===d.t;});try{await navigator.clipboard.writeText(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w]),d.w));l.textContent='Text kopiert ✓';}catch(x){alertBox(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w]),d.w));}};});
   app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var go=$('#ck_go');if(!go)return;

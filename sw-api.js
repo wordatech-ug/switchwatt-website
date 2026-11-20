@@ -127,24 +127,32 @@
   /* Kündigungsschreiben: erscheint im Portal, druckbar als PDF */
   SW.kuendigung = function (a, absender) {
     var heute = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    var L = '<div class="k">' + SW.esc(a.betreiber || absender || '[Betreiber]') + '<br>' + SW.esc(a.betreiber_anschrift || '[Anschrift Betreiber]') + '</div><br>' +
-      '<div class="k">' + SW.esc(a.direktvermarkter || '[Direktvermarkter]') + '<br>' + SW.esc(a.dv_anschrift || '[Anschrift Direktvermarkter]') + '</div>' +
+    var E = SW.esc, leer = function (t) { return '<span style="background:#FFF3C4">[' + t + ']</span>'; };
+    var ein = ((a.register && a.register.einheiten) || []).filter(function (u) { return u && u.mastr; });
+    var zeile = function (k, v) { return '<tr><td style="padding:1px 14px 1px 0;vertical-align:top;white-space:nowrap">' + k + '</td><td style="padding:1px 0">' + v + '</td></tr>'; };
+    var L = '<div class="k">' + E(a.betreiber || absender || '') + (a.betreiber ? '' : leer('Betreiber')) + '<br>' + (a.betreiber_anschrift ? E(a.betreiber_anschrift) : leer('Anschrift Betreiber')) + '</div><br>' +
+      '<div class="k">' + (a.direktvermarkter ? E(a.direktvermarkter) : leer('Direktvermarkter')) + '<br>' + (a.dv_anschrift ? E(a.dv_anschrift) : leer('Anschrift Direktvermarkter')) + '</div>' +
       '<p style="text-align:right">' + heute + '</p>' +
       '<h1>Kündigung des Direktvermarktungsvertrags</h1>' +
-      '<p>Anlage: ' + SW.esc(a.name) + (a.standort ? ', ' + SW.esc(a.standort) : '') + (a.kwp ? ', ' + SW.num(a.kwp, 2) + ' kWp' : '') + '<br>' +
-      (a.dv_vertragsnr ? 'Vertrags-/Kundennummer: ' + SW.esc(a.dv_vertragsnr) + '<br>' : '') +
-      (a.mastr ? 'MaStR-Nummer: ' + SW.esc(a.mastr) + '<br>' : '') +
-      (a.malo ? 'Marktlokation: ' + SW.esc(a.malo) + '<br>' : '') + '</p>' +
+      '<table style="border-collapse:collapse;margin:0 0 14px">' +
+      zeile('Vertragspartner (Anlagenbetreiber):', a.betreiber ? E(a.betreiber) : leer('Betreiber')) +
+      zeile('Vertrags-/Kundennummer:', a.dv_vertragsnr ? E(a.dv_vertragsnr) : leer('bitte aus dem Vertrag eintragen')) +
+      zeile('Anlage:', E(a.name || '') + (a.kwp ? ', ' + SW.num(a.kwp, 2) + ' kWp' : '')) +
+      zeile('Standort:', a.standort ? E(a.standort) : leer('Standort')) +
+      zeile('MaStR-Nummer' + (ein.length > 1 ? 'n' : '') + ':', ein.length ? ein.map(function (u) { return E(u.mastr) + (ein.length > 1 && u.name ? ' (' + E(u.name) + ')' : ''); }).join('<br>') : (a.mastr ? E(a.mastr) : leer('MaStR-Nummer'))) +
+      zeile('Marktlokation (MaLo):', a.malo ? E(a.malo) : leer('Marktlokations-ID')) +
+      zeile('Netzbetreiber:', a.netzbetreiber ? E(a.netzbetreiber) : leer('Netzbetreiber')) +
+      (ein.length === 1 && ein[0].inbetriebnahme ? zeile('Inbetriebnahme:', SW.date(ein[0].inbetriebnahme)) : '') +
+      '</table>' +
       '<p>Sehr geehrte Damen und Herren,</p>' +
       '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage ordentlich und fristgerecht ' +
       (a.vertragsende ? 'zum ' + SW.date(a.vertragsende) + ', hilfsweise zum nächstmöglichen Termin.' : 'zum nächstmöglichen Termin.') + '</p>' +
-      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich.</p>' +
-      '<p>Bei Rückfragen wenden Sie sich gern an uns oder an unseren Dienstleister Switchwatt (WordAtech UG), angebote@switchwatt.de.</p>' +
+      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich. Bitte melden Sie die Marktlokation zum Vertragsende aus Ihrem Bilanzkreis ab und senden Sie uns die Schlussabrechnung an die oben genannte Anschrift.</p>' +
       '<p>Mit freundlichen Grüßen</p><br><br><br>' +
-      '<p>_______________________________<br>Ort, Datum, Unterschrift, ggf. Firmenstempel<br>' + SW.esc(a.betreiber || '') + '</p>';
+      '<p>_______________________________<br>Ort, Datum, Unterschrift, Name in Druckbuchstaben<br>' + E(a.betreiber || '') + '</p>';
     var old = document.getElementById('sw-print'); if (old) old.remove();
     var d = document.createElement('div'); d.id = 'sw-print';
-    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen. Dann drucken oder als PDF speichern, unterschreiben und im Portal hochladen. Alternativ digital mit qualifizierter Signatur unterschreiben.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
+    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen und gelb markierte Felder ergänzen. Dann drucken, unterschreiben und im Portal hochladen. Unterschreiben müssen die vertretungsberechtigten Personen, bei einer GbR in der Regel alle Gesellschafter. Die Kündigung ist Ihre Erklärung, wir bereiten sie nur vor.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
     document.body.appendChild(d);
     d.querySelector('[data-p=print]').onclick = function () { window.print(); };
     d.querySelector('[data-p=close]').onclick = function () { d.remove(); };

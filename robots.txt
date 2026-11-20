@@ -2,6 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /portal.html
 Disallow: /admin.html
+Disallow: /vorschau.html
 
 Sitemap: https://www.switchwatt.de/sitemap.xml
-Disallow: /vorschau.html

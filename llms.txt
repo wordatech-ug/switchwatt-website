@@ -1,6 +1,6 @@
-# Switchwatt
+# SwitchWatt
 
-> Switchwatt ist ein unabhängiger Wechselservice und Abrechnungs-Check für Direktvermarktung in Deutschland. Wir vergleichen Angebote von Direktvermarktern für PV-Dachanlagen von 100 bis 750 kWp, bereiten Kündigung und neuen Vertrag vor und organisieren den Wechsel. Der Betreiber entscheidet, erst dann wird gewechselt. Switchwatt ist ein Service der WordAtech UG (haftungsbeschränkt), Bad Homburg v. d. Höhe.
+> SwitchWatt ist ein unabhängiger Wechselservice und Abrechnungs-Check für Direktvermarktung in Deutschland. Wir vergleichen Angebote von Direktvermarktern für PV-Dachanlagen von 100 bis 750 kWp, bereiten Kündigung und neuen Vertrag vor und organisieren den Wechsel. Der Betreiber entscheidet, erst dann wird gewechselt. SwitchWatt ist ein Service der WordAtech UG (haftungsbeschränkt), Bad Homburg v. d. Höhe.
 
 ## Seiten
 

@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; base-uri 'self'; form-action 'self'">
-<title>Verwaltung – Switchwatt</title>
+<title>Verwaltung – SwitchWatt</title>
 <link rel="stylesheet" href="sw-portal.css?v=17">
 </head>
 <body>
 <div class="sw-top"><div>
-<a class="sw-logo" href="admin.html"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#2F54EB"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#fff"/><circle cx="23" cy="17" r="4" fill="#2F54EB"/></svg><span>Switchwatt <span class="sw-hide-m">Verwaltung</span></span></a>
+<a class="sw-logo" href="admin.html"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#2F54EB"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#fff"/><circle cx="23" cy="17" r="4" fill="#2F54EB"/></svg><span>SwitchWatt <span class="sw-hide-m">Verwaltung</span></span></a>
 <div class="sw-row" id="topnav"></div>
 </div></div>
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=16"></script>
+<script src="sw-api.js?v=17"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),E=SW.esc,me=null,users={};
@@ -83,7 +83,7 @@ async function renderOne(id){
   h+='<section class="sw-card"><h2>Dokumente</h2>'+(docs.length?'<table><tbody>'+docs.map(function(x){return '<tr><td><a href="#" data-file="'+E(x.pfad)+'">'+E(x.dateiname)+'</a></td><td>'+E(SW.ART[x.art]||x.art)+'</td><td>'+SW.date(x.created_at)+'</td><td><button class="sw-btn ghost small" data-read="'+x.id+'">auslesen</button></td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Keine.</p>')+
   '<div class="sw-row" style="margin-top:14px"><select id="ua" style="flex:0 1 240px"><option value="kuendigung_entwurf">Kündigung (Entwurf)</option><option value="sonstiges">Sonstiges</option><option value="vertrag">Vertrag</option></select><input id="uf" type="file" style="flex:1 1 240px"><button class="sw-btn ghost" id="ub">Hochladen</button><button class="sw-btn ghost" id="kb">Kündigung erzeugen</button></div><div id="uerr"></div></section>';
   /* Verlauf */
-  h+='<section class="sw-card"><h2>Verlauf</h2><div class="sw-row"><input id="vt" placeholder="Eintrag (sieht der Kunde)" style="flex:1 1 300px"><button class="sw-btn ghost" id="vb">Eintragen</button></div><table style="margin-top:12px"><tbody>'+log.map(function(l){var w=users[l.von];return '<tr><td style="width:170px" class="sw-muted">'+SW.dateTime(l.created_at)+'</td><td>'+E(l.text)+'</td><td class="sw-muted" style="font-size:13px">'+E(w?(w.rolle==='admin'?'Switchwatt':w.name||w.email):'')+'</td></tr>';}).join('')+'</tbody></table></section>';
+  h+='<section class="sw-card"><h2>Verlauf</h2><div class="sw-row"><input id="vt" placeholder="Eintrag (sieht der Kunde)" style="flex:1 1 300px"><button class="sw-btn ghost" id="vb">Eintragen</button></div><table style="margin-top:12px"><tbody>'+log.map(function(l){var w=users[l.von];return '<tr><td style="width:170px" class="sw-muted">'+SW.dateTime(l.created_at)+'</td><td>'+E(l.text)+'</td><td class="sw-muted" style="font-size:13px">'+E(w?(w.rolle==='admin'?'SwitchWatt':w.name||w.email):'')+'</td></tr>';}).join('')+'</tbody></table></section>';
   app.innerHTML=h;
 
   function reload(){renderOne(id);}
@@ -92,7 +92,7 @@ async function renderOne(id){
   var cfOff=$('#cf_off');if(cfOff)cfOff.onclick=async function(){try{await SW.rest('check_frei?anlage_id=eq.'+a.id,{method:'PATCH',body:{frei_at:null}});reload();}catch(x){alert(x.message);}};
   $('#stb').onclick=async function(){try{var s=$('#st').value,n=$('#stn').value.trim();await SW.rest('anlagen?id=eq.'+a.id,{method:'PATCH',body:{status:s}});await logEntry('Status: '+SW.STATUS[s][0]+(n?' – '+n:''));reload();}catch(x){$('#sterr').innerHTML=msg('err',x.message);}};
   $('#df').onsubmit=async function(e){e.preventDefault();var o={};['direktvermarkter','dv_anschrift','dv_vertragsnr','entgelt','vertragsende','kuendigung_bis','mastr','malo','kwp'].forEach(function(k){var v=$('#d_'+k).value.trim();o[k]=v===''?null:(k==='kwp'?Number(v):v);});
-    try{await SW.rest('anlagen?id=eq.'+a.id,{method:'PATCH',body:o});await logEntry('Daten von Switchwatt ergänzt');reload();}catch(x){$('#dferr').innerHTML=msg('err',x.message);}};
+    try{await SW.rest('anlagen?id=eq.'+a.id,{method:'PATCH',body:o});await logEntry('Daten von SwitchWatt ergänzt');reload();}catch(x){$('#dferr').innerHTML=msg('err',x.message);}};
   var of=$('#of'); if(of){
     $('#calc').onclick=function(){var ct=parseFloat($('#o_ct').value)||0,fix=parseFloat($('#o_fix').value)||0;if(!mwh){alert('kWp fehlt');return;}
       var neu=ct*mwh*10+fix*12;var t=prompt('Heutige Kosten pro Jahr in € (aus dem Vertrag):','');if(t==null)return;var alt=parseFloat(String(t).replace(',','.'));if(isNaN(alt))return;$('#o_ers').value=Math.round(alt-neu);};

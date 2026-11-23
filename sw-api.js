@@ -1,4 +1,4 @@
-/* Switchwatt Portal – kleiner Client für Supabase (Auth, Datenbank, Dateien) ohne externe Bibliotheken */
+/* SwitchWatt Portal – kleiner Client für Supabase (Auth, Datenbank, Dateien) ohne externe Bibliotheken */
 (function () {
   var URL_ = 'https://fyseraoxefnwsayvqzps.supabase.co';
   var KEY = 'sb_publishable_IRGqBkjaUa3_YnZ2HGDdSg_HU6m5ltO';
@@ -122,7 +122,7 @@
     abgebrochen: ['Abgebrochen', '#71717A']
   };
   SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
-  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von Switchwatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Gutschrift Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Auszug' };
+  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von SwitchWatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Gutschrift Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Auszug' };
   SW.daysUntil = function (d) { if (!d) return null; var t = new Date(); var a = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()); var p = String(d).slice(0, 10).split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - a) / 86400000); };
   SW.arr = function (x) { return x == null ? [] : Array.isArray(x) ? x : [x]; };
   SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };
@@ -169,7 +169,7 @@
     return (m[1] ? 'Pilotfassung' : 'Fassung') + ' vom ' + m[4] + '.' + m[3] + '.' + m[2];
   };
   SW.VOLLMACHT_HTML =
-    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke Switchwatt, für die Anlagen, die ich bei Erteilung dieser Vollmacht in meinem Switchwatt-Konto auswähle,</p>' +
+    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke SwitchWatt, für die Anlagen, die ich bei Erteilung dieser Vollmacht in meinem SwitchWatt-Konto auswähle,</p>' +
     '<ol><li>in meinem Namen bei Direktvermarktern Angebote für die Direktvermarktung anzufragen und dafür die nötigen Anlagen- und Vertragsdaten weiterzugeben,</li>' +
     '<li>beim zuständigen Netz- und Messstellenbetreiber die Stammdaten der Anlagen und die Einspeisedaten (Lastgang) für bis zu 36 Monate anzufordern,</li>' +
     '<li>die Angebote auszuwerten und mir einen Angebotsspiegel zur Verfügung zu stellen.</li></ol>' +

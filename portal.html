@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
-<title>Kundenkonto – Switchwatt</title>
+<title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="sw-portal.css?v=22">
 </head>
 <body>
 <div class="sw-top"><div>
-<a class="sw-logo" href="index.html"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#2F54EB"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#fff"/><circle cx="23" cy="17" r="4" fill="#2F54EB"/></svg>Switchwatt</a>
+<a class="sw-logo" href="index.html"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#2F54EB"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#fff"/><circle cx="23" cy="17" r="4" fill="#2F54EB"/></svg>SwitchWatt</a>
 <div class="sw-row" id="topnav"></div>
 </div></div>
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=16"></script>
+<script src="sw-api.js?v=17"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -40,7 +40,7 @@ function go(h){if(location.hash===h)route();else location.hash=h;}
 function renderAuth(mode,note){
   nav.innerHTML='';
   mode=mode||'login';
-  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr Switchwatt-Konto</h1>'+
+  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr SwitchWatt-Konto</h1>'+
   '<p class="sw-muted">'+(WUNSCH==='check'?'Hier laden Sie jeden Monat Ihre Abrechnungen hoch und sehen sofort, ob alles stimmt.':'Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.')+'</p>'+
   (note||'')+
   (mode==='signup'&&!note&&WUNSCH==='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Den Abrechnungs-Check buchen Sie pro Anlage, monatlich oder jährlich. Bei Fragen meldet sich ein Mensch persönlich.</div>':'')+
@@ -192,7 +192,7 @@ function renderNew(){
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
   '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 220px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung</option></select></div>'+
   '<div id="err"></div><div class="sw-row" style="margin-top:16px"><button class="sw-btn" id="go">Hochladen und auslesen</button><button class="sw-btn ghost" id="manual">Ohne Dokument selbst ausfüllen</button></div>'+
-  '<p class="sw-muted" style="font-size:13px;margin-bottom:0">Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und Switchwatt sichtbar. Zum Auslesen wird das Dokument kurz an unseren KI-Dienstleister übermittelt, siehe <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p></section>';
+  '<p class="sw-muted" style="font-size:13px;margin-bottom:0">Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und SwitchWatt sichtbar. Zum Auslesen wird das Dokument kurz an unseren KI-Dienstleister übermittelt, siehe <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p></section>';
   $('#up_doc').onchange=function(){var n=Array.prototype.map.call(this.files,function(f){return f.name;}).join(', ');$('#fname').textContent=n?'Ausgewählt: '+n:'';};
   async function create(){return (await SW.rest('anlagen',{method:'POST',body:{name:'Neue Anlage'},prefer:'return=representation'}))[0];}
   $('#manual').onclick=async function(){busy(this,true);try{var a=await create();go(ziel+a.id);}catch(x){$('#err').innerHTML=msg('err',x.message);busy(this,false);}};
@@ -319,7 +319,7 @@ async function renderAnlage(id,mode){
   app.querySelectorAll('[data-pick]').forEach(function(b){b.onclick=function(){
     if(!hasVm){alertBox('Bitte erteilen Sie zuerst die Vollmacht für diese Anlage auf der Übersichtsseite.');return;}
     var o=offers.filter(function(x){return x.id===b.dataset.pick;})[0];
-    showModal('<h2>Angebot freigeben</h2><p>Sie wählen <strong>'+E(o.anbieter)+'</strong> für die Anlage <strong>'+E(a.name)+'</strong>.</p><p class="sw-muted" style="font-size:15px">Damit bereitet Switchwatt die Kündigung des bisherigen Vertrags und den neuen Vertrag vor. Beides unterschreiben Sie selbst, wir übermitteln es danach für Sie.</p>'+
+    showModal('<h2>Angebot freigeben</h2><p>Sie wählen <strong>'+E(o.anbieter)+'</strong> für die Anlage <strong>'+E(a.name)+'</strong>.</p><p class="sw-muted" style="font-size:15px">Damit bereitet SwitchWatt die Kündigung des bisherigen Vertrags und den neuen Vertrag vor. Beides unterschreiben Sie selbst, wir übermitteln es danach für Sie.</p>'+
       '<label for="fgn">Ihr Name</label><input id="fgn" value="'+E(profile&&profile.name||'')+'"><label class="sw-check" style="margin:14px 0"><input type="checkbox" id="fgc"><span>Ich gebe dieses Angebot verbindlich frei.</span></label><div id="fgerr"></div><div class="sw-row"><button class="sw-btn" id="fgok">Freigeben</button><button class="sw-btn ghost" data-close>Abbrechen</button></div>');
     modal.querySelector('#fgok').onclick=async function(){var n=modal.querySelector('#fgn').value.trim();if(!n||!modal.querySelector('#fgc').checked){modal.querySelector('#fgerr').innerHTML=msg('err','Bitte Namen eingeben und ankreuzen.');return;}
       busy(this,true);try{await SW.rest('freigaben',{method:'POST',body:{anlage_id:a.id,angebot_id:o.id,name_unterzeichner:n}});closeModal();renderAnlage(id);}catch(x){modal.querySelector('#fgerr').innerHTML=msg('err',x.message);busy(this,false);}};

@@ -242,5 +242,9 @@
     inp.dispatchEvent(new Event('change', { bubbles: true }));
   });
 
+  // Firmennamen in GROSSBUCHSTABEN lesbar schreiben (INTERCONNECTOR GmbH -> Interconnector GmbH)
+  var RF = { GMBH: 'GmbH', MBH: 'mbH', EGBR: 'eGbR', GBR: 'GbR', KGAA: 'KGaA', AG: 'AG', KG: 'KG', UG: 'UG', EG: 'eG', OHG: 'OHG', SE: 'SE', CO: 'Co', EWE: 'EWE', EVM: 'EVM', ENM: 'ENM', EON: 'EON', RWE: 'RWE', ENBW: 'EnBW', SWM: 'SWM', BAYWA: 'BayWa' };
+  SW.schoen = function (x) { return String(x == null ? '' : x).replace(/[A-ZÄÖÜ][A-ZÄÖÜß0-9\-]{2,}/g, function (w) { return RF[w] || (w.charAt(0) + w.slice(1).toLowerCase()); }); };
+
   window.SW = SW;
 })();

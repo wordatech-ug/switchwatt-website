@@ -28,8 +28,10 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=21"></script>
+<script src="sw-api.js?v=22"></script>
 <script>
+document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-wsneu]');if(!b)return;var p=b.getAttribute('data-wsneu').split('|');b.disabled=true;b.textContent='Prüft …';var r=await SW.fn('pruefen',{anlage_id:p[0],monat:p[1]});if(r&&r.ok){b.textContent='Fertig: '+r.status;setTimeout(function(){location.reload();},1200);}else{b.disabled=false;b.textContent=r&&r.warteschlange?'Noch nicht möglich':'Fehler';}});
+
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),E=SW.esc,me=null,ME={},users={},zeigeZu=false;
 function msg(t,x){return '<div class="sw-msg '+t+'">'+E(x)+'</div>';}
@@ -49,7 +51,7 @@ function renderLogin(err){
 }
 
 async function renderList(){
-  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id),freigaben(id),dokumente(art),pruefungen(monat,status),check_frei(frei_at,angefragt_at)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at&widerrufen_at=is.null'),SW.rest('marktwerte?select=*&order=monat.desc&limit=14'),SW.rest('abos?select=owner,anlage_id,status,klasse,intervall,laeuft_bis,kuendigung_zum,livemode,rabatt'),SW.rest('dv_bewertung?select=*').catch(function(){return [];})]);
+  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id),freigaben(id),dokumente(art),pruefungen(monat,status),check_frei(frei_at,angefragt_at)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at&widerrufen_at=is.null'),SW.rest('marktwerte?select=*&order=monat.desc&limit=14'),SW.rest('abos?select=owner,anlage_id,status,klasse,intervall,laeuft_bis,kuendigung_zum,livemode,rabatt'),SW.rest('dv_bewertung?select=*').catch(function(){return [];}),SW.rest('check_warteschlange?select=*&erledigt_at=is.null&order=am.asc').catch(function(){return [];})]);
   var an=r[0]; users={}; r[1].forEach(function(p){users[p.id]=p;}); var vm={}; r[2].forEach(function(v){vm[v.owner]=v;});
   var abo={}; (r[4]||[]).forEach(function(x){if(['active','trialing','past_due'].indexOf(x.status)<0)return;(abo[x.owner]=abo[x.owner]||[]).push(x);});
   var zu=r[1].filter(function(p){return p.geschlossen_at;}).length;
@@ -82,6 +84,7 @@ async function renderList(){
     (kunden.length?'':'<p class="sw-muted">Noch keine Kunden.</p>')+'</section>';
   var fr=an.filter(function(a){return a.kuendigung_bis&&OPEN.indexOf(a.status)>=0;}).sort(function(x,y){return x.kuendigung_bis<y.kuendigung_bis?-1:1;});
   var ohne=an.filter(function(a){return !a.kuendigung_bis&&OPEN.indexOf(a.status)>=0;});
+  var WS=r[6]||[];if(WS.length){var anById={};r[0].forEach(function(x){anById[x.id]=x;});h+='<section class="sw-card" style="border-color:rgba(245,183,10,.5)"><h2>Wartende Abrechnungs-Checks ('+WS.length+')</h2><p class="sw-muted" style="font-size:14px;margin-top:-4px">Das Auslesen ist ausgefallen (z. B. KI-Guthaben leer). Der Kunde hat eine freundliche Meldung bekommen. Nach dem Aufladen hier erneut starten.</p>'+WS.map(function(w){var a=anById[w.anlage_id]||{},u=users[w.owner]||{};return '<div class="kc-row" style="grid-template-columns:minmax(160px,1.3fr) 100px minmax(160px,1.3fr) 1fr 150px"><span><a href="#/a/'+w.anlage_id+'">'+E(a.name||'?')+'</a></span><span>'+String(w.monat).slice(5,7)+'/'+String(w.monat).slice(0,4)+'</span><span>'+E(u.name||u.email||'?')+'</span><span class="sw-muted" style="font-size:13px">'+E(w.fehler||'')+' · '+w.versuche+'×, '+SW.dateTime(w.am)+'</span><button class="sw-btn small" data-wsneu="'+w.anlage_id+'|'+String(w.monat).slice(0,7)+'">Erneut prüfen</button></div>';}).join('')+'</section>';}
   h+='<section class="sw-card"><h2>Fristen</h2><p class="sw-muted" style="font-size:14px;margin-top:-4px">Offene Wechsel mit Kündigungstermin, der nächste zuerst.</p>'+
     (fr.length?fr.map(function(a){var u=users[a.owner]||{},d=SW.daysUntil(a.kuendigung_bis),c=d<0?'#71717A':d<=14?'#F87171':d<=45?'#F5B70A':'#22C55E';
       return '<div class="kc-row" style="grid-template-columns:130px minmax(160px,1.3fr) minmax(160px,1.3fr) 150px 1fr"><span class="sw-badge" style="--c:'+c+'">'+(d<0?'abgelaufen':d===0?'heute':'noch '+d+' Tage')+'</span><span><strong>'+SW.date(a.kuendigung_bis)+'</strong> · <a href="#/a/'+a.id+'">'+E(a.name)+'</a></span><span><a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>'+(u.firma?' <span class="sw-muted">'+E(u.firma)+'</span>':'')+'</span><span>'+SW.badge(a.status)+'</span><span class="sw-muted">'+(vm[a.owner]?'':'<span class="sw-red">keine Vollmacht</span> · ')+SW.arr(a.angebote).length+' Angebot(e)'+(SW.arr(a.freigaben).length?' · freigegeben':'')+'</span></div>';}).join(''):'<p class="sw-muted">Keine offenen Fristen.</p>')+

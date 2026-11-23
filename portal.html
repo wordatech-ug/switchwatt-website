@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=21"></script>
+<script src="sw-api.js?v=22"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -124,7 +124,7 @@ async function renderHome(){
     (offenA.length>1?'<label class="sw-check" style="margin:6px 0 4px"><input type="checkbox" id="vmall"><span><strong>Alle auswählen</strong></span></label>':'')+
     offenA.map(function(x){return '<label class="sw-check" style="margin:4px 0"><input type="checkbox" class="vma" value="'+x.id+'"'+(offenA.length===1?' checked':'')+'><span>'+E(x.name)+(x.kwp?' <span class="sw-muted">('+SW.num(x.kwp,1)+' kWp)</span>':'')+'</span></label>';}).join('')+
     '<div class="sw-grid" style="margin-top:12px"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
-    '<label class="sw-check" style="margin:16px 0 10px"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben für die ausgewählten Anlagen und bin allein vertretungsberechtigt oder handle mit Zustimmung aller Vertretungsberechtigten (bei einer GbR in der Regel alle Gesellschafter).</span></label>'+'<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="vmagb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Mit der Vollmacht beauftragen Sie uns, Angebote einzuholen. Finden wir kein besseres Angebot, kostet das nichts.</p><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht und Auftrag erteilen</button></form></section>';
+    '<div id="vmreg" aria-live="polite"></div>'+'<label class="sw-check" style="margin:16px 0 10px"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben für die ausgewählten Anlagen und bin allein vertretungsberechtigt oder handle mit Zustimmung aller Vertretungsberechtigten (bei einer GbR in der Regel alle Gesellschafter).</span></label>'+'<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="vmagb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Mit der Vollmacht beauftragen Sie uns, Angebote einzuholen. Finden wir kein besseres Angebot, kostet das nichts.</p><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht und Auftrag erteilen</button></form></section>';
   }
   if(gedeckt.length){
     h+='<p class="sw-msg ok">Vollmacht erteilt für '+gedeckt.map(function(x){return E(x.name);}).join(', ')+'. <a href="#" id="vmshow">Text ansehen</a> · <a href="#" id="vmwid">Widerrufen</a></p>';
@@ -134,6 +134,17 @@ async function renderHome(){
   var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();var akt=vms.filter(function(v){return v.version===SW.VOLLMACHT_VERSION;});
     showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p style="font-size:14px">'+akt.map(function(v){var na=v.anlagen?an.filter(function(x){return v.anlagen.indexOf(x.id)>=0;}).map(function(x){return x.name;}):an.map(function(x){return x.name;});return 'Erteilt am '+SW.dateTime(v.erteilt_at)+' von '+E(v.name_unterzeichner)+(v.firma?' für '+E(v.firma):'')+' für: <strong>'+E(na.join(', '))+'</strong>';}).join('<br>')+'</p><p class="sw-muted" style="font-size:14px">'+E(SW.vmFassung(SW.VOLLMACHT_VERSION))+'. Widerruf jederzeit hier im Kundenkonto oder per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
   var vw=$('#vmwid'); if(vw)vw.onclick=async function(e){e.preventDefault();if(!confirm('Vollmacht wirklich widerrufen? Wir holen dann keine Angebote mehr für diese Anlagen ein.'))return;try{for(var i=0;i<vms.length;i++)await SW.rest('rpc/vollmacht_widerrufen',{method:'POST',body:{vid:vms[i].id}});for(var j=0;j<gedeckt.length;j++)await SW.rest('verlauf',{method:'POST',body:{anlage_id:gedeckt[j].id,text:'Vollmacht widerrufen'}}).catch(function(){});renderHome();}catch(x){alertBox(x.message);}};
+  var regT=null,regLetzt='';async function regPruef(){var fi=$('#vmfi'),na=$('#vmn'),box=$('#vmreg');if(!fi||!na||!box)return;var f=fi.value.trim(),n=na.value.trim(),k=f+'|'+n;if(k===regLetzt)return;regLetzt=k;box.innerHTML='';if(f.length<3||n.length<3||!/(gmbh|\bkg\b|gbr|\bug\b|\bag\b|\beg\b|ohg|partg|mbh)/i.test(f))return;
+    try{var r=await SW.fn('register',{firma:f,name:n});if(k!==regLetzt||!r||!r.verfuegbar)return;
+      var lst=(r.vertreter||[]).map(function(v){return E(v.name)+(v.art?' ('+E(v.art)+')':'')+(v.ueber?' <span class="sw-muted">über '+E(v.ueber)+'</span>':'');}).join(', ');
+      var reg=E(r.register_name)+' <span class="sw-muted">('+E(r.register)+')</span>';
+      var t={allein:['ok','Abgleich mit dem Register: Sie sind für '+reg+' allein vertretungsberechtigt.'],
+        gemeinsam:['info','⚠️ Laut Register vertreten Sie '+reg+' nur gemeinsam mit anderen. Bitte holen Sie vorher die Zustimmung der übrigen Vertretungsberechtigten ein. Eingetragen: '+lst+'.'],
+        ausgeschlossen:['info','⚠️ Laut Register sind Sie bei '+reg+' von der Vertretung ausgeschlossen. Vertretungsberechtigt: '+lst+'. Bitte lassen Sie die Vollmacht von einer dieser Personen erteilen oder holen Sie deren Zustimmung ein.'],
+        nicht_eingetragen:['info','⚠️ Ihr Name steht bei '+reg+' nicht als Vertreter im Register. Eingetragen: '+lst+'. Wenn Sie anders berechtigt sind, zum Beispiel mit einer Vollmacht, können Sie trotzdem fortfahren.']}[r.status];
+      if(t)box.innerHTML='<p class="sw-msg '+t[0]+'" style="font-size:14px;margin:12px 0 0">'+t[1]+'</p>';}catch(x){}}
+  ['#vmfi','#vmn'].forEach(function(sel){var el=$(sel);if(el)el.addEventListener('change',regPruef);});
+  regPruef();
   var all=$('#vmall'); if(all)all.onchange=function(){app.querySelectorAll('.vma').forEach(function(c){c.checked=all.checked;});};
   app.querySelectorAll('.vma').forEach(function(c){c.onchange=function(){if(all){var cs=app.querySelectorAll('.vma');all.checked=Array.prototype.every.call(cs,function(x){return x.checked;});}};});
   var f=$('#vmf'); if(f)f.onsubmit=async function(e){e.preventDefault();var btn=f.querySelector('[type=submit]'),n=$('#vmn').value.trim(),ids=Array.prototype.filter.call(app.querySelectorAll('.vma'),function(c){return c.checked;}).map(function(c){return c.value;});
@@ -506,6 +517,7 @@ async function runCheck(a,id,monat,btn,auto){
   busy(btn,true,'Wir prüfen … (bis zu einer Minute)');
   var r=await SW.fn('pruefen',{anlage_id:a.id,monat:monat,auto:!!auto});
   if(r&&r.ok&&r.monat)monat=r.monat;window._ckOpen=monat;
+  if(r&&r.warteschlange){busy(btn,false);$('#ck_err').innerHTML=msg('ok',r.error);return;}
   if(!r||!r.ok){busy(btn,false);$('#ck_err').innerHTML=msg('err',(r&&r.error)||'Die Prüfung hat nicht geklappt. Bitte später noch einmal.');return;}
   await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check '+monatName(monat)+': '+(CK[r.status]||CK.fehler)[1]}}).catch(function(){});
   renderAnlage(id);

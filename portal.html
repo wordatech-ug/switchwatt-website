@@ -25,6 +25,7 @@ var E=SW.esc, me=null, profile=null, modus='wechsel';
 var WUNSCH=(new URLSearchParams(location.search).get('bereich')==='check')?'check':null;
 var PW_REGEL='mindestens 10 Zeichen mit Groß- und Kleinbuchstaben, Ziffer und Sonderzeichen';
 function pwOk(p){return p.length>=10&&/[a-z]/.test(p)&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[^A-Za-z0-9]/.test(p);}
+function gruss(){var p=profile||{},n=String(p.name||'').trim();if(p.anrede&&n)return 'Guten Tag, '+p.anrede+' '+n.split(/\s+/).pop();return n?'Guten Tag, '+n:'Guten Tag';}
 function nurCheck(){return profile&&profile.bereich==='check'&&profile.rolle!=='admin';}
 function msg(type,text){return '<div class="sw-msg '+type+'" role="'+(type==='err'?'alert':'status')+'">'+E(text)+'</div>';}
 function $(s){return app.querySelector(s);}
@@ -42,7 +43,7 @@ function renderAuth(mode,note){
   (mode==='signup'&&!note&&WUNSCH!=='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
   '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
   '<form id="f" novalidate>'+
-  (mode==='signup'?'<div style="margin-bottom:14px"><label for="name">Ihr Name</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
+  (mode==='signup'?'<div style="margin-bottom:14px"><label for="anrede">Anrede</label><select id="anrede"><option value="">keine Angabe</option><option>Frau</option><option>Herr</option></select></div><div style="margin-bottom:14px"><label for="name">Ihr Vor- und Nachname</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
   '<div style="margin-bottom:14px"><label for="mail">E-Mail</label><input id="mail" type="email" required autocomplete="email"></div>'+
   '<div style="margin-bottom:14px"><label for="pw">Passwort'+(mode==='signup'?' ('+PW_REGEL+')':'')+'</label><input id="pw" type="password" required autocomplete="'+(mode==='signup'?'new-password':'current-password')+'"></div>'+
   (mode==='signup'?'<label class="sw-check" style="margin-bottom:16px"><input type="checkbox" id="ds" required><span>Ich habe die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen.</span></label>':'')+
@@ -60,7 +61,7 @@ function renderAuth(mode,note){
       if(mode==='signup'){
         if(!$('#name').value.trim()){throw new Error('Bitte geben Sie Ihren Namen ein.');}
         if(!$('#ds').checked){throw new Error('Bitte bestätigen Sie die Datenschutzerklärung.');}
-        var d=await SW.signUp(mail,pw,{name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:WUNSCH||'wechsel'});
+        var d=await SW.signUp(mail,pw,{anrede:$('#anrede').value||null,name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:WUNSCH||'wechsel'});
         if(!d||!d.access_token){renderAuth('login',msg('info','Fast geschafft: Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen geschickt haben. Danach können Sie sich anmelden.'));return;}
       } else { await SW.signIn(mail,pw); }
       await start();
@@ -99,7 +100,7 @@ function steps(vm,anlagen){
 /* ---------- Übersicht ---------- */
 async function renderHome(){
   var d=await loadAll(),vm=d.vm,an=d.anlagen;
-  var h='<h1>Guten Tag'+(profile&&profile.name?', '+E(profile.name):'')+'</h1><p class="sw-muted">So weit sind Sie:</p>'+steps(vm,an);
+  var h='<h1>'+E(gruss())+'</h1><p class="sw-muted">So weit sind Sie:</p>'+steps(vm,an);
   h+='<section class="sw-card'+(an.length?'':' hl')+'"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">'+(an.length?'Ihre Anlagen':'1. Anlage hinzufügen')+'</h2><a class="sw-btn" href="#/neu">+ Anlage hinzufügen</a></div>';
   if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Laden Sie Ihren aktuellen Vertrag oder die letzte Gutschrift hoch, ein Handyfoto reicht. Wir lesen die Daten für Sie aus.</p>';
   an.forEach(function(a){var dd=SW.daysUntil(a.kuendigung_bis);
@@ -466,12 +467,12 @@ function mountCheck(a,id){
 async function renderChecks(){
   var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp,direktvermarkter,check_frei(frei_at,angefragt_at)&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc'),SW.rest('abos?select=anlage_id,status,intervall,kuendigung_zum').catch(function(){return [];})]);
   var an=r[0],pr=r[1]||[],abos=r[2]||[];
-  var h='<h1>'+(profile&&profile.name?'Guten Tag, '+E(profile.name):'Abrechnungs-Check')+'</h1><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung des Netzbetreibers hoch. Wir prüfen beide und zeigen Ihnen, ob alles stimmt.</p>';
+  var h='<h1>'+E(gruss())+'</h1><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung des Netzbetreibers hoch. Wir prüfen beide und zeigen Ihnen, ob alles stimmt.</p>';
   h+='<section class="sw-card'+(an.length?'':' hl')+'"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">'+(an.length?'Ihre Anlagen':'Anlage hinzufügen')+'</h2><a class="sw-btn'+(an.length?' ghost':'')+'" href="#/check/neu">+ '+(an.length?'Weitere Anlage':'Anlage hinzufügen')+'</a></div>';
   if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Einmal mit Vertrag oder einer Gutschrift anlegen. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</p>';
   an.forEach(function(a){var cf=SW.arr(a.check_frei)[0],pc=pr.filter(function(c){return c.anlage_id===a.id;})[0];
     var st=pc?(CK[pc.status]||CK.fehler)[0]+' '+monatName(pc.monat)+': '+(CK[pc.status]||CK.fehler)[1]:(cf&&cf.frei_at?'Freigeschaltet, noch keine Prüfung':'Check noch nicht gebucht');
-    var ab=abos.filter(function(x){return x.anlage_id===a.id;})[0],abt=ab&&ABO_ST[ab.status]?' · Abo '+(ab.intervall==='year'?'jährlich':'monatlich')+', '+(ab.kuendigung_zum?'gekündigt zum '+SW.date(ab.kuendigung_zum):ABO_ST[ab.status]):'';
+    var ab=abos.filter(function(x){return x.anlage_id===a.id;})[0],abt=ab&&ABO_ST[ab.status]?' · Abo '+(ab.intervall==='year'?'jährlich':'monatlich')+', '+(ab.kuendigung_zum?'gekündigt zum '+SW.date(ab.kuendigung_zum):ABO_ST[ab.status]):(cf&&cf.frei_at?' · kostenlos freigeschaltet (Pilotphase)':'');
     h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong><div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(st)+E(abt)+'</div></div>'+(cf&&cf.frei_at?'<a class="sw-btn ghost small" href="#/check/'+a.id+'">Öffnen</a>':'<a class="sw-btn small" href="#/check/'+a.id+'">Check buchen</a>')+'</div>';});
   if(abos.length)h+='<p style="font-size:14px;margin:14px 0 0"><a href="#" id="ck_portal_all">Abos verwalten, Rechnungen und Zahlungsart</a></p>';
   h+='</section>';
@@ -527,9 +528,10 @@ async function route(){
 async function renderKonto(){
   var r=await Promise.all([SW.rest('profiles?select=*&id=eq.'+me.id),SW.rest('abos?select=*').catch(function(){return [];}),SW.rest('anlagen?select=id,name,kwp&order=created_at.asc')]);
   var p=r[0][0]||{},abos=r[1]||[],an=r[2]||[];
-  var F=[['k_name','Ihr Name','name',''],['k_firma','Firma (steht auf der Rechnung)','firma','z. B. Solar K & H eGbR'],['k_tel','Telefon','telefon',''],['k_strasse','Straße und Hausnummer','strasse',''],['k_plz','PLZ','plz',''],['k_ort','Ort','ort',''],['k_ust','USt-IdNr. (freiwillig)','ust_id','DE123456789']];
+  var F=[['k_name','Vor- und Nachname','name',''],['k_firma','Firma (steht auf der Rechnung)','firma','z. B. Solar K & H eGbR'],['k_tel','Telefon','telefon',''],['k_strasse','Straße und Hausnummer','strasse',''],['k_plz','PLZ','plz',''],['k_ort','Ort','ort',''],['k_ust','USt-IdNr. (freiwillig)','ust_id','DE123456789']];
+  var AN='<div class="sw-field"><label for="k_anrede">Anrede</label><select id="k_anrede"><option value="">keine Angabe</option><option'+(p.anrede==='Frau'?' selected':'')+'>Frau</option><option'+(p.anrede==='Herr'?' selected':'')+'>Herr</option></select></div>';
   var h='<p style="margin:0 0 18px"><a href="'+(window._kontoZurueck||'#/check')+'">← Zur Übersicht</a></p><h1>Kundenkonto</h1><p class="sw-muted">Hier ändern Sie Ihre Daten, Ihr Passwort und Ihre Abos.</p>';
-  h+='<section class="sw-card"><h2>Ihre Daten</h2><div class="sw-grid">'+F.map(function(f){return '<div class="sw-field"><label for="'+f[0]+'">'+E(f[1])+'</label><input id="'+f[0]+'" type="text" placeholder="'+E(f[3])+'" value="'+E(p[f[2]]||'')+'"></div>';}).join('')+
+  h+='<section class="sw-card"><h2>Ihre Daten</h2><div class="sw-grid">'+AN+F.map(function(f){return '<div class="sw-field"><label for="'+f[0]+'">'+E(f[1])+'</label><input id="'+f[0]+'" type="text" placeholder="'+E(f[3])+'" value="'+E(p[f[2]]||'')+'"></div>';}).join('')+
     '<div class="sw-field"><label>E-Mail</label><input type="email" value="'+E(me.email)+'" disabled><div class="sw-hint">Für eine neue E-Mail-Adresse schreiben Sie uns kurz an <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a>.</div></div></div>'+
     '<div id="k_msg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="k_save">Daten speichern</button></div></section>';
   var nm=function(id){var a=an.filter(function(x){return x.id===id;})[0];return a?a.name:'Anlage';};
@@ -544,6 +546,7 @@ async function renderKonto(){
   h+='<section class="sw-card"><h2>Konto löschen</h2><p class="sw-muted" style="margin:0">Wenn Sie Ihr Konto und alle Unterlagen löschen möchten, schreiben Sie uns an <a href="mailto:angebote@switchwatt.de?subject=Konto%20l%C3%B6schen">angebote@switchwatt.de</a>. Laufende Abos kündigen Sie bitte vorher oben.</p></section>';
   app.innerHTML=h;
   $('#k_save').onclick=async function(){var b=this,o={};F.forEach(function(f){var v=$('#'+f[0]).value.trim();o[f[2]]=v===''?null:v;});
+    o.anrede=$('#k_anrede').value||null;
     if(o.ust_id)o.ust_id=o.ust_id.replace(/\s/g,'').toUpperCase();
     if(o.ust_id&&!/^DE\d{9}$/.test(o.ust_id)){$('#k_msg').innerHTML=msg('err','Die USt-IdNr. hat das Format DE und 9 Ziffern. Oder lassen Sie das Feld leer.');return;}
     busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:o});Object.keys(o).forEach(function(k){if(profile)profile[k]=o[k];});

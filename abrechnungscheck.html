@@ -13,7 +13,7 @@
 <meta property="og:image" content="https://www.switchwatt.de/hero-poster.jpg">
 <meta property="og:locale" content="de_DE">
 <meta name="theme-color" content="#000000">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
 <script type="application/ld+json">[{"@context":"https://schema.org","@type":"Service","name":"Abrechnungs-Check für PV-Anlagen in der Direktvermarktung","serviceType":"Prüfung von Gutschriften des Direktvermarkters und der Marktprämie","provider":{"@type":"Organization","name":"SwitchWatt","url":"https://www.switchwatt.de/"},"areaServed":"DE","url":"https://www.switchwatt.de/abrechnungscheck.html"},
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"Welche Abrechnungen brauche ich für den Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Die monatliche Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht."}},
@@ -27,12 +27,13 @@
 @font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
 @font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
 @font-face{font-family:'Inter Display';src:url(fonts/InterDisplay-SemiBold.woff) format('woff');font-weight:500 700;font-display:swap}
+@font-face{font-family:'Outfit Logo';src:url(fonts/Outfit-SemiBold-Logo.woff2) format('woff2');font-weight:400 700;font-display:block}
 *{box-sizing:border-box}
 body{margin:0;background:#000;color:#fff;font-family:Inter,system-ui,sans-serif;line-height:1.5;overflow-x:clip}
 a{color:#8FA6FF}a:hover{color:#B7C6FF}
 .nav{position:sticky;top:16px;z-index:10;max-width:1080px;margin:16px auto 0;padding:0 16px}
 .nav>div{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(12,12,16,.82);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 10px 10px 18px;backdrop-filter:blur(12px)}
-.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-family:'Inter Display',Inter,sans-serif;font-weight:600;font-size:21px}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-family:'Outfit Logo','Inter Display',Inter,sans-serif;font-weight:600;font-size:23px;letter-spacing:-.4px}
 .navr{display:flex;align-items:center;gap:4px}
 .navr a{padding:10px 14px;border-radius:10px;color:#E4E4E7;text-decoration:none;font-size:15px;font-weight:500}
 .navr a.cta{background:#2F54EB;color:#fff;font-weight:600;margin-left:6px;white-space:nowrap}
@@ -103,7 +104,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </head>
 <body>
 <nav class="nav"><div>
-<a class="brand" href="index.html"><svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#FFFFFF"/><rect x="5" y="11" width="24" height="12" rx="6" fill="#2F54EB"/><circle cx="23" cy="17" r="4" fill="#FFFFFF"/></svg>SwitchWatt</a>
+<a class="brand" href="index.html"><svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#2F54EB"/><path d="M34 17.5A12 12 0 1 0 36 26" fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/><path d="M36.5 10.5v7.5H29" fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z" fill="#fff"/></svg><span>Switch<span style="color:#8FA6FF">Watt</span></span></a>
 <div class="navr"><a class="hide" href="#ablauf">So geht's</a><a class="hide" href="direktvermarkter-wechsel.html">Direktvermarkter-Wechsel</a><a class="hide" href="#faq">FAQ</a><a class="hide" href="impressum.html#kontakt">Kontakt</a><a href="portal.html?bereich=check">Anmelden</a><a class="cta" href="portal.html?bereich=check">Jetzt starten</a></div>
 </div></nav>
 

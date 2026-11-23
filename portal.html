@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=24">
+<link rel="stylesheet" href="sw-portal.css?v=25">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -364,6 +364,7 @@ function checkBody(e,aid,m){
     else h+='<p class="sw-msg ok" style="margin:0 0 8px">Keine offenen Punkte in diesem Monat.</p>';
     var grp=function(t,arr,zu){return arr.length?'<details class="sw-vmdet"><summary>'+t+' ('+arr.length+')</summary><ul class="sw-ck-list" style="margin-top:10px">'+arr.map(function(p){return li(p,zu?erlBtn([[aid,m,p.titel]],true):'');}).join('')+'</ul></details>':'';};
     h+=grp('Weitere Hinweise',inf)+grp('In Ordnung',okp)+grp('Erledigt',erl,true);
+    h+=vorschlaege(e,pts.filter(function(p){return !ERL.has(erlKey(aid,m,p.titel));}),aid+'_'+m);
   }
   var ng=e.negativpreise;
   if(ng&&ng.perioden&&ng.perioden.length)h+='<details class="sw-vmdet"><summary>Betroffene Zeiten mit negativen Preisen ('+ng.perioden.length+')</summary><p class="sw-muted" style="font-size:14px">'+ng.perioden.map(function(x){return E(x.von)+' bis '+E(x.bis);}).join('<br>')+'</p></details>';
@@ -382,7 +383,7 @@ function naechster(e,p){
   var ko=e.kontakte||{},h='<div class="sw-ck-next"><strong>Nächster Schritt:</strong> '+E(p.tun);
   (p.an||[]).forEach(function(w){if(w!=='dv'&&w!=='nb')return;var k=besterKontakt(ko[w]),z=kontaktZeile(k),t=anfrageText(e,p,k,w);
     h+='<br><span class="sw-muted">'+AN[w]+': '+(z||'Kontakt steht auf Ihrer Abrechnung')+'</span>';
-    if(t)h+=(k&&k.email?' · <a href="'+anfrageLink(e,p,k,w)+'">Anfrage vorbereiten</a>':' · <a href="#" data-anfrage="'+E(JSON.stringify({w:w,t:p.titel}))+'">Anfragetext kopieren</a>');});
+    if(t)h+=' · <span class="sw-muted">steht im Formulierungsvorschlag unten</span>';});
   return h+'</div>';
 }
 /* Anfragetexte: eigene Formulierung je Thema, geschrieben vom Anlagenbetreiber an die jeweilige Stelle.
@@ -408,6 +409,28 @@ function anfrageKern(e,p,w){
   if(/^Abrechnungszeitraum/.test(t))return 'der Abrechnungszeitraum in '+wer+' passt nicht zum Monat '+m+'. Bitte prüfen Sie das.';
   return null;
 }
+
+/* Formulierungsvorschlag: EIN Text je Empfänger mit allen offenen Punkten, zum Kopieren (kein Mailprogramm) */
+function sammelText(e,pts,w){
+  var kerne=[];pts.forEach(function(p){if((p.an||[]).indexOf(w)<0)return;var k=anfrageKern(e,p,w);if(k&&kerne.indexOf(k)<0)kerne.push(k);});
+  if(!kerne.length)return null;
+  var a=window._ckAnlage||{},ko=besterKontakt((e.kontakte||{})[w])||{},m=monatName(e.monat);
+  var gross=function(x){return x.charAt(0).toUpperCase()+x.slice(1);};
+  var bezug=[a.name?'Anlage: '+a.name+(a.standort?', '+a.standort:''):'',(ko.malo||a.malo)?'Marktlokation: '+(ko.malo||a.malo):'',ko.kundennummer?'Kunden-/Vertragsnummer: '+ko.kundennummer:''].filter(Boolean).join('\n');
+  var liste=kerne.length===1?gross(kerne[0]):kerne.map(function(k,i){return (i+1)+'. '+gross(k);}).join('\n\n');
+  return 'Betreff: '+(a.name?a.name+': ':'')+(w==='dv'?'Abrechnung ':'Gutschrift Marktprämie ')+m+'\n\n'+bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+(kerne.length>1?'zu '+(w==='dv'?'Ihrer Abrechnung':'Ihrer Gutschrift')+' für '+m+' haben wir folgende Punkte:\n\n':'')+liste+'\n\nBitte prüfen Sie '+(kerne.length>1?'die Punkte':'das')+' und senden Sie uns gegebenenfalls eine korrigierte Fassung.\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber&&!/nat(ü|ue)rliche person/i.test(a.betreiber)?a.betreiber:'',a.betreiber_anschrift].filter(Boolean).join('\n');
+}
+function vorschlaege(e,pts,key){
+  var h='';['dv','nb'].forEach(function(w){var t=sammelText(e,pts,w);if(!t)return;var k=besterKontakt((e.kontakte||{})[w])||{},id='fv_'+String(key).replace(/[^a-z0-9_]/gi,'')+'_'+w;
+    h+='<div class="sw-fv"><div class="sw-row" style="justify-content:space-between;align-items:center"><strong>Formulierungsvorschlag an '+(w==='dv'?'den Direktvermarkter':'den Netzbetreiber')+(k.name?' ('+E(k.name)+')':'')+'</strong><button type="button" class="sw-btn ghost small" data-kopie="'+id+'">Text kopieren</button></div>'+
+      (kontaktZeile(k)?'<div class="sw-muted" style="font-size:13px;margin:4px 0 8px">Empfänger: '+kontaktZeile(k)+'</div>':'')+
+      '<textarea id="'+id+'" readonly rows="'+Math.min(22,t.split('\n').length+1)+'" style="width:100%;box-sizing:border-box;font-size:14px;line-height:1.5">'+E(t)+'</textarea>'+
+      '<div class="sw-hint">Kopieren, in Ihr E-Mail-Programm einfügen und bei Bedarf anpassen. Erledigte Punkte nehmen wir automatisch heraus.</div></div>';});
+  return h?'<h3 style="margin:22px 0 8px">Vorschlag zur Formulierung</h3>'+h:'';
+}
+document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-kopie]');if(!b)return;ev.preventDefault();var ta=document.getElementById(b.dataset.kopie);if(!ta)return;
+  try{await navigator.clipboard.writeText(ta.value);}catch(x){ta.select();document.execCommand('copy');}
+  var o=b.textContent;b.textContent='Kopiert ✓';setTimeout(function(){b.textContent=o;},1800);});
 function anfrageText(e,p,k,w){
   var kern=anfrageKern(e,p,w);if(!kern)return null;k=k||{};var a=window._ckAnlage||{};
   var bezug=['Anlage: '+(a.name||'')+(a.standort?', '+a.standort:''),(k.malo||a.malo)?'Marktlokation: '+(k.malo||a.malo):'',k.kundennummer?'Kunden-/Vertragsnummer: '+k.kundennummer:''].filter(Boolean).join('\n');

@@ -169,7 +169,7 @@
     return (m[1] ? 'Pilotfassung' : 'Fassung') + ' vom ' + m[4] + '.' + m[3] + '.' + m[2];
   };
   SW.VOLLMACHT_HTML =
-    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke Switchwatt, für die Anlagen, die ich in meinem Switchwatt-Konto anlege,</p>' +
+    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke Switchwatt, für die Anlagen, die ich bei Erteilung dieser Vollmacht in meinem Switchwatt-Konto auswähle,</p>' +
     '<ol><li>in meinem Namen bei Direktvermarktern Angebote für die Direktvermarktung anzufragen und dafür die nötigen Anlagen- und Vertragsdaten weiterzugeben,</li>' +
     '<li>beim zuständigen Netz- und Messstellenbetreiber die Stammdaten der Anlagen und die Einspeisedaten (Lastgang) für bis zu 36 Monate anzufordern,</li>' +
     '<li>die Angebote auszuwerten und mir einen Angebotsspiegel zur Verfügung zu stellen.</li></ol>' +

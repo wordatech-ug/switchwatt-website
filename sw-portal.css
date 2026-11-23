@@ -140,3 +140,6 @@ details summary{padding:6px 0}
 @media (max-width:640px){.sw-hide-s{display:none}}
 
 .sw-pay{background:#fff;border-radius:12px;padding:8px;min-height:120px}
+
+.sw-ck-list li .sw-erl{flex:none;align-self:center;white-space:nowrap}
+@media(max-width:600px){.sw-ck-list li{flex-wrap:wrap}.sw-ck-list li .sw-erl{margin-left:28px}}

@@ -29,7 +29,28 @@
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
 <script src="sw-api.js?v=23"></script>
+<script src="sw-zip.js?v=1"></script>
 <script>
+// Datensicherung: Tabellen als JSON plus alle Dateien in eine ZIP-Datei (nur Superadmin).
+async function sicherung(uid,label,btn){
+  var r=await SW.fn('verwaltung',uid?{aktion:'sicherung',uid:uid}:{aktion:'sicherung'});
+  if(!r||!r.ok)throw new Error((r&&r.error)||'Sicherung fehlgeschlagen.');
+  var enc=new TextEncoder(),F=[],fehl=[],n=0;
+  Object.keys(r.tabellen).forEach(function(t){n+=r.tabellen[t].length;F.push({name:'tabellen/'+t+'.json',data:enc.encode(JSON.stringify(r.tabellen[t],null,1))});});
+  for(var i=0;i<r.dateien.length;i++){var d=r.dateien[i];if(btn)btn.textContent='Dateien '+(i+1)+' von '+r.dateien.length+' …';
+    try{if(!d.url)throw 0;var x=await fetch(d.url);if(!x.ok)throw 0;F.push({name:'dateien/'+d.pfad,data:new Uint8Array(await x.arrayBuffer())});}catch(e){fehl.push(d.pfad);}}
+  var st=new Date(r.am),z=function(v){return String(v).padStart(2,'0');},stamp=st.getFullYear()+'-'+z(st.getMonth()+1)+'-'+z(st.getDate())+'_'+z(st.getHours())+z(st.getMinutes());
+  F.unshift({name:'LIESMICH.txt',data:enc.encode('SwitchWatt Datensicherung vom '+st.toLocaleString('de-DE')+'\r\nUmfang: '+(uid?'ein Kunde ('+label+')':'alle Daten')+'\r\nTabellen: '+Object.keys(r.tabellen).length+' mit '+n+' Zeilen (Ordner tabellen, JSON)\r\nDateien: '+(r.dateien.length-fehl.length)+' von '+r.dateien.length+' (Ordner dateien)'+(fehl.length?'\r\nNICHT gesichert: '+fehl.join(', '):'')+'\r\n')});
+  var a=document.createElement('a');a.href=URL.createObjectURL(SWZip.zip(F));a.download='SwitchWatt-Sicherung_'+stamp+(uid?'_'+String(label||uid).replace(/[^\w.@-]+/g,'_'):'')+'.zip';
+  document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},10000);
+  return {fehl:fehl,dateien:r.dateien.length,zeilen:n};
+}
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-sich]');if(!b||b.disabled)return;e.preventDefault();
+  var alt=b.textContent;b.disabled=true;b.textContent='Sicherung läuft …';
+  try{var s=await sicherung(b.getAttribute('data-sich')||null,b.getAttribute('data-sichn')||'',b);
+    alert('Sicherung heruntergeladen: '+s.zeilen+' Datensätze, '+(s.dateien-s.fehl.length)+' von '+s.dateien+' Dateien.'+(s.fehl.length?'\n\nAchtung, '+s.fehl.length+' Dateien fehlen (siehe LIESMICH.txt).':'')+'\n\nBitte die ZIP-Datei in OneDrive „11 SwitchWatt“ ablegen.');}
+  catch(x){alert(x.message);}finally{b.disabled=false;b.textContent=alt;}});
+
 document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-wsneu]');if(!b)return;var p=b.getAttribute('data-wsneu').split('|');b.disabled=true;b.textContent='Prüft …';var r=await SW.fn('pruefen',{anlage_id:p[0],monat:p[1]});if(r&&r.ok){b.textContent='Fertig: '+r.status;setTimeout(function(){location.reload();},1200);}else{b.disabled=false;b.textContent=r&&r.warteschlange?'Noch nicht möglich':'Fehler';}});
 
 (function(){
@@ -66,7 +87,7 @@ async function renderList(){
   var aboL=[];Object.keys(abo).forEach(function(k){aboL=aboL.concat(abo[k]);});
   var jahr=aboL.reduce(function(t,x){return t+aboJahr(x);},0), kwp=an.reduce(function(t,a){return t+(Number(a.kwp)||0);},0);
   var offenW=an.filter(function(a){return OPEN.indexOf(a.status)>=0;}).length;
-  var h='<h1>Übersicht</h1><div class="sw-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px">'+
+  var h='<div class="sw-row" style="justify-content:space-between;align-items:center"><h1>Übersicht</h1>'+(SA?'<button class="sw-btn ghost small" data-sich="" title="Alle Daten und Dateien als ZIP herunterladen, z. B. in OneDrive „11 SwitchWatt“ ablegen">Datensicherung herunterladen</button>':'')+'</div><div class="sw-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px">'+
     kpi('Kunden',akt.length,akt.filter(function(p){return vm[p.id];}).length+' mit Vollmacht')+
     kpi('Anlagen',an.length,SW.num(kwp)+' kWp gesamt')+
     kpi('Wechsel offen',offenW,'neu, in Prüfung, Angebote, freigegeben')+
@@ -187,7 +208,7 @@ async function renderKunde(uid){
   h+='<section class="sw-card"><h2>Abos</h2>'+(ab.length?'<table class="sw-stack"><thead><tr><th>Anlage</th><th>Paket</th><th>Preis</th><th>Status</th><th>Laufzeit</th></tr></thead><tbody>'+ab.map(function(x){var aktiv=['active','trialing','past_due'].indexOf(x.status)>=0;return '<tr><td data-l="Anlage">'+E((x.anlagen&&x.anlagen.name)||'–')+'</td><td data-l="Paket">Check '+E(String(x.klasse||'').toUpperCase())+' · '+(x.intervall==='year'?'jährlich':'monatlich')+(x.livemode===false?' <span class="sw-muted">Test</span>':'')+'</td><td data-l="Preis">'+SW.num(aboPreis(x),2)+' € netto'+(x.rabatt?' <span class="sw-muted">(−10 %)</span>':'')+'</td><td data-l="Status">'+(aktiv?(x.kuendigung_zum?'<span class="sw-badge" style="--c:#F5B70A">gekündigt</span>':'<span class="sw-badge" style="--c:#22C55E">aktiv</span>'):'<span class="sw-badge" style="--c:#71717A">beendet</span>')+(x.status==='past_due'?' <span class="sw-red">Zahlung überfällig</span>':'')+'</td><td data-l="Laufzeit" style="font-size:14px">seit '+SW.date(x.created_at)+'<br>'+(x.kuendigung_zum?'endet '+SW.date(x.kuendigung_zum):(aktiv?'verlängert sich am '+SW.date(x.laeuft_bis):'beendet'))+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Kein Abo.</p>')+'</section>';
   h+='<section class="sw-card"><h2>Zahlungen</h2><div id="zlist"><p class="sw-muted">Wird aus Stripe geladen …</p></div></section>';
   h+='<section class="sw-card"><h2>Vollmachten</h2>'+(vms.length?'<table class="sw-stack"><tbody>'+vms.map(function(v){return '<tr><td data-l="Erteilt">'+SW.dateTime(v.erteilt_at)+'</td><td data-l="Von">'+E(v.name_unterzeichner)+(v.firma?' für '+E(v.firma):'')+'</td><td data-l="Fassung" class="sw-muted" style="font-size:13px">Fassung '+E(v.version)+(v.agb_version?' · AGB '+E(v.agb_version):'')+'</td><td data-l="Status">'+(v.widerrufen_at?'<span class="sw-badge" style="--c:#71717A">widerrufen '+SW.date(v.widerrufen_at)+'</span>':'<span class="sw-badge" style="--c:#22C55E">gültig</span>')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Keine Vollmacht.</p>')+'</section>';
-  if(SA&&!g&&p.rolle!=='admin')h+='<section class="sw-card"><h2>Konto</h2><p class="sw-muted" style="font-size:14px">Nur für die Superadmin sichtbar.</p><div class="sw-row"><button class="sw-btn ghost small" id="k_adm">Zum Admin machen</button><button class="sw-btn ghost small" id="k_zu" style="color:#F87171">Konto schließen (Unterlagen bleiben)</button><button class="sw-btn ghost small" id="k_weg" style="color:#F87171">Konto komplett löschen (mit Unterlagen)</button></div><p class="sw-muted" style="font-size:13px;margin:10px 0 0">Schließen: Login gesperrt, Abos gekündigt, alles bleibt archiviert. Komplett löschen: zusätzlich alle Anlagen, Unterlagen und Dateien weg, nicht rückgängig zu machen.</p><div id="kerr"></div></section>';
+  if(SA&&!g&&p.rolle!=='admin')h+='<section class="sw-card"><h2>Konto</h2><p class="sw-muted" style="font-size:14px">Nur für die Superadmin sichtbar.</p><div class="sw-row"><button class="sw-btn ghost small" data-sich="'+p.id+'" data-sichn="'+E(p.email)+'">Daten dieses Kunden sichern</button><button class="sw-btn ghost small" id="k_adm">Zum Admin machen</button><button class="sw-btn ghost small" id="k_zu" style="color:#F87171">Konto schließen (Unterlagen bleiben)</button><button class="sw-btn ghost small" id="k_weg" style="color:#F87171">Konto komplett löschen (mit Unterlagen)</button></div><p class="sw-muted" style="font-size:13px;margin:10px 0 0">Schließen: Login gesperrt, Abos gekündigt, alles bleibt archiviert. Komplett löschen: Vorher wird automatisch eine ZIP-Sicherung dieses Kunden heruntergeladen, danach sind alle Anlagen, Unterlagen und Dateien weg.</p><div id="kerr"></div></section>';
   app.innerHTML=h;
   SW.fn('verwaltung',{aktion:'zahlungen',uid:uid}).then(function(z){var L=((z&&z.zahlungen)||[]).sort(function(a,b){return a.datum<b.datum?1:-1;});var el=document.getElementById('zlist');if(!el)return;
     el.innerHTML=L.length?'<table class="sw-stack"><thead><tr><th>Datum</th><th>Rechnung</th><th>Leistung</th><th>Betrag</th><th>Status</th><th></th></tr></thead><tbody>'+L.map(function(x){var st=ZST[x.status]||[x.status,'#71717A'];return '<tr><td data-l="Datum">'+SW.date(x.datum)+'</td><td data-l="Rechnung">'+E(x.nummer||'–')+'</td><td data-l="Leistung" style="font-size:14px">'+E(x.text)+'</td><td data-l="Betrag">'+SW.num(x.betrag,2)+' € brutto</td><td data-l="Status"><span class="sw-badge" style="--c:'+st[1]+'">'+st[0]+'</span>'+(x.test?' <span class="sw-muted">Test</span>':'')+'</td><td>'+(x.pdf?'<a href="'+E(x.pdf)+'" target="_blank" rel="noopener">PDF</a>':'')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted">Noch keine Zahlungen.</p>';
@@ -195,8 +216,10 @@ async function renderKunde(uid){
   var kw=$('#k_weg');if(kw)kw.onclick=async function(){
     var t=prompt('Konto von '+(p.name||p.email)+' KOMPLETT löschen?\n\nDas löscht unwiderruflich alle Anlagen, Unterlagen, Dateien, Prüfungen und den Verlauf. Laufende Abos werden sofort gekündigt.\n\nZur Bestätigung die E-Mail-Adresse eintippen:','');
     if(t==null)return;if(t.trim().toLowerCase()!==String(p.email||'').toLowerCase()){alert('Die E-Mail-Adresse stimmt nicht. Es wurde nichts gelöscht.');return;}
-    kw.disabled=true;kw.textContent='wird gelöscht …';
-    try{var ds=await SW.rest('dokumente?select=id,pfad&owner=eq.'+p.id);for(var i=0;i<ds.length;i++){try{await SW.removeFile(ds[i].pfad);}catch(e){}}
+    kw.disabled=true;kw.textContent='Sicherung läuft …';
+    try{var sb=await sicherung(p.id,p.email,kw);if(sb.fehl.length)throw new Error('Die Sicherung ist unvollständig ('+sb.fehl.length+' Dateien fehlen). Es wurde nichts gelöscht.');
+      if(!confirm('Die Sicherung wurde heruntergeladen. Bitte erst prüfen, dass die ZIP-Datei angekommen ist (Downloads), und sie in OneDrive ablegen.\n\nJetzt endgültig löschen?')){kw.disabled=false;kw.textContent='Konto komplett löschen (mit Unterlagen)';return;}
+      kw.textContent='wird gelöscht …';var ds=await SW.rest('dokumente?select=id,pfad&owner=eq.'+p.id);for(var i=0;i<ds.length;i++){try{await SW.removeFile(ds[i].pfad);}catch(e){}}
       if(ds.length)await SW.rest('dokumente?owner=eq.'+p.id,{method:'DELETE'});
       var res=await SW.fn('verwaltung',{aktion:'konto_schliessen',uid:p.id,email:t.trim()});
       if(!res.ok)throw new Error(res.error||'Fehler');

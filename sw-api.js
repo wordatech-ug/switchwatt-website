@@ -181,5 +181,21 @@
     '<p>Die unterzeichnende Person versichert, allein vertretungsberechtigt zu sein oder mit Zustimmung aller Vertretungsberechtigten zu handeln (bei einer GbR ohne abweichende Regelung alle Gesellschafter).</p>' +
     '<p>Die Vollmacht gilt bis auf Widerruf. Ich kann sie jederzeit im Kundenkonto oder per E-Mail an angebote@switchwatt.de widerrufen. Es gelten die <a href="agb.html" target="_blank">Allgemeinen Geschäftsbedingungen</a> von SwitchWatt. Meine Daten werden nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
 
+  // Auge in jedem Passwortfeld: Passwort anzeigen oder verbergen.
+  var AUGE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var AUGE_ZU='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a10.6 10.6 0 0 0 5.4-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  function augen(root) {
+    (root || document).querySelectorAll('input[type="password"]:not([data-auge])').forEach(function (inp) {
+      inp.setAttribute('data-auge', '1');
+      var w = document.createElement('span'); w.className = 'sw-pw';
+      inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'sw-pw-btn'; b.innerHTML = AUGE; b.setAttribute('aria-label', 'Passwort anzeigen');
+      b.onclick = function () { var zeigen = inp.type === 'password'; inp.type = zeigen ? 'text' : 'password'; b.innerHTML = zeigen ? AUGE_ZU : AUGE; b.setAttribute('aria-label', zeigen ? 'Passwort verbergen' : 'Passwort anzeigen'); inp.focus(); };
+      w.appendChild(b);
+    });
+  }
+  if (window.MutationObserver) new MutationObserver(function () { augen(); }).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', function () { augen(); });
+
   window.SW = SW;
 })();

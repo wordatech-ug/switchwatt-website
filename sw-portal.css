@@ -144,3 +144,5 @@ details summary{padding:6px 0}
 
 .sw-ck-list li .sw-erl{flex:none;align-self:center;white-space:nowrap}
 @media(max-width:600px){.sw-ck-list li{flex-wrap:wrap}.sw-ck-list li .sw-erl{margin-left:28px}}
+
+.sw-pw{position:relative;display:block}.sw-pw input{padding-right:46px;width:100%;box-sizing:border-box}.sw-pw-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:#A1A1AA;cursor:pointer;padding:6px;border-radius:8px;display:flex}.sw-pw-btn:hover{color:#fff;background:rgba(255,255,255,.06)}

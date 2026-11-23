@@ -25,7 +25,7 @@ var E=SW.esc, me=null, profile=null, modus='wechsel';
 var WUNSCH=(new URLSearchParams(location.search).get('bereich')==='check')?'check':null;
 var PW_REGEL='mindestens 10 Zeichen mit Groß- und Kleinbuchstaben, Ziffer und Sonderzeichen';
 function pwOk(p){return p.length>=10&&/[a-z]/.test(p)&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[^A-Za-z0-9]/.test(p);}
-var STRIPE_PK='pk_test_51QKdlDCpxPb7MgFbfJKob6aAyKOD7CZxq9rbfOjAbdknp40K9dSoFahHMSUGBsRZYWzPRZF4sd7R5xk833VJZe3o00F5nT1Ptc',_stripe=null,_einbett=null;
+var STRIPE_PK='pk_test_51UeyalENDQKfxlzFn1J1SelV2LBDxXE7AoPLeL7XQ568a06OHT5TFKBJvUVG3a53jNX3lwBwQEsIdx87p1pq91va00BULZAc72',_stripe=null,_einbett=null;
 var STRIPE_HINWEIS='<p class="sw-muted" style="font-size:13px;margin:10px 0 0">🔒 Die Zahlung wird sicher über unseren Zahlungsdienstleister Stripe abgewickelt. Ihre Kartendaten speichern wir nicht.</p>';
 function stripeLaden(){if(_stripe)return Promise.resolve(_stripe);return new Promise(function(ok,nok){var sc=document.createElement('script');sc.src='https://js.stripe.com/v3/';sc.onload=function(){_stripe=window.Stripe(STRIPE_PK,{locale:'de'});ok(_stripe);};sc.onerror=function(){nok(new Error('Die Bezahlmaske konnte nicht geladen werden.'));};document.head.appendChild(sc);});}
 async function einbetten(ziel,secret){if(_einbett){try{_einbett.destroy();}catch(x){}_einbett=null;}var st=await stripeLaden();_einbett=await st.initEmbeddedCheckout({fetchClientSecret:function(){return Promise.resolve(secret);}});_einbett.mount(ziel);}

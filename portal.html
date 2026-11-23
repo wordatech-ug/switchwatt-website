@@ -629,6 +629,7 @@ async function renderKonto(){
 async function start(){
   me=await SW.me(); if(!me){await SW.signOut();renderAuth();return;}
   var p=await SW.rest('profiles?select=*&id=eq.'+me.id); profile=p[0]||null;
+  if(profile&&profile.rolle==='admin'){location.replace('admin.html');return;}
   nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted sw-hide-s" style="font-size:14px">'+E(me.email)+'</span><a class="sw-btn ghost small" href="#/konto">Kundenkonto</a><button class="sw-btn ghost small" id="out">Abmelden</button>';
   document.getElementById('out').onclick=async function(){me=null;profile=null;try{await SW.signOut();}catch(x){}var lg=document.querySelector('.sw-logo');if(lg)lg.setAttribute('href','index.html');history.replaceState(null,'',location.pathname);nav.innerHTML='';var b=document.getElementById('bereich');if(b)b.remove();renderAuth();};
   var lg=document.querySelector('.sw-logo');if(lg){lg.setAttribute('href',nurCheck()?'#/check':'#/');lg.setAttribute('title','Zu Ihrer Übersicht');}

@@ -15,7 +15,7 @@
 <div class="sw-row" id="topnav"></div>
 </div></div>
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
-<footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum und Kontakt</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
+<footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
 <script src="sw-api.js?v=18"></script>
 <script>
@@ -129,7 +129,7 @@ async function renderHome(){
   if(gedeckt.length){
     h+='<p class="sw-msg ok">Vollmacht erteilt für '+gedeckt.map(function(x){return E(x.name);}).join(', ')+'. <a href="#" id="vmshow">Text ansehen</a> · <a href="#" id="vmwid">Widerrufen</a></p>';
   }
-  h+='<p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
+  h+='<p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a> oder über das <a href="impressum.html#kontakt" target="_blank">Kontaktformular</a></p>';
   app.innerHTML=h;
   var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();var akt=vms.filter(function(v){return v.version===SW.VOLLMACHT_VERSION;});
     showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p style="font-size:14px">'+akt.map(function(v){var na=v.anlagen?an.filter(function(x){return v.anlagen.indexOf(x.id)>=0;}).map(function(x){return x.name;}):an.map(function(x){return x.name;});return 'Erteilt am '+SW.dateTime(v.erteilt_at)+' von '+E(v.name_unterzeichner)+(v.firma?' für '+E(v.firma):'')+' für: <strong>'+E(na.join(', '))+'</strong>';}).join('<br>')+'</p><p class="sw-muted" style="font-size:14px">'+E(SW.vmFassung(SW.VOLLMACHT_VERSION))+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};

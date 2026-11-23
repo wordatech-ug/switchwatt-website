@@ -138,3 +138,5 @@ details summary{padding:6px 0}
 .sw-opt:has(input:checked){border-color:#8FA6FF;background:rgba(47,84,235,.12)}
 
 @media (max-width:640px){.sw-hide-s{display:none}}
+
+.sw-pay{background:#fff;border-radius:12px;padding:8px;min-height:120px}

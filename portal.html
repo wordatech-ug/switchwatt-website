@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=20">
+<link rel="stylesheet" href="sw-portal.css?v=21">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -25,6 +25,10 @@ var E=SW.esc, me=null, profile=null, modus='wechsel';
 var WUNSCH=(new URLSearchParams(location.search).get('bereich')==='check')?'check':null;
 var PW_REGEL='mindestens 10 Zeichen mit Groß- und Kleinbuchstaben, Ziffer und Sonderzeichen';
 function pwOk(p){return p.length>=10&&/[a-z]/.test(p)&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[^A-Za-z0-9]/.test(p);}
+var STRIPE_PK='pk_test_51QKdlDCpxPb7MgFbfJKob6aAyKOD7CZxq9rbfOjAbdknp40K9dSoFahHMSUGBsRZYWzPRZF4sd7R5xk833VJZe3o00F5nT1Ptc',_stripe=null,_einbett=null;
+var STRIPE_HINWEIS='<p class="sw-muted" style="font-size:13px;margin:10px 0 0">🔒 Die Zahlung wird sicher über unseren Zahlungsdienstleister Stripe abgewickelt. Ihre Kartendaten speichern wir nicht.</p>';
+function stripeLaden(){if(_stripe)return Promise.resolve(_stripe);return new Promise(function(ok,nok){var sc=document.createElement('script');sc.src='https://js.stripe.com/v3/';sc.onload=function(){_stripe=window.Stripe(STRIPE_PK,{locale:'de'});ok(_stripe);};sc.onerror=function(){nok(new Error('Die Bezahlmaske konnte nicht geladen werden.'));};document.head.appendChild(sc);});}
+async function einbetten(ziel,secret){if(_einbett){try{_einbett.destroy();}catch(x){}_einbett=null;}var st=await stripeLaden();_einbett=await st.initEmbeddedCheckout({fetchClientSecret:function(){return Promise.resolve(secret);}});_einbett.mount(ziel);}
 function gruss(){var p=profile||{},n=String(p.name||'').trim();if(p.anrede&&n)return 'Guten Tag, '+p.anrede+' '+n.split(/\s+/).pop();return n?'Guten Tag, '+n:'Guten Tag';}
 function nurCheck(){return profile&&profile.bereich==='check'&&profile.rolle!=='admin';}
 function msg(type,text){return '<div class="sw-msg '+type+'" role="'+(type==='err'?'alert':'status')+'">'+E(text)+'</div>';}
@@ -388,7 +392,7 @@ var CK_PREIS={s:[29,313.2,'bis 250 kWp'],m:[39,421.2,'250 bis 500 kWp'],l:[49,52
 function ckKlasse(kwp){kwp=Number(kwp)||0;return kwp<=250?'s':kwp<=500?'m':'l';}
 var ABO_ST={active:'aktiv',trialing:'Testphase',past_due:'Zahlung offen',incomplete:'Zahlung nicht abgeschlossen',unpaid:'unbezahlt',canceled:'beendet',incomplete_expired:'abgebrochen'};
 function aboBox(a,abo){
-  if(abo&&['active','trialing','past_due'].indexOf(abo.status)>=0)return '<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Abo: '+(abo.intervall==='year'?'jährlich':'monatlich')+' · '+ABO_ST[abo.status]+(abo.kuendigung_zum?' · gekündigt zum '+SW.date(abo.kuendigung_zum):abo.laeuft_bis?' · nächste Abrechnung '+SW.date(abo.laeuft_bis):'')+' · <a href="#" id="ck_portal">Abo verwalten, Rechnungen</a></p>'+(abo.status==='past_due'?msg('err','Die letzte Zahlung ist nicht durchgegangen. Bitte unter „Abo verwalten“ die Karte aktualisieren, sonst wird der Check pausiert.'):'');
+  if(abo&&['active','trialing','past_due'].indexOf(abo.status)>=0)return '<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Abo: '+(abo.intervall==='year'?'jährlich':'monatlich')+' · '+ABO_ST[abo.status]+(abo.kuendigung_zum?' · gekündigt zum '+SW.date(abo.kuendigung_zum):abo.laeuft_bis?' · nächste Abrechnung '+SW.date(abo.laeuft_bis):'')+' · <a href="#/konto">Abo verwalten, Rechnungen</a></p>'+(abo.status==='past_due'?msg('err','Die letzte Zahlung ist nicht durchgegangen. Bitte im Kundenkonto die Karte aktualisieren, sonst wird der Check pausiert.'):'');
   return '';
 }
 function aboAngebot(a,abo){
@@ -398,14 +402,14 @@ function aboAngebot(a,abo){
   '<p style="margin:0 0 12px">Für diese Anlage ('+SW.num(a.kwp,0)+' kWp, Klasse '+p[2]+'):</p>'+
   '<div class="sw-grid" style="margin-bottom:12px"><label class="sw-opt"><input type="radio" name="ck_iv" value="monat" checked> <span><strong>'+e(p[0])+' im Monat</strong><br><span class="sw-muted" style="font-size:14px">monatlich kündbar</span></span></label>'+
   '<label class="sw-opt"><input type="radio" name="ck_iv" value="jahr"> <span><strong>'+e(p[1])+' im Jahr</strong><br><span class="sw-muted" style="font-size:14px">10 % günstiger, jährlich kündbar</span></span></label></div>'+
-  '<p class="sw-muted" style="font-size:14px;margin:0 0 12px">Alle Preise netto zzgl. 19 % Umsatzsteuer. Ab der dritten Anlage 10 % Mengenrabatt. Bezahlung per Karte, die Freischaltung erfolgt sofort nach der Zahlung.</p>'+
+  '<p class="sw-muted" style="font-size:14px;margin:0 0 12px">Alle Preise netto zzgl. 19 % Umsatzsteuer. Ab der dritten Anlage 10 % Mengenrabatt. Bezahlung per Karte direkt hier, die Freischaltung erfolgt sofort nach der Zahlung.</p>'+
   '<label class="sw-check" style="display:flex;align-items:flex-start;margin-bottom:14px"><input type="checkbox" id="ck_ut"><span>Ich buche als Unternehmer (zum Beispiel GmbH, GbR, Einzelunternehmen oder Landwirt), nicht als Verbraucher.</span></label>'+
   '<div class="sw-row"><button class="sw-btn" id="ck_buy">Weiter zur Bezahlung</button></div>';
 }
 function checkSection(a,checks,allDocs,cf,abo){
   var frei=(profile&&profile.rolle==='admin')||(cf&&cf.frei_at);
   var h='<section class="sw-card" id="ck"><h2>Abrechnungs-Check</h2><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie vom Netzbetreiber hoch. Wir prüfen Mengen, Marktwert, Marktprämie, Kosten, Umsatzsteuer, Stammdaten und die Regeln bei negativen Preisen.</p>';
-  if(!frei)h+=aboAngebot(a,abo)+'<div id="ck_err"></div>';
+  if(!frei)h+='<div id="ck_buybox">'+aboAngebot(a,abo)+'</div><div id="ck_err"></div>';
   else h+=aboBox(a,abo)+
   '<div style="max-width:260px;margin-bottom:14px"><label for="ck_m">Monat</label><input id="ck_m" type="month" value="'+vormonat()+'"></div>'+
   '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"></div>'+
@@ -450,10 +454,11 @@ function mountCheck(a,id){
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
   var buy=$('#ck_buy');if(buy)buy.onclick=async function(){var b=this;$('#ck_err').innerHTML='';if(!$('#ck_ut').checked){$('#ck_err').innerHTML=msg('err','Bitte bestätigen Sie, dass Sie als Unternehmer buchen.');return;}
     var iv=(app.querySelector('input[name=ck_iv]:checked')||{}).value||'monat';busy(b,true,'Bezahlseite wird geöffnet …');
-    try{var r=await SW.fn('stripe',{aktion:'checkout',anlage_id:a.id,intervall:iv,unternehmer:true});if(!r||!r.ok||!r.url)throw new Error((r&&r.error)||'Die Bezahlseite konnte nicht geöffnet werden.');
-      await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check gebucht ('+(iv==='jahr'?'jährlich':'monatlich')+'), Unternehmer bestätigt, weiter zur Bezahlung'}}).catch(function(){});location.href=r.url;}
+    try{var r=await SW.fn('stripe',{aktion:'checkout',anlage_id:a.id,intervall:iv,unternehmer:true});if(!r||!r.ok||!r.client_secret)throw new Error((r&&r.error)||'Die Bezahlung konnte nicht gestartet werden.');
+      await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check gebucht ('+(iv==='jahr'?'jährlich':'monatlich')+'), Unternehmer bestätigt, Bezahlung gestartet'}}).catch(function(){});
+      var box=$('#ck_buybox');box.innerHTML='<h3 style="margin:0 0 10px">Bezahlung'+(r.rabatt?' (inkl. 10 % Mengenrabatt)':'')+'</h3><div id="ck_pay" class="sw-pay"></div>'+STRIPE_HINWEIS+'<p style="font-size:14px;margin:10px 0 0"><a href="#" id="ck_abbr">Abbrechen</a></p>';
+      await einbetten('#ck_pay',r.client_secret);$('#ck_abbr').onclick=function(ev){ev.preventDefault();if(_einbett){_einbett.destroy();_einbett=null;}renderAnlage(id);};}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
-  var pl=$('#ck_portal');if(pl)pl.onclick=async function(ev){ev.preventDefault();try{var r=await SW.fn('stripe',{aktion:'portal'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);}};
   var go=$('#ck_go');if(!go)return;
   go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=Array.prototype.slice.call($('#ck_dv').files),nb=Array.prototype.slice.call($('#ck_nb').files);var mo=Array.prototype.slice.call(($('#ck_mon')||{}).files||[]);$('#ck_err').innerHTML='';
     if(!/^\d{4}-\d{2}$/.test(m)){$('#ck_err').innerHTML=msg('err','Bitte den Monat wählen.');return;}
@@ -476,7 +481,7 @@ async function renderChecks(){
     var st=pc?(CK[pc.status]||CK.fehler)[0]+' '+monatName(pc.monat)+': '+(CK[pc.status]||CK.fehler)[1]:(cf&&cf.frei_at?'Freigeschaltet, noch keine Prüfung':'Check noch nicht gebucht');
     var ab=abos.filter(function(x){return x.anlage_id===a.id;})[0],abt=ab&&ABO_ST[ab.status]?' · Abo '+(ab.intervall==='year'?'jährlich':'monatlich')+', '+(ab.kuendigung_zum?'gekündigt zum '+SW.date(ab.kuendigung_zum):ABO_ST[ab.status]):(cf&&cf.frei_at?' · kostenlos freigeschaltet (Pilotphase)':'');
     h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong><div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(st)+E(abt)+'</div></div>'+(cf&&cf.frei_at?'<a class="sw-btn ghost small" href="#/check/'+a.id+'">Öffnen</a>':'<a class="sw-btn small" href="#/check/'+a.id+'">Check buchen</a>')+'</div>';});
-  if(abos.length)h+='<p style="font-size:14px;margin:14px 0 0"><a href="#" id="ck_portal_all">Abos verwalten, Rechnungen und Zahlungsart</a></p>';
+  if(abos.length)h+='<p style="font-size:14px;margin:14px 0 0"><a href="#/konto">Abos verwalten, Rechnungen und Zahlungsart</a></p>';
   h+='</section>';
   var mountAbo=function(){var l=$('#ck_portal_all');if(l)l.onclick=async function(ev){ev.preventDefault();try{var r=await SW.fn('stripe',{aktion:'portal'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);}};};
   if(!pr.length){app.innerHTML=h+teaser();mountTeaser();mountAbo();return;}
@@ -528,6 +533,8 @@ async function route(){
 }
 /* ---------- Kundenkonto ---------- */
 async function renderKonto(){
+  var kq=new URLSearchParams(location.search).get('karte'),kmsg='';
+  if(kq){history.replaceState(null,'',location.pathname+location.hash);try{var kr=await SW.fn('stripe',{aktion:'karte_ok',session_id:kq});kmsg=kr&&kr.ok?msg('ok','Neue Karte hinterlegt. Sie gilt ab sofort für alle Abos.'):msg('err',(kr&&kr.error)||'Die Karte wurde nicht gespeichert.');}catch(x){kmsg=msg('err',x.message);}}
   var r=await Promise.all([SW.rest('profiles?select=*&id=eq.'+me.id),SW.rest('abos?select=*').catch(function(){return [];}),SW.rest('anlagen?select=id,name,kwp,check_frei(frei_at)&order=created_at.asc')]);
   var p=r[0][0]||{},abos=r[1]||[],an=r[2]||[];
   var pilot=an.filter(function(a){var cf=SW.arr(a.check_frei)[0];return cf&&cf.frei_at&&!abos.some(function(x){return x.anlage_id===a.id&&['active','trialing','past_due'].indexOf(x.status)>=0;});});
@@ -539,12 +546,14 @@ async function renderKonto(){
     '<div id="k_msg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="k_save">Daten speichern</button></div></section>';
   var nm=function(id){var a=an.filter(function(x){return x.id===id;})[0];return a?a.name:'Anlage';};
   h+='<section class="sw-card"><h2>Abos und Rechnungen</h2>';
-  if(abos.length||pilot.length)h+='<table class="sw-stack"><thead><tr><th>Anlage</th><th>Abo</th><th>Preis</th><th>Status</th><th>Nächste Abrechnung</th></tr></thead><tbody>'+abos.map(function(a){var pp=CK_PREIS[a.klasse||'s']||CK_PREIS.s,bet=(a.intervall==='year'?pp[1]:pp[0])*(a.rabatt?0.9:1);return '<tr><td data-l="Anlage"><a href="#/check/'+a.anlage_id+'">'+E(nm(a.anlage_id))+'</a></td><td data-l="Abo">Abrechnungs-Check, '+(a.intervall==='year'?'jährlich':'monatlich')+'</td><td data-l="Preis">'+SW.num(bet,2)+' € '+(a.intervall==='year'?'im Jahr':'im Monat')+'<br><span class="sw-muted" style="font-size:13px">zzgl. 19 % USt'+(a.rabatt?', inkl. Mengenrabatt':'')+'</span></td><td data-l="Status">'+E(a.kuendigung_zum?'gekündigt zum '+SW.date(a.kuendigung_zum):(ABO_ST[a.status]||a.status||''))+'</td><td data-l="Nächste Abrechnung">'+(a.laeuft_bis&&!a.kuendigung_zum&&['active','trialing','past_due'].indexOf(a.status)>=0?SW.date(a.laeuft_bis):'–')+'</td></tr>';}).join('')+pilot.map(function(a){return '<tr><td data-l="Anlage"><a href="#/check/'+a.id+'">'+E(a.name)+'</a></td><td data-l="Abo">Abrechnungs-Check</td><td data-l="Preis">kostenlos</td><td data-l="Status">Pilotphase</td><td data-l="Nächste Abrechnung">–</td></tr>';}).join('')+'</tbody></table>'+
-    (abos.length?'<p class="sw-muted" style="font-size:14px;margin:14px 0">Zahlungsart ändern, Rechnungen herunterladen oder ein Abo kündigen: Das erledigen Sie im gesicherten Bereich unseres Zahlungsdienstleisters Stripe.</p><div class="sw-row"><button class="sw-btn ghost" id="k_portal">Zahlungsart, Rechnungen, Kündigung</button></div>':'');
+  if(abos.length||pilot.length)h+='<table class="sw-stack"><thead><tr><th>Anlage</th><th>Abo</th><th>Preis</th><th>Status</th><th>Nächste Abrechnung</th><th></th></tr></thead><tbody>'+abos.map(function(a){var pp=CK_PREIS[a.klasse||'s']||CK_PREIS.s,bet=(a.intervall==='year'?pp[1]:pp[0])*(a.rabatt?0.9:1);return '<tr><td data-l="Anlage"><a href="#/check/'+a.anlage_id+'">'+E(nm(a.anlage_id))+'</a></td><td data-l="Abo">Abrechnungs-Check, '+(a.intervall==='year'?'jährlich':'monatlich')+'</td><td data-l="Preis">'+SW.num(bet,2)+' € '+(a.intervall==='year'?'im Jahr':'im Monat')+'<br><span class="sw-muted" style="font-size:13px">zzgl. 19 % USt'+(a.rabatt?', inkl. Mengenrabatt':'')+'</span></td><td data-l="Status">'+E(a.kuendigung_zum?'gekündigt zum '+SW.date(a.kuendigung_zum):(ABO_ST[a.status]||a.status||''))+'</td><td data-l="Nächste Abrechnung">'+(a.laeuft_bis&&!a.kuendigung_zum&&['active','trialing','past_due'].indexOf(a.status)>=0?SW.date(a.laeuft_bis):'–')+'</td><td data-l="">'+(['active','trialing','past_due'].indexOf(a.status)>=0?(a.kuendigung_zum?'<button class="sw-btn ghost small" data-fort="'+a.anlage_id+'">Kündigung zurücknehmen</button>':'<button class="sw-btn ghost small" data-kuend="'+a.anlage_id+'">Kündigen</button>'):'')+'</td></tr>';}).join('')+pilot.map(function(a){return '<tr><td data-l="Anlage"><a href="#/check/'+a.id+'">'+E(a.name)+'</a></td><td data-l="Abo">Abrechnungs-Check</td><td data-l="Preis">kostenlos</td><td data-l="Status">Pilotphase</td><td data-l="Nächste Abrechnung">–</td><td></td></tr>';}).join('')+'</tbody></table>'+
+    '<p class="sw-muted" style="font-size:13px;margin:10px 0 0">Eine Kündigung gilt zum Ende des bezahlten Zeitraums. Bis dahin bleibt der Check freigeschaltet.</p>';
   else h+='<p class="sw-muted" style="margin:0">Sie haben noch kein Abo. Den Abrechnungs-Check buchen Sie bei der jeweiligen Anlage.</p>';
   var offen=an.filter(function(a){return pilot.indexOf(a)<0&&!abos.some(function(x){return x.anlage_id===a.id&&['active','trialing','past_due'].indexOf(x.status)>=0;});});
   h+='<div class="sw-row" style="margin-top:14px;flex-wrap:wrap;gap:10px">'+offen.map(function(a){return '<a class="sw-btn small" href="#/check/'+a.id+'">Check für '+E(a.name)+' buchen</a>';}).join('')+'<a class="sw-btn ghost small" href="#/check/neu">+ Weitere Anlage hinzufügen</a></div>';
   h+='</section>';
+  h+='<section class="sw-card" id="k_zahl"><h2>Zahlungsart</h2>'+kmsg+'<div id="k_karte"><p class="sw-muted" style="margin:0">Wird geladen …</p></div><div id="k_kartebox"></div></section>';
+  h+='<section class="sw-card"><h2>Rechnungen</h2><div id="k_rech"><p class="sw-muted" style="margin:0">Wird geladen …</p></div></section>';
   h+='<section class="sw-card"><h2>Passwort ändern</h2><div style="max-width:420px"><label for="k_pw">Neues Passwort ('+PW_REGEL+')</label><input id="k_pw" type="password" autocomplete="new-password"></div><div id="k_pwmsg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn ghost" id="k_pwsave">Passwort speichern</button></div></section>';
   h+='<section class="sw-card"><h2>Konto löschen</h2><p class="sw-muted" style="margin:0">Wenn Sie Ihr Konto und alle Unterlagen löschen möchten, schreiben Sie uns an <a href="mailto:angebote@switchwatt.de?subject=Konto%20l%C3%B6schen">angebote@switchwatt.de</a>. Laufende Abos kündigen Sie bitte vorher oben.</p></section>';
   app.innerHTML=h;
@@ -555,7 +564,13 @@ async function renderKonto(){
     busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:o});Object.keys(o).forEach(function(k){if(profile)profile[k]=o[k];});
       await SW.fn('stripe',{aktion:'kunde'}).catch(function(){});$('#k_msg').innerHTML=msg('ok','Gespeichert. Ab der nächsten Rechnung gelten die neuen Angaben.');}
     catch(x){$('#k_msg').innerHTML=msg('err',x.message);}busy(b,false);};
-  var pb=$('#k_portal');if(pb)pb.onclick=async function(){busy(this,true);try{var r=await SW.fn('stripe',{aktion:'portal',zurueck:'konto'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);busy(this,false);}};
+  app.querySelectorAll('[data-kuend],[data-fort]').forEach(function(b){b.onclick=async function(){var aid=b.dataset.kuend||b.dataset.fort,k=!!b.dataset.kuend;
+    if(k&&!confirm('Abo für diese Anlage zum Ende des bezahlten Zeitraums kündigen?'))return;busy(b,true);try{var r=await SW.fn('stripe',{aktion:k?'kuendigen':'fortsetzen',anlage_id:aid});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');renderKonto();}catch(x){alertBox(x.message);busy(b,false);}};});
+  SW.fn('stripe',{aktion:'zahlung_info'}).then(function(z){if(!z||!z.ok)throw new Error((z&&z.error)||'');
+    var kt=z.karte;$('#k_karte').innerHTML=(kt?'<p style="margin:0 0 12px">'+E(String(kt.marke).toUpperCase())+' •••• '+E(kt.endung)+' · gültig bis '+String(kt.monat).padStart(2,'0')+'/'+kt.jahr+'</p>':'<p class="sw-muted" style="margin:0 0 12px">Noch keine Karte hinterlegt.</p>')+'<button class="sw-btn ghost small" id="k_kneu">'+(kt?'Andere Karte hinterlegen':'Karte hinterlegen')+'</button>';
+    $('#k_kneu').onclick=async function(){var b=this;busy(b,true);try{var r=await SW.fn('stripe',{aktion:'karte_neu'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');b.remove();$('#k_kartebox').innerHTML='<div id="k_pay" class="sw-pay" style="margin-top:12px"></div>'+STRIPE_HINWEIS;await einbetten('#k_pay',r.client_secret);}catch(x){alertBox(x.message);busy(b,false);}};
+    var rs=z.rechnungen||[];$('#k_rech').innerHTML=rs.length?'<table class="sw-stack"><thead><tr><th>Datum</th><th>Nummer</th><th>Betrag</th><th>Status</th><th></th></tr></thead><tbody>'+rs.map(function(x){return '<tr><td data-l="Datum">'+SW.date(new Date(x.datum*1000).toISOString())+'</td><td data-l="Nummer">'+E(x.nummer||'–')+'</td><td data-l="Betrag">'+SW.num(x.betrag/100,2)+' €</td><td data-l="Status">'+({paid:'bezahlt',open:'offen',void:'storniert',uncollectible:'uneinbringlich'}[x.status]||E(x.status))+'</td><td data-l="">'+(x.pdf?'<a href="'+E(x.pdf)+'" target="_blank" rel="noopener">PDF herunterladen</a>':'')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted" style="margin:0">Noch keine Rechnungen.</p>';
+  }).catch(function(){$('#k_karte').innerHTML=msg('err','Zahlungsdaten konnten gerade nicht geladen werden.');$('#k_rech').innerHTML='';});
   $('#k_pwsave').onclick=async function(){var pw=$('#k_pw').value;if(!pwOk(pw)){$('#k_pwmsg').innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}
     busy(this,true);try{await SW.setPassword(pw);$('#k_pw').value='';$('#k_pwmsg').innerHTML=msg('ok','Passwort geändert.');}catch(x){$('#k_pwmsg').innerHTML=msg('err',x.message);}busy(this,false);};
 }

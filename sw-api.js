@@ -103,6 +103,11 @@
       var j = null; try { j = await r.json(); } catch (e) {}
       return j || { ok: false, error: 'Fehler ' + r.status };
     },
+    async removeFile(path) {
+      var r = await fetch(URL_ + '/storage/v1/object/dokumente/' + path.split('/').map(encodeURIComponent).join('/'), { method: 'DELETE', headers: await headers({}) });
+      if (!r.ok) { var j = null; try { j = await r.json(); } catch (e) {} throw new Error(errText(j, r.status)); }
+      return true;
+    },
     async fileUrl(path) {
       var r = await fetch(URL_ + '/storage/v1/object/sign/dokumente/' + path.split('/').map(encodeURIComponent).join('/'),
         { method: 'POST', headers: await headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ expiresIn: 300 }) });

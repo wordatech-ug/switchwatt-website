@@ -21,8 +21,9 @@
       'Invalid login credentials': 'E-Mail oder Passwort stimmt nicht.',
       'User already registered': 'Für diese E-Mail gibt es schon ein Konto. Bitte melden Sie sich an.',
       'Email not confirmed': 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.',
-      'Password should be at least 6 characters.': 'Das Passwort muss mindestens 8 Zeichen haben.'
+      'Password should be at least 6 characters.': 'Das Passwort ist zu kurz.'
     };
+    if (/password/i.test(m) && /(at least|contain|weak|characters)/i.test(m)) return 'Das Passwort ist zu schwach: mindestens 10 Zeichen mit Groß- und Kleinbuchstaben, Ziffer und Sonderzeichen.';
     return map[m] || m;
   }
 

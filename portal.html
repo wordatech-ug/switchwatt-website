@@ -463,16 +463,19 @@ function mountCheck(a,id){
 
 /* ---------- Übersicht aller Checks ---------- */
 async function renderChecks(){
-  var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp,direktvermarkter,check_frei(frei_at,angefragt_at)&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc')]);
-  var an=r[0],pr=r[1]||[];
+  var r=await Promise.all([SW.rest('anlagen?select=id,name,kwp,direktvermarkter,check_frei(frei_at,angefragt_at)&order=created_at.asc'),SW.rest('pruefungen?select=anlage_id,monat,status,ergebnis&order=monat.desc'),SW.rest('abos?select=anlage_id,status,intervall,kuendigung_zum').catch(function(){return [];})]);
+  var an=r[0],pr=r[1]||[],abos=r[2]||[];
   var h='<h1>'+(profile&&profile.name?'Guten Tag, '+E(profile.name):'Abrechnungs-Check')+'</h1><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung des Netzbetreibers hoch. Wir prüfen beide und zeigen Ihnen, ob alles stimmt.</p>';
   h+='<section class="sw-card'+(an.length?'':' hl')+'"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">'+(an.length?'Ihre Anlagen':'Anlage hinzufügen')+'</h2><a class="sw-btn" href="#/check/neu">+ Anlage hinzufügen</a></div>';
   if(!an.length)h+='<p class="sw-muted" style="margin-bottom:0">Einmal mit Vertrag oder einer Gutschrift anlegen. Wir lesen die Daten aus und gleichen sie mit dem Marktstammdatenregister ab.</p>';
   an.forEach(function(a){var cf=SW.arr(a.check_frei)[0],pc=pr.filter(function(c){return c.anlage_id===a.id;})[0];
     var st=pc?(CK[pc.status]||CK.fehler)[0]+' '+monatName(pc.monat)+': '+(CK[pc.status]||CK.fehler)[1]:(cf&&cf.frei_at?'Freigeschaltet, noch keine Prüfung':cf&&cf.angefragt_at?'Freischaltung angefragt':'Noch nicht freigeschaltet');
-    h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong><div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(st)+'</div></div><a class="sw-btn ghost small" href="#/check/'+a.id+'">Öffnen</a></div>';});
+    var ab=abos.filter(function(x){return x.anlage_id===a.id;})[0],abt=ab&&ABO_ST[ab.status]?' · Abo '+(ab.intervall==='year'?'jährlich':'monatlich')+', '+(ab.kuendigung_zum?'gekündigt zum '+SW.date(ab.kuendigung_zum):ABO_ST[ab.status]):'';
+    h+='<div class="sw-list-item"><div><strong>'+E(a.name)+'</strong><div class="sw-muted" style="font-size:14px">'+(a.kwp?SW.num(a.kwp,1)+' kWp · ':'')+E(st)+E(abt)+'</div></div><a class="sw-btn ghost small" href="#/check/'+a.id+'">Öffnen</a></div>';});
+  if(abos.length)h+='<p style="font-size:14px;margin:14px 0 0"><a href="#" id="ck_portal_all">Abos verwalten, Rechnungen und Zahlungsart</a></p>';
   h+='</section>';
-  if(!pr.length){app.innerHTML=h+teaser();mountTeaser();return;}
+  var mountAbo=function(){var l=$('#ck_portal_all');if(l)l.onclick=async function(ev){ev.preventDefault();try{var r=await SW.fn('stripe',{aktion:'portal'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);}};};
+  if(!pr.length){app.innerHTML=h+teaser();mountTeaser();mountAbo();return;}
   var monate=[];pr.forEach(function(c){var m=String(c.monat).slice(0,7);if(monate.indexOf(m)<0)monate.push(m);});monate=monate.sort().reverse().slice(0,12);
   var by={};pr.forEach(function(c){by[c.anlage_id+'|'+String(c.monat).slice(0,7)]=c;});
   var mit=an.filter(function(a){return pr.some(function(c){return c.anlage_id===a.id;});});
@@ -482,7 +485,7 @@ async function renderChecks(){
   var offen=pr.filter(function(c){return c.status==='rot'||c.status==='gelb';});
   if(offen.length)h+='<section class="sw-card"><h2>Offene Hinweise</h2><ul class="sw-ck-list">'+offen.map(function(c){var a=an.find(function(x){return x.id===c.anlage_id;})||{},m=String(c.monat).slice(0,7),p=((c.ergebnis&&c.ergebnis.punkte)||[]).filter(function(x){return x.stufe==='rot'||x.stufe==='gelb';});
     return p.map(function(x){return '<li class="'+x.stufe+'"><span aria-hidden="true">'+STUFE[x.stufe][0]+'</span><div><a href="#/check/'+c.anlage_id+'/'+m+'">'+E(a.name||'Anlage')+' · '+monatName(m)+'</a><br><strong>'+E(x.titel)+'</strong></div></li>';}).join('');}).join('')+'</ul></section>';
-  app.innerHTML=h+teaser();mountTeaser();
+  app.innerHTML=h+teaser();mountTeaser();mountAbo();
 }
 function teaser(){if(!nurCheck())return '';
   return '<section class="sw-card" style="border-color:rgba(143,166,255,.35)"><h2 style="margin:0 0 6px">Kennen Sie schon unseren Wechsel-Service?</h2><p class="sw-muted" style="margin:0 0 14px">Wir holen Angebote bei mehreren Direktvermarktern ein, vergleichen sie für Sie und kümmern uns um Kündigung und Wechsel. Sie geben nur frei. Viele Anlagen zahlen heute deutlich mehr als nötig.</p><div class="sw-row"><button class="sw-btn ghost" id="tz_go">Wechsel-Service ansehen</button><a class="sw-btn ghost" href="direktvermarkter-wechsel.html#rechner" target="_blank">Kosten vergleichen</a></div></section>';}

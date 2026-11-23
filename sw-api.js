@@ -162,15 +162,22 @@
     return L;
   };
 
-  SW.VOLLMACHT_VERSION = 'test-2026-11-19';
+  SW.VOLLMACHT_VERSION = '2026-11-23';
+  SW.vmFassung = function (v) {
+    var m = /^(test-)?(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
+    if (!m) return 'Fassung ' + (v || '');
+    return (m[1] ? 'Pilotfassung' : 'Fassung') + ' vom ' + m[4] + '.' + m[3] + '.' + m[2];
+  };
   SW.VOLLMACHT_HTML =
-    '<p class="sw-muted" style="margin-top:0">Testfassung für die Pilotphase. Sie wird vor dem offiziellen Start anwaltlich geprüft.</p>' +
-    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter ihrer Marke Switchwatt, für die Anlagen, die ich in meinem Switchwatt-Konto anlege,</p>' +
+    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke Switchwatt, für die Anlagen, die ich in meinem Switchwatt-Konto anlege,</p>' +
     '<ol><li>in meinem Namen bei Direktvermarktern Angebote für die Direktvermarktung anzufragen und dafür die nötigen Anlagen- und Vertragsdaten weiterzugeben,</li>' +
-    '<li>beim zuständigen Netz- und Messstellenbetreiber die Einspeisedaten (Lastgang) der letzten 36 Monate und die Stammdaten der Anlagen anzufordern,</li>' +
-    '<li>die Angebote auszuwerten und mir eine Empfehlung zu geben.</li></ol>' +
-    '<p>Gebe ich ein Angebot im Kundenkonto frei, ist die WordAtech UG außerdem bevollmächtigt, (4) meinen bisherigen Direktvermarktungsvertrag fristgerecht zu kündigen, soweit dafür nicht meine eigene Unterschrift nötig ist, (5) den Vertrag mit dem gewählten Direktvermarkter vorzubereiten und in meinem Namen abzuschließen und (6) die für den Wechsel nötigen Meldungen und die technische Anbindung zu veranlassen. <strong>Ohne Freigabe</strong> darf die WordAtech UG in meinem Namen keine Verträge abschließen oder kündigen.</p>' +
-    '<p>Die Vollmacht gilt bis auf Widerruf und kann jederzeit per E-Mail an angebote@switchwatt.de widerrufen werden. Meine Daten werden dafür nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
+    '<li>beim zuständigen Netz- und Messstellenbetreiber die Stammdaten der Anlagen und die Einspeisedaten (Lastgang) für bis zu 36 Monate anzufordern,</li>' +
+    '<li>die Angebote auszuwerten und mir einen Angebotsspiegel zur Verfügung zu stellen.</li></ol>' +
+    '<p>Gebe ich ein Angebot im Kundenkonto frei, ist die WordAtech UG außerdem bevollmächtigt,</p>' +
+    '<ol start="4"><li>die Kündigung meines bisherigen Direktvermarktungsvertrags und den Vertrag mit dem gewählten Direktvermarkter vorzubereiten und die von mir unterschriebenen Erklärungen an den jeweiligen Vertragspartner zu übermitteln,</li>' +
+    '<li>die für den Wechsel nötigen Meldungen beim Netzbetreiber anzustoßen und Absprachen zur technischen Anbindung zu treffen.</li></ol>' +
+    '<p>Kündigungen und Vertragserklärungen gebe ich selbst ab. Die WordAtech UG ist nicht berechtigt, in meinem Namen Verträge abzuschließen oder zu kündigen.</p>' +
+    '<p>Die Vollmacht gilt bis auf Widerruf und kann jederzeit per E-Mail an angebote@switchwatt.de widerrufen werden. Meine Daten werden nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
 
   window.SW = SW;
 })();

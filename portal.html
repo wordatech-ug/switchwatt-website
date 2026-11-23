@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=14"></script>
+<script src="sw-api.js?v=15"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -112,18 +112,20 @@ async function renderHome(){
     (a.kuendigung_bis?' · Kündigen bis '+SW.date(a.kuendigung_bis)+(dd!=null&&dd<=30&&dd>=0&&['neu','in_pruefung','angebote','freigegeben'].indexOf(a.status)>=0?' <span class="sw-red">(noch '+dd+' Tage)</span>':''):'')+
 (SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
   h+='</section>';
-  if(!vm&&an.length){
-    h+='<section class="sw-card hl"><h2>2. Vollmacht erteilen</h2>'+
-    '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> kündigen wir den alten Vertrag und schließen den neuen ab. Vorher nicht.</li><li><strong>Widerruf</strong> jederzeit per E-Mail an angebote@switchwatt.de.</li></ul>'+
+  var vmAlt=!!(vm&&vm.version!==SW.VOLLMACHT_VERSION);
+  if((!vm||vmAlt)&&an.length){
+    h+='<section class="sw-card hl"><h2>'+(vmAlt?'Vollmacht: neue Fassung bestätigen':'2. Vollmacht erteilen')+'</h2>'+(vmAlt?'<p>Wir haben die Vollmacht überarbeitet: Kündigung und neuen Vertrag unterschreiben Sie immer selbst, wir bereiten nur vor und übermitteln. Bitte bestätigen Sie die neue Fassung.</p>':'')+
+    '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> bereiten wir Kündigung und neuen Vertrag vor. Unterschreiben tun Sie selbst, wir übermitteln die Unterlagen.</li><li><strong>Widerruf</strong> jederzeit per E-Mail an angebote@switchwatt.de.</li></ul>'+
     '<details class="sw-vmdet"><summary>Vollständigen Text der Vollmacht lesen</summary><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div></details>'+
     '<form id="vmf" style="margin-top:16px"><div class="sw-grid"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
     '<label class="sw-check" style="margin:16px 0"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben und bin berechtigt, für den Betreiber zu handeln.</span></label><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht erteilen</button></form></section>';
-  } else if(vm){
+  }
+  if(vm&&!vmAlt){
     h+='<p class="sw-msg ok">Vollmacht erteilt am '+SW.dateTime(vm.erteilt_at)+' von '+E(vm.name_unterzeichner)+(vm.firma?' für '+E(vm.firma):'')+'. <a href="#" id="vmshow">Text ansehen</a></p>';
   }
   h+='<p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>';
   app.innerHTML=h;
-  var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p class="sw-muted" style="font-size:14px">Fassung '+E(vm.version)+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
+  var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p class="sw-muted" style="font-size:14px">'+E(SW.vmFassung(vm.version))+'. Widerruf jederzeit per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
   var f=$('#vmf'); if(f)f.onsubmit=async function(e){e.preventDefault();var btn=f.querySelector('[type=submit]'),n=$('#vmn').value.trim();
     if(!n||!$('#vmc').checked){$('#vmerr').innerHTML=msg('err','Bitte Namen eingeben und das Kästchen ankreuzen.');return;}
     busy(btn,true);

@@ -147,3 +147,5 @@ details summary{padding:6px 0}
 
 .sw-pw{position:relative;display:block}.sw-pw input{padding-right:46px;width:100%;box-sizing:border-box}.sw-pw-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:#A1A1AA;cursor:pointer;padding:6px;border-radius:8px;display:flex}.sw-pw-btn:hover{color:#fff;background:rgba(255,255,255,.06)}
 .sw-fv{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;margin:10px 0;background:rgba(255,255,255,.02)}.sw-fv textarea{background:#0B0B0F;color:#E4E4E7;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;resize:vertical;font-family:inherit}
+
+.sw-dragover{outline:2px dashed #8FA6FF!important;outline-offset:3px;background:rgba(47,84,235,.18)!important}

@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=25">
+<link rel="stylesheet" href="sw-portal.css?v=26">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=20"></script>
+<script src="sw-api.js?v=21"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -189,7 +189,7 @@ function renderNew(){
   var ziel=modus==='check'?'#/check/':'#/anlage/';
   app.innerHTML='<p style="margin-top:28px"><a href="'+(modus==='check'?'#/check':'#/')+'">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
   '<p class="sw-muted">Laden Sie Ihren aktuellen Vertrag oder die letzte Abrechnung hoch. Wir lesen die Daten für Sie aus und gleichen sie mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch.</p>'+
-  '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag oder Abrechnung auswählen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
+  '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag oder Abrechnung auswählen oder hierher ziehen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
   '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 220px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung</option></select></div>'+
   '<div id="err"></div><div class="sw-row" style="margin-top:16px"><button class="sw-btn" id="go">Hochladen und auslesen</button><button class="sw-btn ghost" id="manual">Ohne Dokument selbst ausfüllen</button></div>'+

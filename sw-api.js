@@ -202,5 +202,45 @@
   if (window.MutationObserver) new MutationObserver(function () { augen(); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', function () { augen(); });
 
+  // Drag and Drop: Dateien auf ein Upload-Feld (oder dessen Label/Bereich) ziehen
+  function dropZiel(el) {
+    if (!el || !el.closest) return null;
+    var i = el.closest('input[type=file]'); if (i) return i;
+    var l = el.closest('label[for]');
+    if (l) { var x = document.getElementById(l.getAttribute('for')); if (x && x.type === 'file') return x; }
+    for (var n = el, k = 0; n && n !== document.body && k < 4; n = n.parentElement, k++) {
+      var fs = n.querySelectorAll ? n.querySelectorAll('input[type=file]') : [];
+      if (fs.length === 1) return fs[0];
+      if (fs.length > 1) return null;
+    }
+    return null;
+  }
+  function zone(inp) { if (!inp) return null; var l = inp.id && document.querySelector('label.sw-drop[for="' + inp.id + '"]'); return l || inp; }
+  var markiert = null;
+  function markiere(z) { if (markiert === z) return; if (markiert) markiert.classList.remove('sw-dragover'); markiert = z; if (z) z.classList.add('sw-dragover'); }
+  function hatDateien(e) { var t = e.dataTransfer && e.dataTransfer.types; return t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
+  document.addEventListener('dragover', function (e) {
+    if (!hatDateien(e)) return;
+    e.preventDefault();
+    var inp = dropZiel(e.target);
+    e.dataTransfer.dropEffect = inp && !inp.disabled ? 'copy' : 'none';
+    markiere(inp && !inp.disabled ? zone(inp) : null);
+  });
+  document.addEventListener('dragleave', function (e) { if (!e.relatedTarget) markiere(null); });
+  document.addEventListener('drop', function (e) {
+    if (!hatDateien(e)) return;
+    e.preventDefault(); markiere(null);
+    var inp = dropZiel(e.target); if (!inp || inp.disabled) return;
+    var neu = Array.prototype.slice.call(e.dataTransfer.files || []);
+    var acc = String(inp.accept || '').split(',').map(function (a) { return a.trim().toLowerCase(); }).filter(Boolean);
+    if (acc.length) neu = neu.filter(function (f) { var n = f.name.toLowerCase(), t = (f.type || '').toLowerCase(); return acc.some(function (a) { return a[0] === '.' ? n.slice(-a.length) === a : a.slice(-2) === '/*' ? t.indexOf(a.slice(0, -1)) === 0 : t === a; }); });
+    if (!neu.length) { alert('Dieser Dateityp passt hier nicht. Bitte PDF oder Foto (JPG, PNG) verwenden.'); return; }
+    var dt = new DataTransfer();
+    if (inp.multiple) { Array.prototype.forEach.call(inp.files || [], function (f) { dt.items.add(f); }); neu.forEach(function (f) { dt.items.add(f); }); }
+    else dt.items.add(neu[0]);
+    inp.files = dt.files;
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
   window.SW = SW;
 })();

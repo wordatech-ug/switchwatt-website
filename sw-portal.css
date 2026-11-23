@@ -136,3 +136,5 @@ details summary{padding:6px 0}
 .sw-opt{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px 14px;cursor:pointer}
 .sw-opt input[type=radio]{width:18px;min-height:18px;height:18px;margin:3px 0 0;flex:0 0 auto;accent-color:#2F54EB}
 .sw-opt:has(input:checked){border-color:#8FA6FF;background:rgba(47,84,235,.12)}
+
+@media (max-width:640px){.sw-hide-s{display:none}}

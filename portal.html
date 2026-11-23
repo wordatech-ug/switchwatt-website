@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=19">
+<link rel="stylesheet" href="sw-portal.css?v=20">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -509,6 +509,7 @@ function tabsBar(){
 async function route(){
   var h=location.hash||'#/';
   try{
+    if(h==='#/konto'){tabsBar();await renderKonto();window.scrollTo(0,0);return;}
     if(nurCheck()&&h.indexOf('#/check')!==0)h=(h.indexOf('#/anlage/')===0?'#/check/'+h.slice(9):'#/check');
     if(h==='#/abrechnungen')h='#/check';
     modus=h.indexOf('#/check')===0?'check':'wechsel';
@@ -521,11 +522,39 @@ async function route(){
   }catch(x){app.innerHTML=msg('err','Es ist ein Fehler aufgetreten: '+x.message)+'<p><a href="#/">Neu laden</a></p>';}
   var t=modus==='check'&&window._ckOpen&&$('#ck-'+window._ckOpen);if(t)t.scrollIntoView();else window.scrollTo(0,0);
 }
+/* ---------- Kundenkonto ---------- */
+async function renderKonto(){
+  var r=await Promise.all([SW.rest('profiles?select=*&id=eq.'+me.id),SW.rest('abos?select=*').catch(function(){return [];}),SW.rest('anlagen?select=id,name,kwp&order=created_at.asc')]);
+  var p=r[0][0]||{},abos=r[1]||[],an=r[2]||[];
+  var F=[['k_name','Ihr Name','name',''],['k_firma','Firma (steht auf der Rechnung)','firma','z. B. Solar K & H eGbR'],['k_tel','Telefon','telefon',''],['k_strasse','Straße und Hausnummer','strasse',''],['k_plz','PLZ','plz',''],['k_ort','Ort','ort',''],['k_ust','USt-IdNr. (freiwillig)','ust_id','DE123456789']];
+  var h='<h1>Kundenkonto</h1><p class="sw-muted">Hier ändern Sie Ihre Daten, Ihr Passwort und Ihre Abos.</p>';
+  h+='<section class="sw-card"><h2>Ihre Daten</h2><div class="sw-grid">'+F.map(function(f){return '<div class="sw-field"><label for="'+f[0]+'">'+E(f[1])+'</label><input id="'+f[0]+'" type="text" placeholder="'+E(f[3])+'" value="'+E(p[f[2]]||'')+'"></div>';}).join('')+
+    '<div class="sw-field"><label>E-Mail</label><input type="email" value="'+E(me.email)+'" disabled><div class="sw-hint">Für eine neue E-Mail-Adresse schreiben Sie uns kurz an <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a>.</div></div></div>'+
+    '<div id="k_msg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="k_save">Daten speichern</button></div></section>';
+  var nm=function(id){var a=an.filter(function(x){return x.id===id;})[0];return a?a.name:'Anlage';};
+  h+='<section class="sw-card"><h2>Abos und Rechnungen</h2>';
+  if(abos.length)h+='<table class="sw-stack"><thead><tr><th>Anlage</th><th>Abo</th><th>Status</th><th>Nächste Abrechnung</th></tr></thead><tbody>'+abos.map(function(a){return '<tr><td data-l="Anlage"><a href="#/check/'+a.anlage_id+'">'+E(nm(a.anlage_id))+'</a></td><td data-l="Abo">Abrechnungs-Check, '+(a.intervall==='year'?'jährlich':'monatlich')+'</td><td data-l="Status">'+E(a.kuendigung_zum?'gekündigt zum '+SW.date(a.kuendigung_zum):(ABO_ST[a.status]||a.status||''))+'</td><td data-l="Nächste Abrechnung">'+(a.laeuft_bis&&!a.kuendigung_zum&&['active','trialing','past_due'].indexOf(a.status)>=0?SW.date(a.laeuft_bis):'–')+'</td></tr>';}).join('')+'</tbody></table>'+
+    '<p class="sw-muted" style="font-size:14px;margin:14px 0">Zahlungsart ändern, Rechnungen herunterladen oder ein Abo kündigen: Das erledigen Sie im gesicherten Bereich unseres Zahlungsdienstleisters Stripe.</p><div class="sw-row"><button class="sw-btn ghost" id="k_portal">Zahlungsart, Rechnungen, Kündigung</button></div>';
+  else h+='<p class="sw-muted" style="margin:0">Sie haben noch kein Abo. Den Abrechnungs-Check buchen Sie bei der jeweiligen Anlage.</p>';
+  h+='</section>';
+  h+='<section class="sw-card"><h2>Passwort ändern</h2><div style="max-width:420px"><label for="k_pw">Neues Passwort ('+PW_REGEL+')</label><input id="k_pw" type="password" autocomplete="new-password"></div><div id="k_pwmsg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn ghost" id="k_pwsave">Passwort speichern</button></div></section>';
+  h+='<section class="sw-card"><h2>Konto löschen</h2><p class="sw-muted" style="margin:0">Wenn Sie Ihr Konto und alle Unterlagen löschen möchten, schreiben Sie uns an <a href="mailto:angebote@switchwatt.de?subject=Konto%20l%C3%B6schen">angebote@switchwatt.de</a>. Laufende Abos kündigen Sie bitte vorher oben.</p></section>';
+  app.innerHTML=h;
+  $('#k_save').onclick=async function(){var b=this,o={};F.forEach(function(f){var v=$('#'+f[0]).value.trim();o[f[2]]=v===''?null:v;});
+    if(o.ust_id)o.ust_id=o.ust_id.replace(/\s/g,'').toUpperCase();
+    if(o.ust_id&&!/^DE\d{9}$/.test(o.ust_id)){$('#k_msg').innerHTML=msg('err','Die USt-IdNr. hat das Format DE und 9 Ziffern. Oder lassen Sie das Feld leer.');return;}
+    busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:o});Object.keys(o).forEach(function(k){if(profile)profile[k]=o[k];});
+      await SW.fn('stripe',{aktion:'kunde'}).catch(function(){});$('#k_msg').innerHTML=msg('ok','Gespeichert. Ab der nächsten Rechnung gelten die neuen Angaben.');}
+    catch(x){$('#k_msg').innerHTML=msg('err',x.message);}busy(b,false);};
+  var pb=$('#k_portal');if(pb)pb.onclick=async function(){busy(this,true);try{var r=await SW.fn('stripe',{aktion:'portal',zurueck:'konto'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);busy(this,false);}};
+  $('#k_pwsave').onclick=async function(){var pw=$('#k_pw').value;if(!pwOk(pw)){$('#k_pwmsg').innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}
+    busy(this,true);try{await SW.setPassword(pw);$('#k_pw').value='';$('#k_pwmsg').innerHTML=msg('ok','Passwort geändert.');}catch(x){$('#k_pwmsg').innerHTML=msg('err',x.message);}busy(this,false);};
+}
 async function start(){
   me=await SW.me(); if(!me){await SW.signOut();renderAuth();return;}
   var p=await SW.rest('profiles?select=*&id=eq.'+me.id); profile=p[0]||null;
-  nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted" style="font-size:14px">'+E(me.email)+'</span><button class="sw-btn ghost small" id="out">Abmelden</button>';
-  document.getElementById('out').onclick=async function(){await SW.signOut();location.hash='';var b=document.getElementById('bereich');if(b)b.remove();renderAuth();};
+  nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted sw-hide-s" style="font-size:14px">'+E(me.email)+'</span><a class="sw-btn ghost small" href="#/konto">Kundenkonto</a><button class="sw-btn ghost small" id="out">Abmelden</button>';
+  document.getElementById('out').onclick=async function(){me=null;profile=null;try{await SW.signOut();}catch(x){}history.replaceState(null,'',location.pathname);nav.innerHTML='';var b=document.getElementById('bereich');if(b)b.remove();renderAuth();};
   if(WUNSCH==='check'&&(!location.hash||location.hash==='#/')){location.hash='#/check';return;}
   route();
 }

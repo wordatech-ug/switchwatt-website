@@ -7,6 +7,18 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; base-uri 'self'; form-action 'self'">
 <title>Verwaltung – SwitchWatt</title>
 <link rel="stylesheet" href="sw-portal.css?v=23">
+<style>
+#app.sw-wrap{max-width:1200px}
+.kc{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;margin-top:12px;background:rgba(255,255,255,.02)}
+.kc-top{display:grid;grid-template-columns:minmax(200px,1.2fr) repeat(3,minmax(150px,1fr));gap:16px;align-items:start}
+.kc-l{font-size:12px;color:#A1A1AA;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kc-v{font-size:15px;line-height:1.45}
+.kc-name{font-size:17px;font-weight:600}
+.kc-an{margin-top:14px;border-top:1px solid rgba(255,255,255,.06)}
+.kc-row{display:grid;grid-template-columns:minmax(160px,1.4fr) 90px 150px minmax(120px,1fr) minmax(200px,2fr);gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}
+.kc-row:last-child{border-bottom:0}
+@media (max-width:820px){.kc-top{grid-template-columns:1fr 1fr}.kc-row{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <div class="sw-top"><div>
@@ -28,7 +40,7 @@ function aboPreis(x){var p=PREIS[x.klasse]||PREIS.s;return (x.intervall==='year'
 function aboJahr(x){return x.intervall==='year'?aboPreis(x):aboPreis(x)*12;}
 function kpi(t,v,u){return '<div class="sw-card" style="margin:0;padding:16px"><div class="sw-muted" style="font-size:13px">'+t+'</div><div style="font-size:26px;font-weight:600;margin:4px 0">'+v+'</div><div class="sw-muted" style="font-size:13px">'+u+'</div></div>';}
 var ZST={paid:['bezahlt','#22C55E'],open:['offen','#F5B70A'],draft:['Entwurf','#71717A'],void:['storniert','#71717A'],uncollectible:['uneinbringlich','#F87171']};
-function zText(x){var st=ZST[x.status]||[x.status,'#71717A'];return SW.date(x.datum)+' · '+SW.num(x.betrag,2)+' € <span class="sw-badge" style="--c:'+st[1]+'">'+st[0]+'</span>'+(x.test?' <span class="sw-muted">Test</span>':'');}
+function zText(x){var st=ZST[x.status]||[x.status,'#71717A'];return '<strong>'+SW.num(x.betrag,2)+' €</strong> <span class="sw-badge" style="--c:'+st[1]+'">'+st[0]+'</span><br><span class="sw-muted" style="font-size:13px">'+SW.date(x.datum)+(x.test?' · Test':'')+'</span>';}
 
 function renderLogin(err){
   nav.innerHTML='';
@@ -41,7 +53,7 @@ async function renderList(){
   var an=r[0]; users={}; r[1].forEach(function(p){users[p.id]=p;}); var vm={}; r[2].forEach(function(v){vm[v.owner]=v;});
   var abo={}; (r[4]||[]).forEach(function(x){if(['active','trialing','past_due'].indexOf(x.status)<0)return;(abo[x.owner]=abo[x.owner]||[]).push(x);});
   var zu=r[1].filter(function(p){return p.geschlossen_at;}).length;
-  function aboTxt(o){var l=abo[o]||[];if(!l.length)return '<span class="sw-muted">–</span>';return l.map(function(x){return 'Check '+String(x.klasse||'').toUpperCase()+' '+(x.intervall==='year'?'jährlich':'monatlich')+' · '+SW.num(aboPreis(x),2)+' €'+(x.kuendigung_zum?'<br><span class="sw-muted">gekündigt zum '+SW.date(x.kuendigung_zum)+'</span>':'<br><span class="sw-muted">läuft bis '+SW.date(x.laeuft_bis)+'</span>')+(x.livemode===false?' <span class="sw-muted">· Test</span>':'');}).join('<br>');}
+  function aboTxt(o){var l=abo[o]||[];if(!l.length)return '<span class="sw-muted">–</span>';return l.map(function(x){return '<strong>Check '+String(x.klasse||'').toUpperCase()+'</strong> · '+SW.num(aboPreis(x),2)+' € '+(x.intervall==='year'?'/ Jahr':'/ Monat')+(x.livemode===false?' <span class="sw-badge" style="--c:#71717A">Test</span>':'')+'<br><span class="sw-muted" style="font-size:13px">'+(x.kuendigung_zum?'gekündigt zum '+SW.date(x.kuendigung_zum):'verlängert sich am '+SW.date(x.laeuft_bis))+'</span>';}).join('<br>');}
   if(!zeigeZu)an=an.filter(function(a){return !(users[a.owner]&&users[a.owner].geschlossen_at);});
   var kunden=r[1].filter(function(p){return p.rolle!=='admin'&&(zeigeZu||!p.geschlossen_at);});
   var team=r[1].filter(function(p){return p.rolle==='admin';});
@@ -56,7 +68,16 @@ async function renderList(){
     kpi('Wechsel offen',offenW,'neu, in Prüfung, Angebote, freigegeben')+
     kpi('Aktive Abos',aboL.length,SW.num(jahr,2)+' € pro Jahr netto')+
     '<div class="sw-card" style="margin:0;padding:16px"><div class="sw-muted" style="font-size:13px">Zahlungen</div><div id="kpi_z" style="font-size:26px;font-weight:600;margin:4px 0">…</div><div class="sw-muted" style="font-size:13px" id="kpi_z2">wird aus Stripe geladen</div></div></div>';
-  h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Kunden</h2>'+(zu?'<label class="sw-check" style="margin:0"><input type="checkbox" id="zz"'+(zeigeZu?' checked':'')+'><span>Geschlossene Konten zeigen ('+zu+')</span></label>':'')+'</div><table class="sw-stack"><thead><tr><th>Kunde</th><th>Anlagen</th><th>Vollmacht</th><th>Abo</th><th>Letzte Zahlung</th></tr></thead><tbody>'+kunden.map(function(p){var g=!!p.geschlossen_at,al=anOf[p.id]||[];return '<tr'+(g?' style="opacity:.55"':'')+'><td data-l="Kunde"><a href="#/k/'+p.id+'"><strong>'+E(p.name||p.email)+'</strong></a>'+(p.firma?'<br><span class="sw-muted" style="font-size:13px">'+E(p.firma)+'</span>':'')+(g?' <span class="sw-badge" style="--c:#71717A">geschlossen</span>':'')+'</td><td data-l="Anlagen" style="font-size:14px">'+(al.length?al.map(function(a){return '<a href="#/a/'+a.id+'">'+E(a.name)+'</a> <span class="sw-muted">'+E((SW.STATUS[a.status]||[a.status])[0])+'</span>';}).join('<br>'):'<span class="sw-muted">keine</span>')+'</td><td data-l="Vollmacht">'+(vm[p.id]?'✅ '+SW.date(vm[p.id].erteilt_at):(g?'–':'<span class="sw-red">fehlt</span>'))+'</td><td data-l="Abo" style="font-size:14px">'+aboTxt(p.id)+'</td><td data-l="Letzte Zahlung" style="font-size:14px" id="zl_'+p.id+'"><span class="sw-muted">…</span></td></tr>';}).join('')+'</tbody></table>'+(kunden.length?'':'<p class="sw-muted">Noch keine Kunden.</p>')+'</section>';
+  h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Kunden</h2>'+(zu?'<label class="sw-check" style="margin:0"><input type="checkbox" id="zz"'+(zeigeZu?' checked':'')+'><span>Geschlossene Konten zeigen ('+zu+')</span></label>':'')+'</div>'+
+    kunden.map(function(p){var g=!!p.geschlossen_at,al=anOf[p.id]||[];
+      return '<div class="kc"'+(g?' style="opacity:.55"':'')+'><div class="kc-top">'+
+        '<div><a class="kc-name" href="#/k/'+p.id+'">'+E(p.name||p.email)+'</a>'+(g?' <span class="sw-badge" style="--c:#71717A">geschlossen</span>':'')+'<div class="sw-muted" style="font-size:14px;margin-top:2px">'+E(p.firma||'')+(p.firma?' · ':'')+E(p.email)+'</div></div>'+
+        '<div><div class="kc-l">Vollmacht</div><div class="kc-v">'+(vm[p.id]?'<span class="sw-badge" style="--c:#22C55E">erteilt</span> '+SW.date(vm[p.id].erteilt_at):(g?'–':'<span class="sw-badge" style="--c:#F87171">fehlt</span>'))+'</div></div>'+
+        '<div><div class="kc-l">Abo</div><div class="kc-v">'+aboTxt(p.id)+'</div></div>'+
+        '<div><div class="kc-l">Letzte Zahlung</div><div class="kc-v" id="zl_'+p.id+'"><span class="sw-muted">…</span></div></div></div>'+
+        '<div class="kc-an">'+(al.length?al.map(function(a){var d=SW.daysUntil(a.kuendigung_bis),docs=SW.arr(a.dokumente),pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];
+          return '<div class="kc-row"><a href="#/a/'+a.id+'"><strong>'+E(a.name)+'</strong></a><span>'+SW.num(a.kwp,1)+' kWp</span><span>'+SW.badge(a.status)+'</span><span>'+(a.kuendigung_bis?'kündigen bis '+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?' <span class="sw-red">('+d+' T.)</span>':''):'<span class="sw-muted">Frist offen</span>')+'</span><span class="sw-muted">'+docs.length+' Dok. · '+SW.arr(a.angebote).length+' Angebot(e)'+(pc?' · Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(2,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||''):'')+'</span></div>';}).join(''):'<div class="kc-row"><span class="sw-muted">Noch keine Anlage</span></div>')+'</div></div>';}).join('')+
+    (kunden.length?'':'<p class="sw-muted">Noch keine Kunden.</p>')+'</section>';
   h+='<h2 style="margin-top:28px">Anlagen</h2><p class="sw-muted">Sortiert nach Kündigungstermin.</p>';
   var dringend=an.filter(function(a){var d=SW.daysUntil(a.kuendigung_bis);return d!=null&&d<=45&&OPEN.indexOf(a.status)>=0;});
   if(dringend.length)h+=msg('err','Dringend: '+dringend.map(function(a){return a.name+' (bis '+SW.date(a.kuendigung_bis)+', '+SW.daysUntil(a.kuendigung_bis)+' Tage)';}).join(' · '));

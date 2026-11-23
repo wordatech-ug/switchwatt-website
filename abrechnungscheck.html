@@ -21,7 +21,7 @@
 {"@type":"Question","name":"Wann entfällt die Marktprämie bei negativen Strompreisen?","acceptedAnswer":{"@type":"Answer","text":"Das regelt § 51 EEG und hängt von Inbetriebnahme und Größe der Anlage ab. Für ältere Anlagen gilt eine Mindestdauer negativer Preise in Folge und eine Leistungsgrenze, für neue Anlagen ab dem 25.02.2025 entfällt die Marktprämie in jeder Viertelstunde mit negativem Preis."}},
 {"@type":"Question","name":"Was prüft der Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Mengen, Marktwert, Marktprämie, die Kosten des Direktvermarkters, die Umsatzsteuer, die Regeln bei negativen Strompreisen und Abregelungen. Außerdem vergleichen wir Ihren Ertrag mit der gemessenen Sonneneinstrahlung des Deutschen Wetterdienstes an Ihrem Standort."}},
 {"@type":"Question","name":"Welche Unterlagen brauche ich?","acceptedAnswer":{"@type":"Answer","text":"Jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie von Ihrem Netzbetreiber. Ein PDF oder ein Handyfoto reicht. Kommt eine Korrektur, legen Sie sie einfach dazu. Freiwillig, aber empfohlen: ein Export aus Ihrem Monitoring (zum Beispiel SMA, Solar-Log, meteocontrol oder Fronius) als PDF, CSV oder Excel. Damit vergleichen wir die tatsächlich erzeugte Strommenge mit der abgerechneten, das ist genauer als der Abgleich mit dem Wetter. Ohne Export prüfen wir alles andere genauso."}},
-{"@type":"Question","name":"Was kostet der Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Pro Anlage und abhängig von der Größe: bis 250 kWp 29 €, bis 500 kWp 39 €, darüber 49 € im Monat. Im Jahresabo 10 % günstiger, ab der dritten Anlage weitere 10 % Mengenrabatt. Alle Preise netto zzgl. Umsatzsteuer, nur für Unternehmer, monatlich kündbar."}},
+{"@type":"Question","name":"Was kostet der Abrechnungs-Check?","acceptedAnswer":{"@type":"Answer","text":"Pro Anlage und abhängig von der Größe: bis 250 kWp 29 €, bis 500 kWp 39 €, darüber 49 € im Monat. Im Jahresabo 10 % günstiger, ab der dritten Anlage weitere 10 % Mengenrabatt. Alle Preise netto zzgl. Umsatzsteuer, nur für Unternehmer. Das Monatsabo ist monatlich, das Jahresabo jährlich kündbar."}},
 {"@type":"Question","name":"Ist das eine Rechts- oder Steuerberatung?","acceptedAnswer":{"@type":"Answer","text":"Nein. Der Check ist eine automatische Plausibilitätsprüfung Ihrer Abrechnungen. Wir zeigen, was auffällt, und schlagen einen nächsten Schritt vor. Steuerfragen klären Sie mit Ihrem Steuerberater, und was Sie unternehmen, entscheiden Sie selbst."}}]}]</script>
 <style>
 @font-face{font-family:Inter;src:url(fonts/Inter-Regular.woff) format('woff');font-weight:400;font-display:swap}
@@ -131,13 +131,13 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </section>
 
 <section class="card res">
-<p style="margin:0 0 12px;font-size:13px;color:#71717A">Beispiel aus einer echten Prüfung, anonymisiert</p>
+<p style="margin:0 0 12px;font-size:13px;color:#71717A">Beispiel nach einer echten Prüfung, Zahlen verändert</p>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2 style="margin:0">⚠️ Mai 2026</h2><span class="tag">Bitte ansehen</span></div>
 <ul class="chk res">
 <li><span>✓</span><div>Einspeisung stimmt überein: 59.513 kWh</div></li>
 <li><span>✓</span><div>Marktprämie richtig berechnet: 2.549,27 €</div></li>
 <li><span>✓</span><div>Pauschale wie im Vertrag, Umsatzsteuer richtig</div></li>
-<li class="g"><span>⚠️</span><div><b>Marktwert nachträglich korrigiert:</b> 79,15 € Nachzahlung vom Direktvermarkter stehen aus.</div></li>
+<li class="g"><span>⚠️</span><div><b>Marktwert nachträglich korrigiert:</b> 74,80 € Nachzahlung vom Direktvermarkter stehen aus.</div></li>
 <li><span>✓</span><div>Ertrag 16 % unter Vorjahr, aber wetterbedingt: Die Sonne lag 9 % darunter.</div></li>
 <li class="i"><span>ℹ️</span><div>Betreibername beim Netzbetreiber veraltet. Anfragetext liegt bereit.</div></li>
 </ul>
@@ -147,7 +147,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </div>
 
 <section class="card neg">
-<h2>Negative Strompreise: das prüft kaum jemand</h2>
+<h2>Negative Strompreise: oft übersehen. Wir prüfen jede Viertelstunde.</h2>
 <p>Bei negativen Preisen entfällt die Marktprämie, aber nicht für jede Anlage und nicht ab derselben Dauer. Das hängt davon ab, wann Ihre Anlage in Betrieb ging und wie groß sie ist.</p>
 <p>Wir ermitteln die Regel für Ihre Anlage, gleichen sie Viertelstunde für Viertelstunde mit den Börsenpreisen ab und schätzen, wie viel Marktprämie betroffen ist. Fehlt der Abzug in der Abrechnung oder ist er zu hoch, sagen wir es Ihnen, bevor der Netzbetreiber Monate später nachfordert.</p>
 </section>
@@ -173,7 +173,7 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </details>
 <details style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
 <summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Was kostet der Abrechnungs-Check?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
-<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Pro Anlage und abhängig von der Größe: bis 250 kWp 29 €, bis 500 kWp 39 €, darüber 49 € im Monat. Im Jahresabo 10 % günstiger, ab der dritten Anlage weitere 10 % Mengenrabatt. Alle Preise netto zzgl. Umsatzsteuer, nur für Unternehmer, monatlich kündbar.</p>
+<p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #A1A1AA">Pro Anlage und abhängig von der Größe: bis 250 kWp 29 €, bis 500 kWp 39 €, darüber 49 € im Monat. Im Jahresabo 10 % günstiger, ab der dritten Anlage weitere 10 % Mengenrabatt. Alle Preise netto zzgl. Umsatzsteuer, nur für Unternehmer. Das Monatsabo ist monatlich, das Jahresabo jährlich kündbar.</p>
 </details>
 <details style="border-radius: 14px; background: #0A0A0D; border: 1px solid rgba(255,255,255,0.08); padding: 0 22px">
 <summary style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 17px; font-weight: 600">Ist das eine Rechts- oder Steuerberatung?<span class="sw-plus" aria-hidden="true" style="font-size: 24px; color: #8FA6FF; transition: transform .2s">+</span></summary>
@@ -182,12 +182,12 @@ h2.sec{font-size:clamp(26px,3.5vw,36px);margin:70px 0 0;text-align:center}
 </div>
 
 <div class="cta2">
-<p style="color:#A1A1AA;margin:0 0 4px">Ab 29 € im Monat pro Anlage, zzgl. USt. Monatlich kündbar.</p>
+<p style="color:#A1A1AA;margin:0 0 4px">Ab 29 € im Monat pro Anlage, zzgl. USt. Monatsabo monatlich kündbar.</p>
 <a class="btn" href="portal.html?bereich=check">Konto anlegen und Abrechnung prüfen</a>
 </div>
 </main>
 
-<footer>© 2026 SwitchWatt · ein Service der WordAtech UG (haftungsbeschränkt) · <a href="index.html">Startseite</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></footer>
+<footer>© 2026 SwitchWatt · ein Service der WordAtech UG (haftungsbeschränkt) · <a href="index.html">Startseite</a> · <a href="agb.html">AGB</a> · <a href="impressum.html">Impressum und Kontakt</a> · <a href="datenschutz.html">Datenschutz</a></footer>
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('sw-session')||'null');if(!s||!s.access_token)return;document.querySelectorAll('a').forEach(function(a){if(a.textContent.trim()==='Anmelden'&&/portal\.html/.test(a.getAttribute('href')||'')){a.textContent='Kundenkonto';a.setAttribute('href','portal.html#/konto');}});}catch(e){}})();</script>
 </body>
 </html>

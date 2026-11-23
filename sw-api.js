@@ -150,12 +150,12 @@
       '<p>Sehr geehrte Damen und Herren,</p>' +
       '<p>hiermit kündigen wir den Direktvermarktungsvertrag für die oben genannte Anlage ordentlich und fristgerecht ' +
       (a.vertragsende ? 'zum ' + SW.date(a.vertragsende) + ', hilfsweise zum nächstmöglichen Termin.' : 'zum nächstmöglichen Termin.') + '</p>' +
-      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich.</p>' +
+      '<p>Bitte bestätigen Sie uns den Eingang dieser Kündigung und das genaue Vertragsende schriftlich. Bitte senden Sie die Bestätigung in Kopie an unseren Wechseldienstleister SwitchWatt, angebote@switchwatt.de.</p>' +
       '<p>Mit freundlichen Grüßen</p><br><br><br>' +
       '<p>_______________________________<br>Ort, Datum, Unterschrift, Name in Druckbuchstaben<br>' + E(a.betreiber || '') + '</p>';
     var old = document.getElementById('sw-print'); if (old) old.remove();
     var d = document.createElement('div'); d.id = 'sw-print';
-    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen und gelb markierte Felder ergänzen. Dann drucken, unterschreiben und im Portal hochladen. Unterschreiben müssen die vertretungsberechtigten Personen, bei einer GbR in der Regel alle Gesellschafter. Die Kündigung ist Ihre Erklärung, wir bereiten sie nur vor.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
+    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen und gelb markierte Felder ergänzen. Dann drucken, unterschreiben und im Portal hochladen. Unterschreiben müssen die vertretungsberechtigten Personen: bei einer GmbH Geschäftsführer oder Prokuristen in vertretungsberechtigter Zahl, bei einer GbR in der Regel alle Gesellschafter. Die Kündigung ist Ihre Erklärung, wir bereiten sie nur vor.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
     document.body.appendChild(d);
     d.querySelector('[data-p=print]').onclick = function () { window.print(); };
     d.querySelector('[data-p=close]').onclick = function () { d.remove(); };
@@ -163,21 +163,23 @@
   };
 
   SW.VOLLMACHT_VERSION = '2026-11-23';
+  SW.AGB_VERSION = '23.11.2026';
   SW.vmFassung = function (v) {
     var m = /^(test-)?(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
     if (!m) return 'Fassung ' + (v || '');
     return (m[1] ? 'Pilotfassung' : 'Fassung') + ' vom ' + m[4] + '.' + m[3] + '.' + m[2];
   };
   SW.VOLLMACHT_HTML =
-    '<p>Hiermit bevollmächtige ich die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke SwitchWatt, für die Anlagen, die ich bei Erteilung dieser Vollmacht in meinem SwitchWatt-Konto auswähle,</p>' +
+    '<p>Der Betreiber der ausgewählten Anlagen, vertreten durch die unterzeichnende Person (zusammen „ich“), bevollmächtigt die WordAtech UG (haftungsbeschränkt), Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe, handelnd unter der Marke SwitchWatt, für die Anlagen, die ich bei Erteilung dieser Vollmacht in meinem SwitchWatt-Konto auswähle,</p>' +
     '<ol><li>in meinem Namen bei Direktvermarktern Angebote für die Direktvermarktung anzufragen und dafür die nötigen Anlagen- und Vertragsdaten weiterzugeben,</li>' +
     '<li>beim zuständigen Netz- und Messstellenbetreiber die Stammdaten der Anlagen und die Einspeisedaten (Lastgang) für bis zu 36 Monate anzufordern,</li>' +
     '<li>die Angebote auszuwerten und mir einen Angebotsspiegel zur Verfügung zu stellen.</li></ol>' +
     '<p>Gebe ich ein Angebot im Kundenkonto frei, ist die WordAtech UG außerdem bevollmächtigt,</p>' +
     '<ol start="4"><li>die Kündigung meines bisherigen Direktvermarktungsvertrags und den Vertrag mit dem gewählten Direktvermarkter vorzubereiten und die von mir unterschriebenen Erklärungen an den jeweiligen Vertragspartner zu übermitteln,</li>' +
-    '<li>die für den Wechsel nötigen Meldungen beim Netzbetreiber anzustoßen und Absprachen zur technischen Anbindung zu treffen.</li></ol>' +
+    '<li>die für den Wechsel nötigen Meldungen beim Netzbetreiber anzustoßen und Termine und technische Daten für die Anbindung abzustimmen; dazu darf sie die nötigen Anlagendaten an den von mir beauftragten Anbindungsdienstleister (z. B. SolarBridge GmbH) weitergeben.</li></ol>' +
     '<p>Kündigungen und Vertragserklärungen gebe ich selbst ab. Die WordAtech UG ist nicht berechtigt, in meinem Namen Verträge abzuschließen oder zu kündigen.</p>' +
-    '<p>Die Vollmacht gilt bis auf Widerruf und kann jederzeit per E-Mail an angebote@switchwatt.de widerrufen werden. Meine Daten werden nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
+    '<p>Die unterzeichnende Person versichert, allein vertretungsberechtigt zu sein oder mit Zustimmung aller Vertretungsberechtigten zu handeln (bei einer GbR ohne abweichende Regelung alle Gesellschafter).</p>' +
+    '<p>Die Vollmacht gilt bis auf Widerruf. Ich kann sie jederzeit im Kundenkonto oder per E-Mail an angebote@switchwatt.de widerrufen. Es gelten die <a href="agb.html" target="_blank">Allgemeinen Geschäftsbedingungen</a> von SwitchWatt. Meine Daten werden nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
 
   window.SW = SW;
 })();

@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Impressum – SwitchWatt</title>
+<title>Impressum und Kontakt – SwitchWatt</title>
 <meta name="robots" content="noindex">
 <style>
 body{margin:0;background:#000000;color:#E4E4E7;font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
 main{max-width:760px;margin:0 auto;padding:48px 24px 64px}
 h1{font-size:32px;margin:0 0 24px;color:#F4F1E8}h2{font-size:20px;margin:32px 0 8px;color:#F4F1E8}
 a{color:#8FA6FF}a:hover{color:#B7C6FF}
+input,textarea{width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid #3F3F46;background:#0A0A0D;color:#F4F1E8;font:inherit}button{padding:12px 20px;border-radius:12px;border:0;background:#2F54EB;color:#fff;font:inherit;font-weight:600;cursor:pointer;justify-self:start}
 </style>
 </head>
 <body>
@@ -21,16 +22,32 @@ a{color:#8FA6FF}a:hover{color:#B7C6FF}
 <p>WordAtech UG (haftungsbeschränkt)<br>Kaiser-Friedrich-Promenade 79<br>61348 Bad Homburg v. d. Höhe</p>
 <p>Vertreten durch die Geschäftsführerin Kyra-Marilyn Blume</p>
 <h2>Kontakt</h2>
-<p>E-Mail: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a></p>
+<p>E-Mail: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a> oder über das <a href="#kontakt">Kontaktformular</a> unten.</p>
 <h2>Registereintrag</h2>
 <p>Registergericht: Amtsgericht Bad Homburg v. d. Höhe<br>Registernummer: HRB 16752</p>
 <h2>Umsatzsteuer-ID</h2>
 <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE369604900</p>
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
 <p>Kyra-Marilyn Blume, Kaiser-Friedrich-Promenade 79, 61348 Bad Homburg v. d. Höhe</p>
-<h2>Verbraucherstreitbeilegung</h2>
-<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
-<p style="margin-top:40px"><a href="datenschutz.html">Datenschutz</a> · <a href="index.html">Zur Startseite</a></p>
+<h2>Hinweis</h2>
+<p>Unser Angebot richtet sich ausschließlich an Unternehmer.</p>
+<h2 id="kontakt">Kontaktformular</h2>
+<form id="kf" style="display:grid;gap:12px;max-width:520px">
+<label>Name<br><input id="kf_n" required maxlength="120" autocomplete="name"></label>
+<label>Firma (optional)<br><input id="kf_f" maxlength="160" autocomplete="organization"></label>
+<label>E-Mail<br><input id="kf_e" type="email" required maxlength="200" autocomplete="email"></label>
+<label>Nachricht<br><textarea id="kf_m" required maxlength="4000" rows="6"></textarea></label>
+<input id="kf_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+<p style="font-size:14px;color:#A1A1AA;margin:0">Wir verwenden Ihre Angaben nur, um Ihre Anfrage zu beantworten. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+<button type="submit" id="kf_b">Nachricht senden</button>
+<p id="kf_s" role="status" style="margin:0"></p>
+</form>
+<script>(function(){var f=document.getElementById('kf');f.onsubmit=async function(e){e.preventDefault();var s=document.getElementById('kf_s'),b=document.getElementById('kf_b');if(document.getElementById('kf_hp').value){s.textContent='Danke, Ihre Nachricht ist angekommen.';return;}
+b.disabled=true;s.textContent='Wird gesendet …';
+try{var r=await fetch('https://fyseraoxefnwsayvqzps.supabase.co/rest/v1/kontaktanfragen',{method:'POST',headers:{apikey:'sb_publishable_IRGqBkjaUa3_YnZ2HGDdSg_HU6m5ltO','Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:document.getElementById('kf_n').value.trim(),firma:document.getElementById('kf_f').value.trim()||null,email:document.getElementById('kf_e').value.trim(),nachricht:document.getElementById('kf_m').value.trim()})});
+if(!r.ok)throw new Error();f.reset();s.textContent='Danke, Ihre Nachricht ist angekommen. Wir melden uns in der Regel innerhalb eines Werktags.';}
+catch(x){s.textContent='Das hat nicht geklappt. Bitte schreiben Sie uns an angebote@switchwatt.de.';}b.disabled=false;};})();</script>
+<p style="margin-top:40px"><a href="agb.html">AGB</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="index.html">Zur Startseite</a></p>
 </main>
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('sw-session')||'null');if(!s||!s.access_token)return;document.querySelectorAll('a').forEach(function(a){if(a.textContent.trim()==='Anmelden'&&/portal\.html/.test(a.getAttribute('href')||'')){a.textContent='Kundenkonto';a.setAttribute('href','portal.html#/konto');}});}catch(e){}})();</script>
 </body>

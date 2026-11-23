@@ -365,6 +365,7 @@ function checkBody(e,aid,m){
     var grp=function(t,arr,zu){return arr.length?'<details class="sw-vmdet"><summary>'+t+' ('+arr.length+')</summary><ul class="sw-ck-list" style="margin-top:10px">'+arr.map(function(p){return li(p,zu?erlBtn([[aid,m,p.titel]],true):'');}).join('')+'</ul></details>':'';};
     h+=grp('Weitere Hinweise',inf)+grp('In Ordnung',okp)+grp('Erledigt',erl,true);
     h+=vorschlaege(e,pts.filter(function(p){return !ERL.has(erlKey(aid,m,p.titel));}),aid+'_'+m);
+    if(e.wechsel_hinweis)h+='<div class="sw-msg info" style="margin:14px 0 0;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><strong>Ihr Direktvermarkter ist vergleichsweise teuer.</strong><br>Wir haben festgestellt, dass Anlagen Ihrer Größe bei anderen Direktvermarktern derzeit weniger zahlen. Vielleicht lohnt sich ein Wechsel. Wir holen Angebote für Sie ein und kümmern uns um Kündigung und Wechsel.</div><button class="sw-btn" data-ws="'+E(aid)+'">Zum Wechselservice</button></div>';
   }
   var ng=e.negativpreise;
   if(ng&&ng.perioden&&ng.perioden.length)h+='<details class="sw-vmdet"><summary>Betroffene Zeiten mit negativen Preisen ('+ng.perioden.length+')</summary><p class="sw-muted" style="font-size:14px">'+ng.perioden.map(function(x){return E(x.von)+' bis '+E(x.bis);}).join('<br>')+'</p></details>';
@@ -576,6 +577,8 @@ async function renderChecks(){
 function teaser(){if(!nurCheck())return '';
   return '<section class="sw-card" style="border-color:rgba(143,166,255,.35)"><h2 style="margin:0 0 6px">Kennen Sie schon unseren Wechsel-Service?</h2><p class="sw-muted" style="margin:0 0 14px">Wir holen Angebote bei mehreren Direktvermarktern ein, vergleichen sie für Sie und kümmern uns um Kündigung und Wechsel. Sie geben nur frei. Viele Anlagen zahlen heute deutlich mehr als nötig.</p><div class="sw-row"><button class="sw-btn ghost" id="tz_go">Wechsel-Service nutzen</button><a class="sw-btn ghost" href="direktvermarkter-wechsel.html#rechner" target="_blank">Kosten vergleichen</a></div></section>';}
 function mountTeaser(){var b=$('#tz_go');if(b)b.onclick=async function(){busy(b,true);try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';location.hash='#/';}catch(x){alertBox(x.message);busy(b,false);}};}
+
+document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-ws]');if(!b)return;busy(b,true);try{if(nurCheck()){await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';}location.hash='#/anlage/'+b.getAttribute('data-ws');}catch(x){alertBox(x.message);busy(b,false);}});
 
 /* ---------- Modal ---------- */
 function showModal(inner){modal.innerHTML='<div class="sw-modal" role="dialog" aria-modal="true"><div>'+inner+'</div></div>';modal.querySelectorAll('[data-close]').forEach(function(b){b.onclick=closeModal;});var f=modal.querySelector('input,button');if(f)f.focus();}

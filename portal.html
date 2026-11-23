@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=28">
+<link rel="stylesheet" href="sw-portal.css?v=29">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -276,6 +276,7 @@ async function renderAnlage(id,mode){
   var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=vmDeckt(r[5],id),checks=r[6]||[],cf=r[7][0]||null,abo=(r[8]||[])[0]||null;
   var editable=mode==='check'||['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var CKM=mode==='check';
+  window._ckWechsel=hasVm||['in_pruefung','angebote','freigegeben','kuendigung','gewechselt'].indexOf(a.status)>=0;
   if(CKM&&/[?&]abo=ok/.test(location.search)&&!window._aboSync){window._aboSync=1;history.replaceState(null,'',location.pathname+location.hash);app.innerHTML=msg('info','Zahlung wird bestätigt …');try{await SW.fn('stripe',{aktion:'sync',anlage_id:id});}catch(x){}return renderAnlage(id,mode);}
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>'+
     (CKM?'<p class="sw-sub">'+[a.kwp?SW.num(a.kwp,1)+' kWp':'',a.direktvermarkter?E(a.direktvermarkter):'',a.standort?E(a.standort):''].filter(Boolean).join(' · ')+'</p>':'');
@@ -284,7 +285,7 @@ async function renderAnlage(id,mode){
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
   if(CKM)h+=checkSection(a,checks,allDocs,cf,abo);
-  if(CKM&&!(checks[0]&&checks[0].ergebnis&&checks[0].ergebnis.wechsel_hinweis)){var wp={s:390,m:590,l:890}[ckKlasse(a.kwp)];h+='<section class="sw-card sw-slim"><div class="sw-row" style="justify-content:space-between;gap:16px;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h2 style="margin:0 0 4px;font-size:18px">Direktvermarkter wechseln?</h2><p class="sw-muted" style="margin:0;font-size:14px">Wir holen Angebote ein, vergleichen sie und kümmern uns um Kündigung und Wechsel. '+(Number(a.kwp)>0?'Für diese Anlage einmalig '+SW.num(wp,0)+' € zzgl. USt, fällig erst, wenn Sie den neuen Vertrag unterschrieben haben.':'Pauschale nach Anlagengröße, fällig erst bei Vertragsschluss.')+'</p></div><button class="sw-btn ghost" id="ws_go">Wechsel für diese Anlage starten</button></div></section>';}
+  if(CKM&&!window._ckWechsel&&!(checks[0]&&checks[0].ergebnis&&checks[0].ergebnis.wechsel_hinweis)){var wp={s:390,m:590,l:890}[ckKlasse(a.kwp)];h+='<section class="sw-card sw-slim"><div class="sw-row" style="justify-content:space-between;gap:16px;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h2 style="margin:0 0 4px;font-size:18px">Direktvermarkter wechseln?</h2><p class="sw-muted" style="margin:0;font-size:14px">Wir holen Angebote ein, vergleichen sie und kümmern uns um Kündigung und Wechsel. '+(Number(a.kwp)>0?'Für diese Anlage einmalig '+SW.num(wp,0)+' € zzgl. USt, fällig erst, wenn Sie den neuen Vertrag unterschrieben haben.':'Pauschale nach Anlagengröße, fällig erst bei Vertragsschluss.')+'</p></div><button class="sw-btn ghost" id="ws_go">Wechsel für diese Anlage starten</button></div></section>';}
   /* Angebote */
   if(CKM){}
   else if(offers.length){
@@ -367,7 +368,8 @@ document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.targe
 function checkBody(e,aid,m){
   if(!e)return '';
   var k=e.kennzahlen||{},h='';
-  if(aid&&e.wechsel_hinweis)h+='<div class="sw-ws"><div><strong>'+(e.wechsel_hinweis==='rot'?'Ihr Direktvermarkter ist vergleichsweise teuer.':'Es gibt günstigere Direktvermarkter für Ihre Anlage.')+'</strong><br>Anlagen Ihrer Größe zahlen bei anderen Direktvermarktern derzeit weniger. Vielleicht lohnt sich ein Wechsel. Wir holen Angebote ein und kümmern uns um Kündigung und Wechsel.</div><button class="sw-btn small" data-ws="'+E(aid)+'">Zum Wechselservice</button></div>';
+  if(aid&&window._ckWechsel&&e===((window._ckChecks||[])[0]||{}).ergebnis)h+='<div class="sw-ws sw-ws-ok"><div><strong>Gut, dass Sie den Wechsel schon angestoßen haben.</strong><br>Wir holen gerade Angebote für Ihre Anlage ein und melden uns, sobald wir sie verglichen haben. Den aktuellen Stand sehen Sie im Bereich Direktvermarkter-Wechsel.</div><a class="sw-btn ghost small" href="#/anlage/'+E(aid)+'">Zum Wechsel</a></div>';
+  else if(aid&&!window._ckWechsel&&e.wechsel_hinweis)h+='<div class="sw-ws"><div><strong>'+(e.wechsel_hinweis==='rot'?'Ihr Direktvermarkter ist vergleichsweise teuer.':'Es gibt günstigere Direktvermarkter für Ihre Anlage.')+'</strong><br>Anlagen Ihrer Größe zahlen bei anderen Direktvermarktern derzeit weniger. Vielleicht lohnt sich ein Wechsel. Wir holen Angebote ein und kümmern uns um Kündigung und Wechsel.</div><button class="sw-btn small" data-ws="'+E(aid)+'">Zum Wechselservice</button></div>';
   if(k.menge_kwh)h+='<dl class="sw-grid sw-dl sw-ck-k"><div><dt>Einspeisung</dt><dd>'+SW.num(k.menge_kwh)+' kWh'+(k.kwh_je_kwp?' ('+SW.num(k.kwh_je_kwp,1)+' kWh/kWp)':'')+'</dd></div><div><dt>Marktwert + Marktprämie</dt><dd>'+SW.num(k.erloes_eur,2)+' €</dd></div><div><dt>Kosten Direktvermarkter</dt><dd>'+SW.num(k.kosten_dv_eur,2)+' €'+(k.kosten_dv_ct!=null?' ('+SW.num(k.kosten_dv_ct,2)+' ct/kWh)':'')+'</dd></div><div><dt>Netto nach Kosten</dt><dd><strong>'+SW.num(k.netto_eur,2)+' €</strong></dd></div></dl>';
   var pts=(e.punkte||[]).slice().sort(function(x,y){return STUFE[x.stufe][1]-STUFE[y.stufe][1];});
   var li=function(p,btn){return punktLi(p,'<strong>'+E(p.titel)+'</strong><br>'+E(p.text)+naechster(e,p),btn);};

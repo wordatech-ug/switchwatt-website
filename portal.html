@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; frame-src blob:; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – Switchwatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%232F54EB'/%3E%3Crect x='5' y='11' width='24' height='12' rx='6' fill='%23FFFFFF'/%3E%3Ccircle cx='23' cy='17' r='4' fill='%232F54EB'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=18">
+<link rel="stylesheet" href="sw-portal.css?v=19">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -36,7 +36,7 @@ function renderAuth(mode,note){
   app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr Switchwatt-Konto</h1>'+
   '<p class="sw-muted">'+(WUNSCH==='check'?'Hier laden Sie jeden Monat Ihre Abrechnungen hoch und sehen sofort, ob alles stimmt.':'Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.')+'</p>'+
   (note||'')+
-  (mode==='signup'&&!note&&WUNSCH==='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Der Abrechnungs-Check wird nach Ihrer Anfrage freigeschaltet. Wir nennen Ihnen die Konditionen vorab und melden uns persönlich.</div>':'')+
+  (mode==='signup'&&!note&&WUNSCH==='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Den Abrechnungs-Check buchen Sie pro Anlage, monatlich oder jährlich. Bei Fragen meldet sich ein Mensch persönlich.</div>':'')+
   (mode==='signup'&&!note&&WUNSCH!=='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
   '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
   '<form id="f" novalidate>'+
@@ -235,17 +235,18 @@ async function renderAnlage(id,mode){
   var ps=String(id).split('/');id=ps[0];var openM=ps[1]==='ck'?ps[2]:(mode==='check'&&/^\d{4}-\d{2}$/.test(ps[1]||'')?ps[1]:null);window._ckOpen=openM;
   var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+encodeURIComponent(id)),SW.rest('dokumente?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),
     SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
-    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id))]);
+    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=id&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id)),SW.rest('abos?select=*&anlage_id=eq.'+encodeURIComponent(id)).catch(function(){return [];})]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
-  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null;
+  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=r[5].length>0,checks=r[6]||[],cf=r[7][0]||null,abo=(r[8]||[])[0]||null;
   var editable=mode==='check'||['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var CKM=mode==='check';
+  if(CKM&&/[?&]abo=ok/.test(location.search)&&!window._aboSync){window._aboSync=1;history.replaceState(null,'',location.pathname+location.hash);app.innerHTML=msg('info','Zahlung wird bestätigt …');try{await SW.fn('stripe',{aktion:'sync',anlage_id:id});}catch(x){}return renderAnlage(id,mode);}
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>';
   if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
   if(!CKM&&!hasVm)h+=msg('info','Damit wir Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
-  if(CKM)h+=checkSection(a,checks,allDocs,cf);
+  if(CKM)h+=checkSection(a,checks,allDocs,cf,abo);
   /* Angebote */
   if(CKM){}
   else if(offers.length){
@@ -376,11 +377,29 @@ function druckBericht(a,checks){
   h+='<p class="m" style="margin-top:28px">'+HAFTUNG+'</p></body></html>';
   w.document.open();w.document.write(h);w.document.close();setTimeout(function(){w.focus();w.print();},400);
 }
-function checkSection(a,checks,allDocs,cf){
+var CK_PREIS={s:[29,313.2,'bis 250 kWp'],m:[39,421.2,'250 bis 500 kWp'],l:[49,529.2,'ab 500 kWp']};
+function ckKlasse(kwp){kwp=Number(kwp)||0;return kwp<=250?'s':kwp<=500?'m':'l';}
+var ABO_ST={active:'aktiv',trialing:'Testphase',past_due:'Zahlung offen',incomplete:'Zahlung nicht abgeschlossen',unpaid:'unbezahlt',canceled:'beendet',incomplete_expired:'abgebrochen'};
+function aboBox(a,abo){
+  if(abo&&['active','trialing','past_due'].indexOf(abo.status)>=0)return '<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Abo: '+(abo.intervall==='year'?'jährlich':'monatlich')+' · '+ABO_ST[abo.status]+(abo.kuendigung_zum?' · gekündigt zum '+SW.date(abo.kuendigung_zum):abo.laeuft_bis?' · nächste Abrechnung '+SW.date(abo.laeuft_bis):'')+' · <a href="#" id="ck_portal">Abo verwalten, Rechnungen</a></p>'+(abo.status==='past_due'?msg('err','Die letzte Zahlung ist nicht durchgegangen. Bitte unter „Abo verwalten“ die Karte aktualisieren, sonst wird der Check pausiert.'):'');
+  return '';
+}
+function aboAngebot(a,abo){
+  if(!(Number(a.kwp)>0))return msg('info','Bitte tragen Sie zuerst die Leistung der Anlage in kWp ein (oben bei „Bearbeiten“). Danach können Sie den Check buchen.');
+  var k=ckKlasse(a.kwp),p=CK_PREIS[k],e=function(x){return SW.num(x,2)+' €';};
+  return (abo&&abo.status&&ABO_ST[abo.status]&&['active','trialing','past_due'].indexOf(abo.status)<0?msg('info','Letztes Abo: '+ABO_ST[abo.status]+'.'):'')+
+  '<p style="margin:0 0 12px">Für diese Anlage ('+SW.num(a.kwp,0)+' kWp, Klasse '+p[2]+'):</p>'+
+  '<div class="sw-grid" style="margin-bottom:12px"><label class="sw-opt"><input type="radio" name="ck_iv" value="monat" checked> <span><strong>'+e(p[0])+' im Monat</strong><br><span class="sw-muted" style="font-size:14px">monatlich kündbar</span></span></label>'+
+  '<label class="sw-opt"><input type="radio" name="ck_iv" value="jahr"> <span><strong>'+e(p[1])+' im Jahr</strong><br><span class="sw-muted" style="font-size:14px">10 % günstiger, jährlich kündbar</span></span></label></div>'+
+  '<p class="sw-muted" style="font-size:14px;margin:0 0 12px">Alle Preise netto zzgl. 19 % Umsatzsteuer. Ab der dritten Anlage 10 % Mengenrabatt. Bezahlung per Karte, die Freischaltung erfolgt sofort nach der Zahlung.</p>'+
+  '<label class="sw-check" style="display:flex;align-items:flex-start;margin-bottom:14px"><input type="checkbox" id="ck_ut"><span>Ich buche als Unternehmer (zum Beispiel GmbH, GbR, Einzelunternehmen oder Landwirt), nicht als Verbraucher.</span></label>'+
+  '<div class="sw-row"><button class="sw-btn" id="ck_buy">Weiter zur Bezahlung</button></div>';
+}
+function checkSection(a,checks,allDocs,cf,abo){
   var frei=(profile&&profile.rolle==='admin')||(cf&&cf.frei_at);
   var h='<section class="sw-card" id="ck"><h2>Abrechnungs-Check</h2><p class="sw-muted">Laden Sie jeden Monat die Gutschrift Ihres Direktvermarkters und die Abrechnung der Marktprämie vom Netzbetreiber hoch. Wir prüfen Mengen, Marktwert, Marktprämie, Kosten, Umsatzsteuer, Stammdaten und die Regeln bei negativen Preisen.</p>';
-  if(!frei)h+=(cf&&cf.angefragt_at?msg('info','Sie haben den Abrechnungs-Check am '+SW.date(cf.angefragt_at)+' angefragt. Wir melden uns mit den Konditionen und schalten ihn dann frei.'):'<p style="margin:0 0 14px">Der Check ist in der Pilotphase auf Anfrage verfügbar. Wir nennen Ihnen die Konditionen vorab und schalten ihn dann für diese Anlage frei.</p><div class="sw-row"><button class="sw-btn" id="ck_req">Freischaltung anfragen</button></div>')+'<div id="ck_err"></div>';
-  else h+=
+  if(!frei)h+=aboAngebot(a,abo)+'<div id="ck_err"></div>';
+  else h+=aboBox(a,abo)+
   '<div style="max-width:260px;margin-bottom:14px"><label for="ck_m">Monat</label><input id="ck_m" type="month" value="'+vormonat()+'"></div>'+
   '<div class="sw-grid"><div><label for="ck_dv">Gutschrift Direktvermarkter</label><input id="ck_dv" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"></div>'+
   '<div><label for="ck_nb">Abrechnung Netzbetreiber (Marktprämie)</label><input id="ck_nb" class="sw-file" type="file" multiple accept="application/pdf,image/jpeg,image/png"><div class="sw-hint">Auch mehrere Dateien, zum Beispiel Gutschrift und Netznutzungsrechnung. Korrekturen einfach dazulegen, wir prüfen die neueste Fassung.</div></div></div>'+
@@ -422,6 +441,12 @@ function mountCheck(a,id){
   app.querySelectorAll('a[data-anfrage]').forEach(function(l){l.onclick=async function(ev){ev.preventDefault();var d=JSON.parse(l.dataset.anfrage),det=l.closest('details.sw-ck'),m=det?det.id.slice(3):null,c=cks.find(function(x){return String(x.monat).slice(0,7)===m;});if(!c)return;var e=c.ergebnis,p=(e.punkte||[]).find(function(x){return x.titel===d.t;});try{await navigator.clipboard.writeText(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w]),d.w));l.textContent='Text kopiert ✓';}catch(x){alertBox(anfrageText(e,p,besterKontakt((e.kontakte||{})[d.w]),d.w));}};});
   app.querySelectorAll('a[data-ck]').forEach(function(l){l.onclick=function(e){e.preventDefault();var d=$('#ck-'+l.dataset.ck);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}};});
   var rq=$('#ck_req');if(rq)rq.onclick=async function(){busy(this,true);try{await SW.rest('check_frei',{method:'POST',body:{anlage_id:a.id,angefragt_at:new Date().toISOString()}});await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check angefragt'}}).catch(function(){});renderAnlage(id);}catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(this,false);}};
+  var buy=$('#ck_buy');if(buy)buy.onclick=async function(){var b=this;$('#ck_err').innerHTML='';if(!$('#ck_ut').checked){$('#ck_err').innerHTML=msg('err','Bitte bestätigen Sie, dass Sie als Unternehmer buchen.');return;}
+    var iv=(app.querySelector('input[name=ck_iv]:checked')||{}).value||'monat';busy(b,true,'Bezahlseite wird geöffnet …');
+    try{var r=await SW.fn('stripe',{aktion:'checkout',anlage_id:a.id,intervall:iv,unternehmer:true});if(!r||!r.ok||!r.url)throw new Error((r&&r.error)||'Die Bezahlseite konnte nicht geöffnet werden.');
+      await SW.rest('verlauf',{method:'POST',body:{anlage_id:a.id,text:'Abrechnungs-Check gebucht ('+(iv==='jahr'?'jährlich':'monatlich')+'), Unternehmer bestätigt, weiter zur Bezahlung'}}).catch(function(){});location.href=r.url;}
+    catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
+  var pl=$('#ck_portal');if(pl)pl.onclick=async function(ev){ev.preventDefault();try{var r=await SW.fn('stripe',{aktion:'portal'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');location.href=r.url;}catch(x){alertBox(x.message);}};
   var go=$('#ck_go');if(!go)return;
   go.onclick=async function(){var b=this,m=$('#ck_m').value,dv=Array.prototype.slice.call($('#ck_dv').files),nb=Array.prototype.slice.call($('#ck_nb').files);var mo=Array.prototype.slice.call(($('#ck_mon')||{}).files||[]);$('#ck_err').innerHTML='';
     if(!/^\d{4}-\d{2}$/.test(m)){$('#ck_err').innerHTML=msg('err','Bitte den Monat wählen.');return;}

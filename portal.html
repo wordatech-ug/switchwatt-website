@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=27">
+<link rel="stylesheet" href="sw-portal.css?v=28">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -380,7 +380,7 @@ function checkBody(e,aid,m){
     else h+='<p class="sw-msg ok" style="margin:0 0 8px">Keine offenen Punkte in diesem Monat.</p>';
     var grp=function(t,arr,zu){return arr.length?'<details class="sw-vmdet"><summary>'+t+' ('+arr.length+')</summary><ul class="sw-ck-list" style="margin-top:10px">'+arr.map(function(p){return li(p,zu?erlBtn([[aid,m,p.titel]],true):'');}).join('')+'</ul></details>':'';};
     h+=grp('Weitere Hinweise',inf)+grp('In Ordnung',okp)+grp('Erledigt',erl,true);
-    h+=vorschlaege(e,pts.filter(function(p){return !ERL.has(erlKey(aid,m,p.titel));}),aid+'_'+m);
+    h+=vorschlaege(e,pts.filter(function(p){return (p.stufe==='rot'||p.stufe==='gelb')&&!ERL.has(erlKey(aid,m,p.titel));}),aid+'_'+m);
   }
   var ng=e.negativpreise;
   if(ng&&ng.perioden&&ng.perioden.length)h+='<details class="sw-vmdet"><summary>Betroffene Zeiten mit negativen Preisen ('+ng.perioden.length+')</summary><p class="sw-muted" style="font-size:14px">'+ng.perioden.map(function(x){return E(x.von)+' bis '+E(x.bis);}).join('<br>')+'</p></details>';

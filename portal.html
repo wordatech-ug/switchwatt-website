@@ -525,10 +525,11 @@ function checkSection(a,checks,allDocs,cf,abo){
   if(!frei)h+='<div id="ck_buybox">'+aboAngebot(a,abo)+'</div><div id="ck_err"></div>';
   else{
     var vtr=allDocs.filter(function(d){return d.art==='vertrag';})[0];
-    if(!vtr)h+='<div class="sw-ck-step"><h3 style="margin:16px 0 6px">Schritt 1: Ihr Vertrag</h3><p class="sw-muted" style="margin:0 0 12px;font-size:14px">Zuerst brauchen wir Ihren Vertrag mit dem Direktvermarkter. Daraus lesen wir das vereinbarte Entgelt. Nur so können wir prüfen, ob richtig abgerechnet wird.</p>'+
+    var ohneV=false;try{ohneV=localStorage.getItem('sw-ohnevtr-'+a.id)==='1';}catch(x){}
+    if(!vtr&&!ohneV)h+='<div class="sw-ck-step"><h3 style="margin:16px 0 6px">Schritt 1: Ihr Vertrag <span class="sw-muted" style="font-weight:400;font-size:14px">(dringend empfohlen)</span></h3><p class="sw-muted" style="margin:0 0 12px;font-size:14px">Daraus lesen wir das vereinbarte Entgelt. Nur mit Vertrag sehen wir, ob Ihr Direktvermarkter mehr abzieht als vereinbart. Ohne Vertrag prüfen wir alles andere, nur Ihr Entgelt nicht.</p>'+
       '<label class="sw-drop" for="ck_vtr"><strong>Vertrag hierher ziehen oder auswählen</strong><span class="sw-muted">PDF oder Foto, auch mehrere Seiten</span><span id="ck_vtrn" style="color:#C9D4FF"></span></label><input id="ck_vtr" type="file" multiple hidden accept="application/pdf,image/jpeg,image/png">'+
-      '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_vgo">Vertrag hochladen</button></div></div>';
-    else h+='<p class="sw-muted" style="font-size:14px;margin:14px 0 4px">✓ Vertrag liegt vor'+(a.entgelt?' · Entgelt laut Vertrag: '+E(a.entgelt):' · Entgelt im Vertrag nicht gefunden, bitte bei der Anlage eintragen')+'</p>'+
+      '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px;align-items:center;gap:12px"><button class="sw-btn" id="ck_vgo">Vertrag hochladen</button><button type="button" class="sw-btn ghost" id="ck_ohne">Ohne Vertrag weiter</button></div></div>';
+    else h+=(vtr?'<p class="sw-muted" style="font-size:14px;margin:14px 0 4px">✓ Vertrag liegt vor'+(a.entgelt?' · Entgelt laut Vertrag: '+E(a.entgelt):' · Entgelt im Vertrag nicht gefunden, bitte bei der Anlage eintragen')+'</p>':'<p class="sw-muted" style="font-size:14px;margin:14px 0 4px">Ohne Vertrag: Ihr Vermarktungsentgelt prüfen wir nicht. <a href="#" id="ck_mitvtr">Vertrag jetzt hochladen</a></p>')+
       '<h3 style="margin:18px 0 6px">Abrechnungen des Monats</h3>'+
       '<label class="sw-drop sw-drop-ck" for="ck_files"><strong>Abrechnungen hierher ziehen oder auswählen</strong><span class="sw-muted">Eine vom Direktvermarkter, eine vom Netzbetreiber. Sie heißen oft „Gutschrift“. Gern beide auf einmal, PDF oder Foto.</span></label>'+
       '<input id="ck_files" type="file" multiple hidden accept="application/pdf,image/jpeg,image/png"><ul class="sw-chips" id="ck_list"></ul>'+
@@ -580,6 +581,8 @@ function mountCheck(a,id){
       var box=$('#ck_buybox');box.innerHTML='<h3 style="margin:0 0 10px">Bezahlung'+(r.rabatt?' (inkl. 10 % Mengenrabatt)':'')+'</h3><div id="ck_pay" class="sw-pay"></div>'+STRIPE_HINWEIS+'<p style="font-size:14px;margin:10px 0 0"><a href="#" id="ck_abbr">Abbrechen</a></p>';
       await einbetten('#ck_pay',r.client_secret);$('#ck_abbr').onclick=function(ev){ev.preventDefault();if(_einbett){_einbett.destroy();_einbett=null;}renderAnlage(id);};}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
+  var ckO=$('#ck_ohne');if(ckO)ckO.onclick=function(){try{localStorage.setItem('sw-ohnevtr-'+a.id,'1');}catch(x){}renderAnlage(id);};
+  var ckM=$('#ck_mitvtr');if(ckM)ckM.onclick=function(e){e.preventDefault();try{localStorage.removeItem('sw-ohnevtr-'+a.id);}catch(x){}renderAnlage(id);};
   var vgo=$('#ck_vgo');if(vgo){var vi=$('#ck_vtr');vi.onchange=function(){var n=Array.prototype.map.call(vi.files,function(f){return f.name;}).join(', ');$('#ck_vtrn').textContent=n?'Ausgewählt: '+n:'';};
     vgo.onclick=async function(){var b=this;if(!vi.files.length){$('#ck_err').innerHTML=msg('err','Bitte zuerst den Vertrag auswählen.');return;}
       busy(b,true,'Wird hochgeladen …');try{var ids=await uploadFiles(a,vi,'vertrag');b.textContent='Wir lesen Ihren Vertrag aus … (bis zu 30 Sekunden)';try{await SW.fn('auslesen',{dokument_id:ids[0]});}catch(e){}renderAnlage(id);}

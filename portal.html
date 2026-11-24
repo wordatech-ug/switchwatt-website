@@ -419,6 +419,8 @@ function anfrageKern(e,p,w){
   if(/^Marktwert-Betrag/.test(t))return 'in Ihrer Abrechnung für '+m+' passt der Betrag für den Marktwert nicht zu Menge und Preis. Bitte prüfen Sie die Berechnung.';
   if(/^Abregelung ohne Entschädigung/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine abgeregelte Menge ausgewiesen, aber kein Ausgleich. Bitte erläutern Sie uns, wie die Abregelung vergütet wird.';
   if(/abgeregelt|^Abgeregelt/.test(t))return 'in Ihrer Abrechnung für '+m+' ist eine größere abgeregelte Menge ausgewiesen. Bitte erläutern Sie uns, aus welchem Grund abgeregelt wurde und wie die entgangene Marktprämie ausgeglichen wird.';
+  if(/^Volleinspeisungsbonus wird nicht gezahlt/.test(t))return 'unsere Anlage speist den gesamten Strom ins Netz ein (Volleinspeisung). In Ihrer Gutschrift für '+m+' ist jedoch der anzulegende Wert für Teileinspeisung angesetzt. Bitte prüfen Sie, ob die Volleinspeisung bei Ihnen hinterlegt ist, und korrigieren Sie die Gutschrift auf den anzulegenden Wert für Volleinspeisung (§ 48 Abs. 2a EEG). Falls Ihnen eine Mitteilung zur Volleinspeisung fehlt, teilen Sie uns das bitte mit.';
+  if(/^Anzulegender Wert prüfen/.test(t))return 'der in Ihrer Gutschrift für '+m+' angesetzte anzulegende Wert weicht von unserer Berechnung ab. Bitte teilen Sie uns mit, mit welchem Inbetriebnahmedatum, welcher Leistung und welcher Einspeiseart (Voll- oder Teileinspeisung) Sie rechnen.';
   if(/^Marktprämie/.test(t))return 'die Marktprämie in Ihrer Gutschrift für '+m+' können wir nicht nachvollziehen. Bitte erläutern Sie uns die Berechnung.';
   if(/^Einspeisemengen/.test(t))return 'die Einspeisemenge in '+wer+' für '+m+' weicht von der Menge '+(w==='dv'?'des Netzbetreibers':'des Direktvermarkters')+' ab. Bitte prüfen Sie, welche Menge gilt.';
   if(/^Einspeisung deutlich unter/.test(t))return 'die abgerechnete Einspeisemenge für '+m+' liegt deutlich unter der Erzeugung, die unser Monitoring für diesen Monat zeigt. Bitte prüfen Sie die Zählerwerte und teilen Sie uns die abgelesenen Stände mit.';
@@ -439,7 +441,7 @@ function sammelText(e,pts,w){
   var a=window._ckAnlage||{},ko=besterKontakt((e.kontakte||{})[w])||{},m=monatName(e.monat);
   var gross=function(x){return x.charAt(0).toUpperCase()+x.slice(1);};
   var bezug=bezugsBlock(a,ko,w);
-  var liste=kerne.length===1?gross(kerne[0]):kerne.map(function(k,i){return (i+1)+'. '+gross(k);}).join('\n\n');
+  var liste=kerne.length===1?kerne[0]:kerne.map(function(k,i){return (i+1)+'. '+gross(k);}).join('\n\n');
   return 'Betreff: '+(a.name?a.name+': ':'')+(w==='dv'?'Abrechnung ':'Gutschrift Marktprämie ')+m+'\n\n'+bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+(kerne.length>1?'zu '+(w==='dv'?'Ihrer Abrechnung':'Ihrer Gutschrift')+' für '+m+' haben wir folgende Punkte:\n\n':'')+liste+(kerne.length>1?'\n\nBitte prüfen Sie die Punkte und senden Sie uns gegebenenfalls eine korrigierte Fassung.':'')+'\n\n'+(w==='dv'?'Ihre Abrechnung':'Ihre Gutschrift')+' für '+m+' haben wir dieser E-Mail beigefügt.'+'\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber&&!/nat(ü|ue)rliche person|^ABR\d/i.test(a.betreiber)?a.betreiber:'',a.betreiber_anschrift].filter(Boolean).join('\n');
 }
 function vorschlaege(e,pts,key){

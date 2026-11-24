@@ -92,7 +92,7 @@ function renderNewPassword(){
 async function loadAll(){
   var r=await Promise.all([
     SW.rest('vollmachten?select=*&widerrufen_at=is.null&order=erteilt_at.desc'),
-    SW.rest('anlagen?select=*,angebote(id),freigaben(id),pruefungen(monat,status)&order=created_at.asc')
+    SW.rest('anlagen?select=*,angebote(id),freigaben(id),pruefungen(monat,status),dokumente(art)&order=created_at.asc')
   ]);
   var vms=r[0]||[];
   return {vm:vms[0]||null,vms:vms,anlagen:r[1]};
@@ -125,7 +125,7 @@ async function renderHome(){
     '<details class="sw-vmdet"><summary>Vollständigen Text der Vollmacht lesen</summary><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div></details>'+
     '<form id="vmf" style="margin-top:16px"><label>Für welche Anlagen?</label>'+
     (offenA.length>1?'<label class="sw-check" style="margin:6px 0 4px"><input type="checkbox" id="vmall"><span><strong>Alle auswählen</strong></span></label>':'')+
-    offenA.map(function(x){return '<label class="sw-check" style="margin:4px 0"><input type="checkbox" class="vma" value="'+x.id+'"'+(offenA.length===1?' checked':'')+'><span>'+E(x.name)+(x.kwp?' <span class="sw-muted">('+SW.num(x.kwp,1)+' kWp)</span>':'')+'</span></label>';}).join('')+
+    offenA.map(function(x){var hatV=SW.arr(x.dokumente).some(function(d){return d.art==='vertrag';});if(!hatV)return '<div class="sw-check" style="margin:4px 0;opacity:.85"><input type="checkbox" disabled><span>'+E(x.name)+' <span style="color:#FCD34D;font-size:14px">· Vertrag fehlt, für den Wechsel nötig: <a href="#/anlage/'+x.id+'">jetzt hochladen</a></span></span></div>';return '<label class="sw-check" style="margin:4px 0"><input type="checkbox" class="vma" value="'+x.id+'"'+(offenA.length===1?' checked':'')+'><span>'+E(x.name)+(x.kwp?' <span class="sw-muted">('+SW.num(x.kwp,1)+' kWp)</span>':'')+'</span></label>';}).join('')+
     '<div class="sw-grid" style="margin-top:12px"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
     '<div id="vmreg" aria-live="polite"></div>'+'<label class="sw-check" style="margin:16px 0 10px"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben für die ausgewählten Anlagen und bin allein vertretungsberechtigt oder handle mit Zustimmung aller Vertretungsberechtigten (bei einer GbR in der Regel alle Gesellschafter).</span></label>'+'<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="vmagb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Mit der Vollmacht beauftragen Sie uns, Angebote einzuholen. Finden wir kein besseres Angebot, kostet das nichts.</p><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht und Auftrag erteilen</button></form></section>';
   }
@@ -204,10 +204,10 @@ async function uploadFiles(anlage,input,art){
 function renderNew(){
   var ziel=modus==='check'?'#/check/':'#/anlage/';
   app.innerHTML='<p style="margin-top:28px"><a href="'+(modus==='check'?'#/check':'#/')+'">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
-  '<p class="sw-muted">Laden Sie Ihren <strong>Vertrag mit dem Direktvermarkter</strong> hoch. Wir lesen Entgelt, Laufzeit und Kündigungsfrist aus und gleichen die Anlage mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch. Ohne Vertrag geht es auch, dann prüfen wir aber Ihr Vermarktungsentgelt nicht.</p>'+
+  '<p class="sw-muted">Laden Sie Ihren <strong>Vertrag mit dem Direktvermarkter</strong> hoch. Wir lesen Entgelt, Laufzeit und Kündigungsfrist aus und gleichen die Anlage mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch. '+(modus==='check'?'Ohne Vertrag geht es auch, dann prüfen wir aber Ihr Vermarktungsentgelt nicht.':'<strong>Für den Wechsel ist der Vertrag nötig:</strong> Nur daraus kennen wir Laufzeit und Kündigungsfrist.')+'</p>'+
   '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag hierher ziehen oder auswählen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
-  '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 320px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung (Vertrag reiche ich nach)</option></select></div>'+
+  '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 320px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung (Vertrag reiche ich nach'+(modus==='check'?'':', vor der Vollmacht nötig')+')</option></select></div>'+
   '<div id="err"></div><div class="sw-row" style="margin-top:16px"><button class="sw-btn" id="go">Hochladen und auslesen</button><button class="sw-btn ghost" id="manual">Ohne Dokument selbst ausfüllen</button></div>'+
   '<p class="sw-muted" style="font-size:13px;margin-bottom:0">Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und SwitchWatt sichtbar. Zum Auslesen wird das Dokument kurz an unseren KI-Dienstleister übermittelt, siehe <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p></section>';
   $('#up_doc').onchange=function(){var n=Array.prototype.map.call(this.files,function(f){return f.name;}).join(', ');$('#fname').textContent=n?'Ausgewählt: '+n:'';};
@@ -290,6 +290,7 @@ async function renderAnlage(id,mode){
   if(CKM&&/[?&]abo=ok/.test(location.search)&&!window._aboSync){window._aboSync=1;history.replaceState(null,'',location.pathname+location.hash);app.innerHTML=msg('info','Zahlung wird bestätigt …');try{await SW.fn('stripe',{aktion:'sync',anlage_id:id});}catch(x){}return renderAnlage(id,mode);}
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>'+
     (CKM?'<p class="sw-sub">'+[a.kwp?SW.num(a.kwp,1)+' kWp':'',a.direktvermarkter?E(a.direktvermarkter):'',a.standort?E(a.standort):''].filter(Boolean).join(' · ')+'</p>':'');
+  if(!CKM&&!allDocs.some(function(x){return x.art==='vertrag';}))h+=msg('info','Für den Wechsel brauchen wir Ihren Vertrag mit dem Direktvermarkter. Nur daraus kennen wir Laufzeit und Kündigungsfrist. Bitte unten bei „Dokumente“ als „Vertrag“ hochladen.');
   if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
   if(window._wsFehler){h+=msg('err',window._wsFehler);window._wsFehler=null;}
   if(!CKM&&!hasVm)h+=msg('info','Damit wir für diese Anlage Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');

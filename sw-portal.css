@@ -184,3 +184,5 @@ input[type=file]::file-selector-button{font:inherit;font-weight:600;color:#fff;b
 input[type=file]::file-selector-button:hover{background:rgba(255,255,255,.12)}
 .sw-fv summary .sw-btn{white-space:nowrap;flex:none}
 .sw-ws-ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.35);color:#BBF7D0}
+
+.sw-fv-auf{font-size:13px;color:#8FA6FF;margin-left:8px;white-space:nowrap}.sw-fv-auf::after{content:' ▾'}.sw-fv[open] .sw-fv-auf{font-size:0}.sw-fv[open] .sw-fv-auf::after{content:'Text ausblenden ▴';font-size:13px}

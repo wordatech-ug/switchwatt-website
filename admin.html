@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co; base-uri 'self'; form-action 'self'">
 <title>Verwaltung – SwitchWatt</title>
-<link rel="stylesheet" href="sw-portal.css?v=29">
+<link rel="stylesheet" href="sw-portal.css?v=30">
 <style>
 #app.sw-wrap{max-width:1200px}
 .kc{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;margin-top:12px;background:rgba(255,255,255,.02)}
@@ -80,7 +80,7 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
   an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
     var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote),fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
     var fristP=d==null?4:d<=14?1:d<=30?2:d<=60?3:4;
-    if(offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
+    if(hatVm&&offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
     if(fg.length&&['kuendigung','gewechselt'].indexOf(a.status)<0)add('freigabe:'+a.id,fristP,'Kunde hat freigegeben: Kündigung und neuen Vertrag vorbereiten',lk,wer,'freigegeben am '+SW.date(fg[0].freigegeben_at));
     if(hatVm&&offen&&!ang.length&&!fg.length)add('angebote:'+a.id,fristP,'Angebote einholen',lk,wer,'Vollmacht seit '+SW.date(v.erteilt_at)+(a.kuendigung_bis?' · kündigen bis '+SW.date(a.kuendigung_bis):' · Frist offen'));
     if(ang.length&&!fg.length&&offen){var neu=ang.map(function(o){return o.created_at;}).sort().pop(),t=tage(neu);if(t!=null&&t>=5)add('nachfassen:'+a.id+':'+String(neu).slice(0,10),fristP,'Kunde hat seit '+t+' Tagen nicht freigegeben: nachfassen',lk,wer,ang.length+' Angebot(e)');}
@@ -115,7 +115,8 @@ async function renderList(){
   var anOf={};an.forEach(function(a){(anOf[a.owner]=anOf[a.owner]||[]).push(a);});
   var aboL=[];Object.keys(abo).forEach(function(k){aboL=aboL.concat(abo[k]);});
   var jahr=aboL.reduce(function(t,x){return t+aboJahr(x);},0), kwp=an.reduce(function(t,a){return t+(Number(a.kwp)||0);},0);
-  var offenW=an.filter(function(a){return OPEN.indexOf(a.status)>=0;}).length;
+  var wechsel=function(a){var v=vm[a.owner];return !!(v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0));};
+  var offenW=an.filter(function(a){return OPEN.indexOf(a.status)>=0&&wechsel(a);}).length;
   var h='<div class="sw-row" style="justify-content:space-between;align-items:center"><h1>Übersicht</h1>'+(SA?'<button class="sw-btn ghost small" data-sich="" title="Alle Daten und Dateien als ZIP herunterladen, z. B. in OneDrive „11 SwitchWatt“ ablegen">Datensicherung herunterladen</button>':'')+'</div><div class="sw-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px">'+
     kpi('Kunden',akt.length,akt.filter(function(p){return vm[p.id];}).length+' mit Vollmacht')+
     kpi('Anlagen',an.length,SW.num(kwp)+' kWp gesamt')+
@@ -127,16 +128,16 @@ async function renderList(){
     kunden.map(function(p){var g=!!p.geschlossen_at,al=anOf[p.id]||[];
       return '<div class="kc"'+(g?' style="opacity:.55"':'')+'><div class="kc-top">'+
         '<div><a class="kc-name" href="#/k/'+p.id+'">'+E(p.name||p.email)+'</a>'+(g?' <span class="sw-badge" style="--c:#71717A">geschlossen</span>':'')+'<div class="sw-muted" style="font-size:14px;margin-top:2px">'+E(p.firma||'')+(p.firma?' · ':'')+E(p.email)+'</div></div>'+
-        '<div><div class="kc-l">Vollmacht</div><div class="kc-v">'+(vm[p.id]?'<span class="sw-badge" style="--c:#22C55E">erteilt</span> '+SW.date(vm[p.id].erteilt_at):(g?'–':'<span class="sw-badge" style="--c:#F87171">fehlt</span>'))+'</div></div>'+
+        '<div><div class="kc-l">Vollmacht</div><div class="kc-v">'+(vm[p.id]?'<span class="sw-badge" style="--c:#22C55E">erteilt</span> '+SW.date(vm[p.id].erteilt_at):(g?'–':(abo[p.id]&&abo[p.id].length?'<span class="sw-muted">nicht nötig (nur Check)</span>':'<span class="sw-badge" style="--c:#F87171">fehlt</span>')))+'</div></div>'+
         '<div><div class="kc-l">Abo</div><div class="kc-v">'+aboTxt(p.id)+'</div></div>'+
         '<div><div class="kc-l">Letzte Zahlung</div><div class="kc-v" id="zl_'+p.id+'"><span class="sw-muted">…</span></div></div></div>'+
         '<div class="kc-an">'+(al.length?al.map(function(a){var d=SW.daysUntil(a.kuendigung_bis),docs=SW.arr(a.dokumente),pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];
-          return '<div class="kc-row"><a href="#/a/'+a.id+'"><strong>'+E(a.name)+'</strong></a><span>'+SW.num(a.kwp,1)+' kWp</span><span>'+SW.badge(a.status)+'</span><span>'+(a.kuendigung_bis?'kündigen bis '+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?' <span class="sw-red">('+d+' T.)</span>':''):'<span class="sw-muted">Frist offen</span>')+'</span><span class="sw-muted">'+docs.length+' Dok. · '+SW.arr(a.angebote).length+' Angebot(e)'+(pc?' · Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(2,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||''):'')+paTxt(a.id)+'</span></div>';}).join(''):'<div class="kc-row"><span class="sw-muted">Noch keine Anlage</span></div>')+'</div></div>';}).join('')+
+          return '<div class="kc-row"><a href="#/a/'+a.id+'"><strong>'+E(a.name)+'</strong></a><span>'+SW.num(a.kwp,1)+' kWp</span><span>'+SW.badge(a.status)+'</span><span>'+(a.kuendigung_bis?'kündigen bis '+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0&&wechsel(a)?' <span class="sw-red">('+d+' T.)</span>':''):'<span class="sw-muted">Frist offen</span>')+'</span><span class="sw-muted">'+docs.length+' Dok. · '+SW.arr(a.angebote).length+' Angebot(e)'+(pc?' · Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(2,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||''):'')+paTxt(a.id)+'</span></div>';}).join(''):'<div class="kc-row"><span class="sw-muted">Noch keine Anlage</span></div>')+'</div></div>';}).join('')+
     (kunden.length?'':'<p class="sw-muted">Noch keine Kunden.</p>')+'</section>';
-  var fr=an.filter(function(a){return a.kuendigung_bis&&OPEN.indexOf(a.status)>=0;}).sort(function(x,y){return x.kuendigung_bis<y.kuendigung_bis?-1:1;});
-  var ohne=an.filter(function(a){return !a.kuendigung_bis&&OPEN.indexOf(a.status)>=0;});
+  var fr=an.filter(function(a){return a.kuendigung_bis&&OPEN.indexOf(a.status)>=0&&wechsel(a);}).sort(function(x,y){return x.kuendigung_bis<y.kuendigung_bis?-1:1;});
+  var ohne=an.filter(function(a){return !a.kuendigung_bis&&OPEN.indexOf(a.status)>=0&&wechsel(a);});
   var WS=r[6]||[];if(WS.length){var anById={};r[0].forEach(function(x){anById[x.id]=x;});h+='<section class="sw-card" style="border-color:rgba(245,183,10,.5)"><h2>Wartende Abrechnungs-Checks ('+WS.length+')</h2><p class="sw-muted" style="font-size:14px;margin-top:-4px">Das Auslesen ist ausgefallen (z. B. KI-Guthaben leer). Der Kunde hat eine freundliche Meldung bekommen. Nach dem Aufladen hier erneut starten.</p>'+WS.map(function(w){var a=anById[w.anlage_id]||{},u=users[w.owner]||{};return '<div class="kc-row" style="grid-template-columns:minmax(160px,1.3fr) 100px minmax(160px,1.3fr) 1fr 150px"><span><a href="#/a/'+w.anlage_id+'">'+E(a.name||'?')+'</a></span><span>'+String(w.monat).slice(5,7)+'/'+String(w.monat).slice(0,4)+'</span><span>'+E(u.name||u.email||'?')+'</span><span class="sw-muted" style="font-size:13px">'+E(w.fehler||'')+' · '+w.versuche+'×, '+SW.dateTime(w.am)+'</span><button class="sw-btn small" data-wsneu="'+w.anlage_id+'|'+String(w.monat).slice(0,7)+'">Erneut prüfen</button></div>';}).join('')+'</section>';}
-  h+='<section class="sw-card"><h2>Fristen</h2><p class="sw-muted" style="font-size:14px;margin-top:-4px">Offene Wechsel mit Kündigungstermin, der nächste zuerst.</p>'+
+  h+='<section class="sw-card"><h2>Fristen</h2><p class="sw-muted" style="font-size:14px;margin-top:-4px">Offene Wechsel (mit Vollmacht) mit Kündigungstermin, der nächste zuerst. Anlagen nur mit Abrechnungs-Check stehen hier nicht.</p>'+
     (fr.length?fr.map(function(a){var u=users[a.owner]||{},d=SW.daysUntil(a.kuendigung_bis),c=d<0?'#71717A':d<=14?'#F87171':d<=45?'#F5B70A':'#22C55E';
       return '<div class="kc-row" style="grid-template-columns:130px minmax(160px,1.3fr) minmax(160px,1.3fr) 150px 1fr"><span class="sw-badge" style="--c:'+c+'">'+(d<0?'abgelaufen':d===0?'heute':'noch '+d+' Tage')+'</span><span><strong>'+SW.date(a.kuendigung_bis)+'</strong> · <a href="#/a/'+a.id+'">'+E(a.name)+'</a></span><span><a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>'+(u.firma?' <span class="sw-muted">'+E(u.firma)+'</span>':'')+'</span><span>'+SW.badge(a.status)+'</span><span class="sw-muted">'+(vm[a.owner]?'':'<span class="sw-red">keine Vollmacht</span> · ')+SW.arr(a.angebote).length+' Angebot(e)'+(SW.arr(a.freigaben).length?' · freigegeben':'')+'</span></div>';}).join(''):'<p class="sw-muted">Keine offenen Fristen.</p>')+
     (ohne.length?'<p style="margin:14px 0 0;font-size:14px"><span class="sw-red">Frist noch nicht erfasst:</span> '+ohne.map(function(a){return '<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';}).join(', ')+'</p>':'')+'</section>';

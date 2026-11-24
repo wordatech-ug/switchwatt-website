@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; connect-src https://fyseraoxefnwsayvqzps.supabase.co https://api.stripe.com https://*.stripe.com; frame-src blob: https://js.stripe.com https://*.stripe.com; base-uri 'self'; form-action 'self'">
 <title>Kundenkonto – SwitchWatt</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232F54EB'/%3E%3Cpath d='M34 17.5A12 12 0 1 0 36 26' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M36.5 10.5v7.5H29' fill='none' stroke='%23fff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25.5 15.5l-6 10h5l-2 7.5 7.5-10.5h-5l2.5-7z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="sw-portal.css?v=29">
+<link rel="stylesheet" href="sw-portal.css?v=30">
 </head>
 <body>
 <div class="sw-top"><div>
@@ -427,30 +427,35 @@ function anfrageKern(e,p,w){
   return null;
 }
 
+/* Bezug für jede Anfrage: wer, welche Anlage, MaLo, Kundennummer. Fehlt etwas, steht ein Platzhalter zum Ausfüllen da. */
+function bezugsBlock(a,k,w){
+  var betr=a.betreiber&&!/nat(ü|ue)rliche person|^ABR\d/i.test(a.betreiber)?a.betreiber:'[Name bzw. Firma des Anlagenbetreibers]';
+  return ['Anlagenbetreiber: '+betr,'Anlage: '+(a.name||'')+(a.standort?', '+a.standort:''),'Marktlokation (MaLo): '+((k.malo||a.malo)||'[MaLo eintragen]'),'Kunden-/Vertragsnummer: '+(k.kundennummer||(w==='dv'?a.dv_vertragsnr:'')||'[Nummer eintragen]')].join('\n');
+}
 /* Formulierungsvorschlag: EIN Text je Empfänger mit allen offenen Punkten, zum Kopieren (kein Mailprogramm) */
 function sammelText(e,pts,w){
   var kerne=[];pts.forEach(function(p){if((p.an||[]).indexOf(w)<0)return;var k=anfrageKern(e,p,w);if(k&&kerne.indexOf(k)<0)kerne.push(k);});
   if(!kerne.length)return null;
   var a=window._ckAnlage||{},ko=besterKontakt((e.kontakte||{})[w])||{},m=monatName(e.monat);
   var gross=function(x){return x.charAt(0).toUpperCase()+x.slice(1);};
-  var bezug=[a.name?'Anlage: '+a.name+(a.standort?', '+a.standort:''):'',(ko.malo||a.malo)?'Marktlokation: '+(ko.malo||a.malo):'',ko.kundennummer?'Kunden-/Vertragsnummer: '+ko.kundennummer:''].filter(Boolean).join('\n');
+  var bezug=bezugsBlock(a,ko,w);
   var liste=kerne.length===1?gross(kerne[0]):kerne.map(function(k,i){return (i+1)+'. '+gross(k);}).join('\n\n');
-  return 'Betreff: '+(a.name?a.name+': ':'')+(w==='dv'?'Abrechnung ':'Gutschrift Marktprämie ')+m+'\n\n'+bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+(kerne.length>1?'zu '+(w==='dv'?'Ihrer Abrechnung':'Ihrer Gutschrift')+' für '+m+' haben wir folgende Punkte:\n\n':'')+liste+(kerne.length>1?'\n\nBitte prüfen Sie die Punkte und senden Sie uns gegebenenfalls eine korrigierte Fassung.':'')+'\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber&&!/nat(ü|ue)rliche person/i.test(a.betreiber)?a.betreiber:'',a.betreiber_anschrift].filter(Boolean).join('\n');
+  return 'Betreff: '+(a.name?a.name+': ':'')+(w==='dv'?'Abrechnung ':'Gutschrift Marktprämie ')+m+'\n\n'+bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+(kerne.length>1?'zu '+(w==='dv'?'Ihrer Abrechnung':'Ihrer Gutschrift')+' für '+m+' haben wir folgende Punkte:\n\n':'')+liste+(kerne.length>1?'\n\nBitte prüfen Sie die Punkte und senden Sie uns gegebenenfalls eine korrigierte Fassung.':'')+'\n\n'+(w==='dv'?'Ihre Abrechnung':'Ihre Gutschrift')+' für '+m+' haben wir dieser E-Mail beigefügt.'+'\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber&&!/nat(ü|ue)rliche person|^ABR\d/i.test(a.betreiber)?a.betreiber:'',a.betreiber_anschrift].filter(Boolean).join('\n');
 }
 function vorschlaege(e,pts,key){
   var h='';['dv','nb'].forEach(function(w){var t=sammelText(e,pts,w);if(!t)return;var k=besterKontakt((e.kontakte||{})[w])||{},id='fv_'+String(key).replace(/[^a-z0-9_]/gi,'')+'_'+w;
-    h+='<details class="sw-fv"><summary><span><strong>An '+(w==='dv'?'den Direktvermarkter':'den Netzbetreiber')+'</strong>'+(k.name?' <span class="sw-muted">'+E(k.name)+'</span>':'')+'</span><button type="button" class="sw-btn ghost small" data-kopie="'+id+'">Text kopieren</button></summary>'+
+    h+='<details class="sw-fv"><summary><span><strong>An '+(w==='dv'?'den Direktvermarkter':'den Netzbetreiber')+'</strong>'+(k.name?' <span class="sw-muted">'+E(k.name)+'</span>':'')+' <span class="sw-fv-auf">Text ansehen</span></span><button type="button" class="sw-btn ghost small" data-kopie="'+id+'">Text kopieren</button></summary>'+
       (kontaktZeile(k)?'<div class="sw-muted" style="font-size:13px;margin:8px 0">Empfänger: '+kontaktZeile(k)+'</div>':'')+
       '<textarea id="'+id+'" readonly rows="'+Math.min(18,t.split('\n').length+1)+'">'+E(t)+'</textarea></details>';});
-  return h?'<h3 style="margin:22px 0 4px">Vorschlag zur Formulierung</h3><p class="sw-hint" style="margin:0 0 8px">Alle offenen Punkte je Empfänger in einem Text. Kopieren, ins E-Mail-Programm einfügen, fertig.</p>'+h:'';
+  return h?'<h3 style="margin:22px 0 4px">Vorschlag zur Formulierung</h3><p class="sw-hint" style="margin:0 0 8px">Alle offenen Punkte je Empfänger in einem Text. Zum Ansehen aufklappen, dann kopieren, ins E-Mail-Programm einfügen und die Abrechnung anhängen. Eckige Klammern bitte ausfüllen.</p>'+h:'';
 }
 document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-kopie]');if(!b)return;ev.preventDefault();var ta=document.getElementById(b.dataset.kopie);if(!ta)return;
   try{await navigator.clipboard.writeText(ta.value);}catch(x){ta.select();document.execCommand('copy');}
   var o=b.textContent;b.textContent='Kopiert ✓';setTimeout(function(){b.textContent=o;},1800);});
 function anfrageText(e,p,k,w){
   var kern=anfrageKern(e,p,w);if(!kern)return null;k=k||{};var a=window._ckAnlage||{};
-  var bezug=['Anlage: '+(a.name||'')+(a.standort?', '+a.standort:''),(k.malo||a.malo)?'Marktlokation: '+(k.malo||a.malo):'',k.kundennummer?'Kunden-/Vertragsnummer: '+k.kundennummer:''].filter(Boolean).join('\n');
-  return bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+kern+'\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber,a.betreiber_anschrift].filter(Boolean).join('\n');
+  var bezug=bezugsBlock(a,k,w);
+  return bezug+'\n\nSehr geehrte Damen und Herren,\n\n'+kern+'\n\n'+(w==='dv'?'Ihre Abrechnung':'Ihre Gutschrift')+' für '+monatName(e.monat)+' haben wir dieser E-Mail beigefügt.\n\nVielen Dank und freundliche Grüße\n\n'+[a.betreiber,a.betreiber_anschrift].filter(Boolean).join('\n');
 }
 function anfrageLink(e,p,k,w){var a=window._ckAnlage||{};return 'mailto:'+encodeURIComponent(k.email)+'?subject='+encodeURIComponent((a.name?a.name+': ':'')+'Abrechnung '+monatName(e.monat))+'&body='+encodeURIComponent(anfrageText(e,p,k,w));}
 function druckBericht(a,checks){

@@ -155,6 +155,30 @@
   };
   SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
   SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von SwitchWatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Gutschrift Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Auszug' };
+  // Vertragstermine: aktuelles Vertragsende und nächster Kündigungstermin, inklusive automatischer Verlängerung.
+  // Ergebnis: { ende, kuendigen_bis, verlaengert, fehlt: 'vertrag' | 'start' | null }
+  SW.termine = function (a, hatVertrag) {
+    var ZW = { ein: 1, einen: 1, einem: 1, eine: 1, zwei: 2, drei: 3, vier: 4, sechs: 6, zwoelf: 12, 'zwölf': 12 };
+    var monate = function (t) { var m = String(t || '').toLowerCase().match(/(\d+|ein|einen|einem|eine|zwei|drei|vier|sechs|zwölf|zwoelf)\s*(?:weitere[sn]?\s+)?(jahr|monat|woche)/); if (!m) return null; var n = /\d/.test(m[1]) ? Number(m[1]) : ZW[m[1]]; return m[2] === 'jahr' ? n * 12 : m[2] === 'monat' ? n : n / 4.345; };
+    var iso = function (d) { return d.toISOString().slice(0, 10); };
+    var plusMon = function (d, n) { var x = new Date(d.getTime()); var tag = x.getUTCDate(); x.setUTCDate(1); x.setUTCMonth(x.getUTCMonth() + Math.floor(n)); var max = new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 0)).getUTCDate(); x.setUTCDate(Math.min(tag, max)); if (n % 1) x.setUTCDate(x.getUTCDate() + Math.round((n % 1) * 30.44)); return x; };
+    var d = function (t) { return t ? new Date(String(t).slice(0, 10) + 'T00:00:00Z') : null; };
+    var heute = d(new Date().toISOString());
+    var frist = monate(a.kuendigungsfrist), verl = /automatisch|stillschweigend|jeweils|weiteres/i.test(a.verlaengerung || '') ? monate(a.verlaengerung) : null;
+    var lz = a.laufzeit_monate || (function () { var f = a.auslesung && a.auslesung.felder; var t = [f && f.vertragsende && f.vertragsende.fundstelle, f && f.kuendigung_bis && f.kuendigung_bis.fundstelle].join(' '); var m = t.match(/laufzeit[^.]{0,20}?(\d+|ein|einem|zwei|drei|vier|fünf|fuenf)\s*(jahr|monat)/i); if (!m) return null; var n = /\d/.test(m[1]) ? Number(m[1]) : ({ ein: 1, einem: 1, zwei: 2, drei: 3, vier: 4, 'fünf': 5, fuenf: 5 })[m[1].toLowerCase()]; return /jahr/i.test(m[2]) ? n * 12 : n; })();
+    var ende = d(a.vertragsende);
+    if (!ende && a.vertragsbeginn && lz) { ende = plusMon(d(a.vertragsbeginn), lz); ende.setUTCDate(ende.getUTCDate() - 1); }
+    if (!ende) {
+      if (a.kuendigung_bis) return { ende: null, kuendigen_bis: a.kuendigung_bis, verlaengert: false, fehlt: null };
+      return { ende: null, kuendigen_bis: null, verlaengert: false, fehlt: hatVertrag ? 'start' : 'vertrag', laufzeit: lz };
+    }
+    var bis = function (e) { if (frist == null) return a.kuendigung_bis && !verl ? d(a.kuendigung_bis) : null; var x = plusMon(e, -frist); return x; };
+    var verlaengert = false, n = 0;
+    // nächster Ausstieg: erstes Vertragsende, dessen Kündigungsfrist noch nicht abgelaufen ist
+    while (verl && n < 40) { var kb = bis(ende); if ((kb && kb >= heute) || (!kb && ende >= heute)) break; ende = plusMon(new Date(ende.getTime() + 864e5), verl); ende.setUTCDate(ende.getUTCDate() - 1); verlaengert = true; n++; }
+    var k = bis(ende);
+    return { ende: iso(ende), kuendigen_bis: k ? iso(k) : null, verlaengert: verlaengert, fehlt: null, laufzeit: lz };
+  };
   SW.daysUntil = function (d) { if (!d) return null; var t = new Date(); var a = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()); var p = String(d).slice(0, 10).split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - a) / 86400000); };
   SW.arr = function (x) { return x == null ? [] : Array.isArray(x) ? x : [x]; };
   SW.safeName = function (n) { return String(n).normalize('NFKD').replace(/[^\w.\-]+/g, '_').slice(-80); };

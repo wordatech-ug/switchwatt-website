@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=24"></script>
+<script src="sw-api.js?v=25"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -173,6 +173,7 @@ var FIELDS=[
  ['dv_vertragsnr','Vertrags- oder Kundennummer','text',''],
  ['entgelt','Aktuelles Entgelt laut Vertrag','text','z. B. 49 € pro Monat + 0,29 ct/kWh'],
  ['abschaltung','Marktdienliche Abschaltung','text','z. B. ja, mit Ausgleich der Marktprämie',false,'Regelt Ihr Direktvermarkter die Anlage bei negativen Strompreisen ab, und was bekommen Sie dafür? Steht meist im Vertrag.'],
+ ['vertragsbeginn','Beginn der Belieferung durch den Direktvermarkter','date','',false,'Steht oft nicht im Vertrag, sondern auf der ersten Abrechnung oder in der Begrüßungsmail. Wichtig, wenn die Laufzeit „ab Beginn der Direktvermarktung“ zählt.'],
  ['vertragsende','Vertrag läuft bis','date',''],
  ['kuendigungsfrist','Kündigungsfrist','text','z. B. 3 Monate zum Laufzeitende',false,'Steht im Vertrag. Wenn Sie unsicher sind, lassen Sie das Feld leer, wir prüfen es.'],
  ['kuendigung_bis','Spätester Kündigungstermin','date','',false,'Bis zu diesem Tag muss die Kündigung beim Direktvermarkter sein. Leer lassen, wenn unbekannt.'],
@@ -313,7 +314,7 @@ async function renderAnlage(id,mode){
   if(!CKM){var lc=checks[0];h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><div><h2 style="margin:0 0 4px">Abrechnungs-Check</h2><p class="sw-muted" style="margin:0;font-size:14px">'+(lc?'Zuletzt geprüft: '+monatName(lc.monat)+' '+(CK[lc.status]||CK.fehler)[0]+' '+(CK[lc.status]||CK.fehler)[1]:(cf&&cf.frei_at?'Gutschriften jeden Monat automatisch prüfen lassen.':'Gutschriften jeden Monat automatisch prüfen lassen. Für diese Anlage '+SW.num(CK_PREIS[ckKlasse(a.kwp)][0],2)+' € im Monat zzgl. USt, monatlich kündbar.'))+'</p></div>'+(cf&&cf.frei_at?'<a class="sw-btn ghost" href="#/check/'+a.id+'">Zum Check</a>':'<a class="sw-btn" href="#/check/'+a.id+'">Check buchen</a>')+'</div></section>';}
   /* Daten */
   var datenH='<div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Daten der Anlage</h2>'+(editable?'<button class="sw-btn ghost small" id="edit">Bearbeiten</button>':'')+'</div><div id="data" style="margin-top:14px"><dl class="sw-grid sw-dl">'+
-    FIELDS.map(function(f){var v=a[f[0]];if(f[2]==='date')v=v?SW.date(v):'–';else if(f[0]==='kwp')v=v!=null?SW.num(v,2):'–';else v=E(v||'–');return '<div><dt>'+E(f[1])+'</dt><dd>'+v+'</dd></div>';}).join('')+'</dl></div>';
+    FIELDS.map(function(f){var v=a[f[0]];if(f[2]==='date')v=v?SW.date(v):'–';else if(f[0]==='kwp')v=v!=null?SW.num(v,2):'–';else v=E(v||'–');return '<div><dt>'+E(f[1])+'</dt><dd>'+v+'</dd></div>';}).join('')+(function(){var t=SW.termine(a,true);return t.ende&&t.kuendigen_bis&&(t.verlaengert||t.kuendigen_bis!==a.kuendigung_bis)?'<div style="grid-column:1/-1"><dt>Nächster möglicher Ausstieg</dt><dd><strong>'+SW.date(t.ende)+'</strong>, Kündigung muss bis <strong>'+SW.date(t.kuendigen_bis)+'</strong> beim Direktvermarkter sein'+(t.verlaengert?' (der Vertrag hat sich automatisch verlängert)':'')+'. Von uns berechnet, bitte mit dem Vertrag abgleichen.</dd></div>':t.fehlt==='start'?'<div style="grid-column:1/-1"><dt>Nächster möglicher Ausstieg</dt><dd>Können wir berechnen, sobald Sie den Beginn der Belieferung eintragen.</dd></div>':'';})()+'</dl></div>';
   if(CKM){h+='<section class="sw-card sw-fold">'+(!needReview?'<details><summary>Daten der Anlage</summary><div class="sw-fold-in">'+datenH.replace('<h2 style="margin:0">Daten der Anlage</h2>','<span></span>')+'</div></details>':'');}
   else if(!needReview)h+='<section class="sw-card">'+datenH+'</section>';
   /* Dokumente */

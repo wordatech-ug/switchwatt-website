@@ -67,7 +67,7 @@ function zText(x){var st=ZST[x.status]||[x.status,'#71717A'];return '<strong>'+S
 
 function renderLogin(err){
   nav.innerHTML='';
-  app.innerHTML='<div style="max-width:420px;margin:0 auto"><h1>Verwaltung</h1>'+(SW.abgemeldet()?'<div class="sw-msg info" style="font-size:14px">Du wurdest nach 30 Minuten ohne Aktivität automatisch abgemeldet. Bitte neu anmelden.</div>':'')+'<form class="sw-card" id="f"><label for="m">E-Mail</label><input id="m" type="email" autocomplete="email" required><label for="p" style="margin-top:12px">Passwort</label><input id="p" type="password" autocomplete="current-password" required>'+(err?msg('err',err):'')+'<button class="sw-btn" style="margin-top:16px;width:100%">Anmelden</button></form></div>';
+  app.innerHTML='<div style="max-width:420px;margin:0 auto"><h1>Verwaltung</h1>'+(SW.abgemeldet()?'<div class="sw-msg info" style="font-size:14px">Du wurdest nach 30 Minuten ohne Aktivität automatisch abgemeldet. Bitte neu anmelden.</div>':'')+'<form class="sw-card" id="f"><label for="m">E-Mail</label><input id="m" type="email" autocomplete="email" required><label for="p" style="margin-top:12px">Passwort</label><input id="p" type="password" autocomplete="current-password" required>'+(err?msg('err',err):'')+'<button class="sw-btn" style="margin-top:16px;width:100%">Anmelden</button></form><p class="sw-muted" style="text-align:center;font-size:14px;margin-top:16px">Kein Verwaltungszugang? <a href="portal.html">Zum Kundenportal</a> · <a href="index.html">Zur Website</a></p></div>';
   $('#f').onsubmit=async function(e){e.preventDefault();try{await SW.signIn($('#m').value.trim(),$('#p').value);start();}catch(x){renderLogin(x.message);}};
 }
 

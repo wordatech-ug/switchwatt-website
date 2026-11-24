@@ -71,8 +71,37 @@ function renderLogin(err){
   $('#f').onsubmit=async function(e){e.preventDefault();try{await SW.signIn($('#m').value.trim(),$('#p').value);start();}catch(x){renderLogin(x.message);}};
 }
 
+// „Was ist zu tun?“: Aufgaben ergeben sich aus dem Stand der Kunden. „Erledigt“ blendet eine Aufgabe aus, „Später“ für 7 Tage.
+function aufgabenHtml(an,users,vm,WS,AE,KA){
+  var heute=new Date().toISOString().slice(0,10),aus={};
+  AE.forEach(function(x){if(!x.bis||x.bis>heute)aus[x.schluessel]=x;});
+  var L=[],tage=function(d){return d?Math.floor((Date.now()-new Date(d).getTime())/864e5):null;};
+  var add=function(k,prio,text,link,wer,info){if(!aus[k])L.push({k:k,p:prio,t:text,l:link,w:wer,i:info||''});};
+  an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
+    var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote),fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
+    var fristP=d==null?60:d<=14?1:d<=30?2:d<=60?3:4;
+    if(offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
+    if(fg.length&&['kuendigung','gewechselt'].indexOf(a.status)<0)add('freigabe:'+a.id,fristP,'Kunde hat freigegeben: Kündigung und neuen Vertrag vorbereiten',lk,wer,'freigegeben am '+SW.date(fg[0].freigegeben_at));
+    if(hatVm&&offen&&!ang.length&&!fg.length)add('angebote:'+a.id,fristP,'Angebote einholen',lk,wer,'Vollmacht seit '+SW.date(v.erteilt_at)+(a.kuendigung_bis?' · kündigen bis '+SW.date(a.kuendigung_bis):' · Frist offen'));
+    if(ang.length&&!fg.length&&offen){var neu=ang.map(function(o){return o.created_at;}).sort().pop(),t=tage(neu);if(t!=null&&t>=5)add('nachfassen:'+a.id+':'+String(neu).slice(0,10),fristP,'Kunde hat seit '+t+' Tagen nicht freigegeben: nachfassen',lk,wer,ang.length+' Angebot(e)');}
+    if(offen&&!a.kuendigung_bis&&hatVm)add('fristfehlt:'+a.id,5,'Kündigungstermin erfassen',lk,wer,'Vertrag prüfen');
+    if(!a.daten_bestaetigt_at&&tage(a.created_at)>=3)add('daten:'+a.id,5,'Kunde hat die Anlagendaten noch nicht bestätigt: erinnern',lk,wer,'angelegt am '+SW.date(a.created_at));
+    var cf=SW.arr(a.check_frei)[0]||a.check_frei;if(cf&&cf.angefragt_at&&!cf.frei_at)add('check:'+a.id,2,'Abrechnungs-Check freischalten',lk,wer,'angefragt am '+SW.date(cf.angefragt_at));
+  });
+  var anById={};an.forEach(function(a){anById[a.id]=a;});
+  WS.forEach(function(w){var a=anById[w.anlage_id]||{},u=users[w.owner]||{};add('ws:'+w.anlage_id+':'+w.monat,1,'Abrechnungs-Check wartet: erneut prüfen ('+String(w.monat).slice(5,7)+'/'+String(w.monat).slice(0,4)+')','<a href="#/a/'+w.anlage_id+'">'+E(a.name||'?')+'</a>',E(u.name||u.email||'?'),E(w.fehler||''));});
+  KA.forEach(function(x){add('kontakt:'+x.id,x.name==='SwitchWatt System'?1:2,x.name==='SwitchWatt System'?'Systemmeldung prüfen':'Kontaktanfrage beantworten','<span title="'+E(x.nachricht||'')+'">'+E(String(x.nachricht||'').slice(0,60))+(String(x.nachricht||'').length>60?' …':'')+'</span>',E((x.name||'')+(x.firma?', '+x.firma:''))+'<br><span class="sw-muted" style="font-size:13px">'+E(x.email||'')+'</span>',SW.dateTime(x.created_at));});
+  L.sort(function(x,y){return x.p-y.p;});
+  var farbe=function(p){return p<=0?'#F87171':p<=1?'#F87171':p<=2?'#F5B70A':p<=4?'#8FA6FF':'#71717A';},wort=function(p){return p<=1?'dringend':p<=2?'bald':p<=4?'offen':'später';};
+  return '<section class="sw-card" id="todo"><h2>Was ist zu tun?'+(L.length?' <span class="sw-muted" style="font-weight:400">('+L.length+')</span>':'')+'</h2>'+(L.length?L.map(function(x){return '<div class="kc-row" style="grid-template-columns:90px minmax(200px,2fr) minmax(140px,1.2fr) minmax(120px,1fr) 1fr 170px"><span class="sw-badge" style="--c:'+farbe(x.p)+'">'+wort(x.p)+'</span><strong style="font-weight:500">'+x.t+'</strong><span>'+x.l+'</span><span>'+x.w+'</span><span class="sw-muted" style="font-size:13px">'+x.i+'</span><span style="text-align:right;white-space:nowrap"><button class="sw-btn ghost small" data-ae="'+E(x.k)+'" data-bis="7">Später</button> <button class="sw-btn ghost small" data-ae="'+E(x.k)+'">Erledigt</button></span></div>';}).join(''):'<p class="sw-muted" style="margin:0">Nichts offen. 🎉</p>')+'</section>';
+}
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-ae]');if(!b)return;e.preventDefault();b.disabled=true;
+  var k=b.getAttribute('data-ae'),bis=b.getAttribute('data-bis');
+  try{if(/^kontakt:/.test(k)&&!bis)await SW.rest('kontaktanfragen?id=eq.'+k.slice(8),{method:'PATCH',body:{erledigt_at:new Date().toISOString()}});
+    else await SW.rest('aufgaben_erledigt',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:{schluessel:k,erledigt_at:new Date().toISOString(),bis:bis?new Date(Date.now()+bis*864e5).toISOString().slice(0,10):null}});
+    var row=b.closest('.kc-row');if(row)row.remove();}catch(x){alert(x.message);b.disabled=false;}});
 async function renderList(){
-  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id),freigaben(id),dokumente(art),pruefungen(monat,status),check_frei(frei_at,angefragt_at)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at&widerrufen_at=is.null'),SW.rest('marktwerte?select=*&order=monat.desc&limit=14'),SW.rest('abos?select=owner,anlage_id,status,klasse,intervall,laeuft_bis,kuendigung_zum,livemode,rabatt'),SW.rest('dv_bewertung?select=*').catch(function(){return [];}),SW.rest('check_warteschlange?select=*&erledigt_at=is.null&order=am.asc').catch(function(){return [];})]);
+  var r=await Promise.all([SW.rest('anlagen?select=*,angebote(id,created_at),freigaben(id,freigegeben_at),dokumente(art),pruefungen(monat,status),check_frei(frei_at,angefragt_at)&order=kuendigung_bis.asc.nullslast'),SW.rest('profiles?select=*'),SW.rest('vollmachten?select=owner,erteilt_at,anlagen&widerrufen_at=is.null'),SW.rest('marktwerte?select=*&order=monat.desc&limit=14'),SW.rest('abos?select=owner,anlage_id,status,klasse,intervall,laeuft_bis,kuendigung_zum,livemode,rabatt'),SW.rest('dv_bewertung?select=*').catch(function(){return [];}),SW.rest('check_warteschlange?select=*&erledigt_at=is.null&order=am.asc').catch(function(){return [];}),SW.rest('aufgaben_erledigt?select=*').catch(function(){return [];}),SW.rest('kontaktanfragen?select=*&erledigt_at=is.null&order=created_at.asc').catch(function(){return [];})]);
   var an=r[0]; users={}; r[1].forEach(function(p){users[p.id]=p;}); var vm={}; r[2].forEach(function(v){vm[v.owner]=v;});
   var abo={}; (r[4]||[]).forEach(function(x){if(['active','trialing','past_due'].indexOf(x.status)<0)return;(abo[x.owner]=abo[x.owner]||[]).push(x);});
   var zu=r[1].filter(function(p){return p.geschlossen_at;}).length;
@@ -93,6 +122,7 @@ async function renderList(){
     kpi('Wechsel offen',offenW,'neu, in Prüfung, Angebote, freigegeben')+
     kpi('Aktive Abos',aboL.length,SW.num(jahr,2)+' € pro Jahr netto')+
     '<div class="sw-card" style="margin:0;padding:16px"><div class="sw-muted" style="font-size:13px">Zahlungen</div><div id="kpi_z" style="font-size:26px;font-weight:600;margin:4px 0">…</div><div class="sw-muted" style="font-size:13px" id="kpi_z2">wird aus Stripe geladen</div></div></div>';
+  h+=aufgabenHtml(an,users,vm,r[6]||[],r[7]||[],r[8]||[]);
   h+='<section class="sw-card"><div class="sw-row" style="justify-content:space-between"><h2 style="margin:0">Kunden</h2>'+(zu?'<label class="sw-check" style="margin:0"><input type="checkbox" id="zz"'+(zeigeZu?' checked':'')+'><span>Geschlossene Konten zeigen ('+zu+')</span></label>':'')+'</div>'+
     kunden.map(function(p){var g=!!p.geschlossen_at,al=anOf[p.id]||[];
       return '<div class="kc"'+(g?' style="opacity:.55"':'')+'><div class="kc-top">'+

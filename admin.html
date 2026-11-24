@@ -28,7 +28,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=23"></script>
+<script src="sw-api.js?v=24"></script>
 <script src="sw-zip.js?v=1"></script>
 <script>
 // Datensicherung: Tabellen als JSON plus alle Dateien in eine ZIP-Datei (nur Superadmin).
@@ -67,7 +67,7 @@ function zText(x){var st=ZST[x.status]||[x.status,'#71717A'];return '<strong>'+S
 
 function renderLogin(err){
   nav.innerHTML='';
-  app.innerHTML='<div style="max-width:420px;margin:0 auto"><h1>Verwaltung</h1><form class="sw-card" id="f"><label for="m">E-Mail</label><input id="m" type="email" autocomplete="email" required><label for="p" style="margin-top:12px">Passwort</label><input id="p" type="password" autocomplete="current-password" required>'+(err?msg('err',err):'')+'<button class="sw-btn" style="margin-top:16px;width:100%">Anmelden</button></form></div>';
+  app.innerHTML='<div style="max-width:420px;margin:0 auto"><h1>Verwaltung</h1>'+(SW.abgemeldet()?'<div class="sw-msg info" style="font-size:14px">Du wurdest nach 30 Minuten ohne Aktivität automatisch abgemeldet. Bitte neu anmelden.</div>':'')+'<form class="sw-card" id="f"><label for="m">E-Mail</label><input id="m" type="email" autocomplete="email" required><label for="p" style="margin-top:12px">Passwort</label><input id="p" type="password" autocomplete="current-password" required>'+(err?msg('err',err):'')+'<button class="sw-btn" style="margin-top:16px;width:100%">Anmelden</button></form></div>';
   $('#f').onsubmit=async function(e){e.preventDefault();try{await SW.signIn($('#m').value.trim(),$('#p').value);start();}catch(x){renderLogin(x.message);}};
 }
 

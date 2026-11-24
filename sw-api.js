@@ -8,11 +8,37 @@
   function save(s) { try { if (s) localStorage.setItem(STORE, JSON.stringify(s)); else localStorage.removeItem(STORE); } catch (e) {} }
   var session = load();
 
+  // Automatisch abmelden nach 30 Minuten ohne Aktivität (gilt über alle Tabs, auch nach dem Schließen des Browsers)
+  var AKTIV = 'sw-aktiv', LEERLAUF = 30 * 60 * 1000;
+  function aktivJetzt() { try { localStorage.setItem(AKTIV, String(Date.now())); } catch (e) {} }
+  function zuletztAktiv() { try { return Number(localStorage.getItem(AKTIV) || 0); } catch (e) { return 0; } }
+  function leerlaufPruefen() {
+    if (!session) return false;
+    var z = zuletztAktiv();
+    if (z && Date.now() - z > LEERLAUF) {
+      var rt = session.access_token; session = null; save(null);
+      try { fetch(URL_ + '/auth/v1/logout', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + rt } }); } catch (e) {}
+      try { sessionStorage.setItem('sw-abgemeldet', '1'); } catch (e) {}
+      return true;
+    }
+    if (!z) aktivJetzt();
+    return false;
+  }
+  leerlaufPruefen();
+  (function () {
+    var letzte = 0;
+    ['click', 'keydown', 'scroll', 'touchstart', 'mousemove'].forEach(function (ev) {
+      window.addEventListener(ev, function () { var n = Date.now(); if (n - letzte > 30000) { letzte = n; if (!leerlaufPruefen()) aktivJetzt(); } }, { passive: true, capture: true });
+    });
+    setInterval(function () { if (leerlaufPruefen()) location.reload(); }, 60000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && leerlaufPruefen()) location.reload(); });
+  })();
+
   function setSession(d) {
     if (!d || !d.access_token) { session = null; save(null); return null; }
     session = { access_token: d.access_token, refresh_token: d.refresh_token,
       expires_at: d.expires_at || (Math.floor(Date.now() / 1000) + (d.expires_in || 3600)), user: d.user };
-    save(session); return session;
+    save(session); aktivJetzt(); return session;
   }
 
   function errText(j, status) {
@@ -57,6 +83,7 @@
 
   var SW = {
     get user() { return session && session.user; },
+    abgemeldet() { try { var v = sessionStorage.getItem('sw-abgemeldet'); sessionStorage.removeItem('sw-abgemeldet'); return !!v; } catch (e) { return false; } },
     async signUp(email, password, meta) {
       var d = await authCall('signup', { email: email, password: password, data: meta || {} });
       if (d && d.access_token) setSession(d);

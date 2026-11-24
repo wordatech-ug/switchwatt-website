@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=27"></script>
+<script src="sw-api.js?v=28"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -203,10 +203,10 @@ async function uploadFiles(anlage,input,art){
 function renderNew(){
   var ziel=modus==='check'?'#/check/':'#/anlage/';
   app.innerHTML='<p style="margin-top:28px"><a href="'+(modus==='check'?'#/check':'#/')+'">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
-  '<p class="sw-muted">Laden Sie Ihren aktuellen Vertrag oder die letzte Abrechnung hoch. Wir lesen die Daten für Sie aus und gleichen sie mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch.</p>'+
-  '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag oder Abrechnung auswählen oder hierher ziehen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
+  '<p class="sw-muted">Laden Sie Ihren <strong>Vertrag mit dem Direktvermarkter</strong> hoch. Wir lesen Entgelt, Laufzeit und Kündigungsfrist aus und gleichen die Anlage mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch. Ohne Vertrag können wir nicht prüfen, ob richtig abgerechnet wird.</p>'+
+  '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag hierher ziehen oder auswählen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
-  '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 220px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung</option></select></div>'+
+  '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 320px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung (Vertrag reiche ich nach)</option></select></div>'+
   '<div id="err"></div><div class="sw-row" style="margin-top:16px"><button class="sw-btn" id="go">Hochladen und auslesen</button><button class="sw-btn ghost" id="manual">Ohne Dokument selbst ausfüllen</button></div>'+
   '<p class="sw-muted" style="font-size:13px;margin-bottom:0">Ihre Dateien liegen verschlüsselt auf Servern in Frankfurt und sind nur für Sie und SwitchWatt sichtbar. Zum Auslesen wird das Dokument kurz an unseren KI-Dienstleister übermittelt, siehe <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p></section>';
   $('#up_doc').onchange=function(){var n=Array.prototype.map.call(this.files,function(f){return f.name;}).join(', ');$('#fname').textContent=n?'Ausgewählt: '+n:'';};
@@ -499,10 +499,18 @@ function checkSection(a,checks,allDocs,cf,abo){
   var frei=(profile&&profile.rolle==='admin')||(cf&&cf.frei_at);
   var h='<section class="sw-card" id="ck"><div class="sw-row" style="justify-content:space-between;align-items:baseline"><h2 style="margin:0">Abrechnung prüfen</h2>'+(frei?aboBox(a,abo):'')+'</div>';
   if(!frei)h+='<div id="ck_buybox">'+aboAngebot(a,abo)+'</div><div id="ck_err"></div>';
-  else h+='<label class="sw-drop sw-drop-ck" for="ck_files"><strong>Abrechnungen hierher ziehen oder auswählen</strong><span class="sw-muted">Gutschrift des Direktvermarkters und Abrechnung des Netzbetreibers, gern beide auf einmal. PDF oder Foto.</span></label>'+
-  '<input id="ck_files" type="file" multiple hidden accept="application/pdf,image/jpeg,image/png"><ul class="sw-chips" id="ck_list"></ul>'+
-  '<details class="sw-mini"><summary>Monitoring-Export dazulegen (freiwillig)</summary><div style="padding:8px 0 4px"><input id="ck_mon" type="file" accept="application/pdf,image/jpeg,image/png,.csv,.txt,.xlsx,.xls,text/csv"><div class="sw-hint">Export aus SMA, Solar-Log, meteocontrol, Fronius o. ä. Dann vergleichen wir Erzeugung und Einspeisung direkt.</div></div></details>'+
-  '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px;align-items:center;gap:12px"><button class="sw-btn" id="ck_go">Prüfen</button><label for="ck_m" class="sw-muted" style="font-size:14px;margin:0">Monat</label><select id="ck_m" class="sw-sel-sm">'+monatsListe()+'</select></div>';
+  else{
+    var vtr=allDocs.filter(function(d){return d.art==='vertrag';})[0];
+    if(!vtr)h+='<div class="sw-ck-step"><h3 style="margin:16px 0 6px">Schritt 1: Ihr Vertrag</h3><p class="sw-muted" style="margin:0 0 12px;font-size:14px">Zuerst brauchen wir Ihren Vertrag mit dem Direktvermarkter. Daraus lesen wir das vereinbarte Entgelt. Nur so können wir prüfen, ob richtig abgerechnet wird.</p>'+
+      '<label class="sw-drop" for="ck_vtr"><strong>Vertrag hierher ziehen oder auswählen</strong><span class="sw-muted">PDF oder Foto, auch mehrere Seiten</span><span id="ck_vtrn" style="color:#C9D4FF"></span></label><input id="ck_vtr" type="file" multiple hidden accept="application/pdf,image/jpeg,image/png">'+
+      '<div id="ck_err"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn" id="ck_vgo">Vertrag hochladen</button></div></div>';
+    else h+='<p class="sw-muted" style="font-size:14px;margin:14px 0 4px">✓ Vertrag liegt vor'+(a.entgelt?' · Entgelt laut Vertrag: '+E(a.entgelt):' · Entgelt im Vertrag nicht gefunden, bitte bei der Anlage eintragen')+'</p>'+
+      '<h3 style="margin:18px 0 6px">Abrechnungen des Monats</h3>'+
+      '<label class="sw-drop sw-drop-ck" for="ck_files"><strong>Abrechnungen hierher ziehen oder auswählen</strong><span class="sw-muted">Eine vom Direktvermarkter, eine vom Netzbetreiber. Sie heißen oft „Gutschrift“. Gern beide auf einmal, PDF oder Foto.</span></label>'+
+      '<input id="ck_files" type="file" multiple hidden accept="application/pdf,image/jpeg,image/png"><ul class="sw-chips" id="ck_list"></ul>'+
+      '<h3 style="margin:18px 0 6px">Monitoring-Export <span class="sw-muted" style="font-weight:400;font-size:14px">(empfohlen)</span></h3><input id="ck_mon" type="file" accept="application/pdf,image/jpeg,image/png,.csv,.txt,.xlsx,.xls,text/csv"><div class="sw-hint">Die Monatswerte aus Ihrem Monitoring (SMA, Solar-Log, meteocontrol, Fronius o. ä.). Dann vergleichen wir, was erzeugt und was abgerechnet wurde.</div>'+
+      '<div id="ck_err"></div><div class="sw-row" style="margin-top:16px;align-items:center;gap:12px"><button class="sw-btn" id="ck_go">Prüfen</button><label for="ck_m" class="sw-muted" style="font-size:14px;margin:0">Monat</label><select id="ck_m" class="sw-sel-sm">'+monatsListe()+'</select></div>';
+  }
   window._ckChecks=checks;window._ckAnlage=a;
   if(checks.length){
     var openM=window._ckOpen||String(checks[0].monat).slice(0,7);
@@ -548,6 +556,10 @@ function mountCheck(a,id){
       var box=$('#ck_buybox');box.innerHTML='<h3 style="margin:0 0 10px">Bezahlung'+(r.rabatt?' (inkl. 10 % Mengenrabatt)':'')+'</h3><div id="ck_pay" class="sw-pay"></div>'+STRIPE_HINWEIS+'<p style="font-size:14px;margin:10px 0 0"><a href="#" id="ck_abbr">Abbrechen</a></p>';
       await einbetten('#ck_pay',r.client_secret);$('#ck_abbr').onclick=function(ev){ev.preventDefault();if(_einbett){_einbett.destroy();_einbett=null;}renderAnlage(id);};}
     catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};
+  var vgo=$('#ck_vgo');if(vgo){var vi=$('#ck_vtr');vi.onchange=function(){var n=Array.prototype.map.call(vi.files,function(f){return f.name;}).join(', ');$('#ck_vtrn').textContent=n?'Ausgewählt: '+n:'';};
+    vgo.onclick=async function(){var b=this;if(!vi.files.length){$('#ck_err').innerHTML=msg('err','Bitte zuerst den Vertrag auswählen.');return;}
+      busy(b,true,'Wird hochgeladen …');try{var ids=await uploadFiles(a,vi,'vertrag');b.textContent='Wir lesen Ihren Vertrag aus … (bis zu 30 Sekunden)';try{await SW.fn('auslesen',{dokument_id:ids[0]});}catch(e){}renderAnlage(id);}
+      catch(x){$('#ck_err').innerHTML=msg('err',x.message);busy(b,false);}};}
   var go=$('#ck_go');if(!go)return;
   var fi=$('#ck_files'),liste=[];
   var istNb=function(n){return /netz|nb[_ -]|marktpr|enm|energienetze|westnetz|syna|avacon|e\.?dis|bayernwerk|netze|mitnetz|evu|einspeise/i.test(n);};

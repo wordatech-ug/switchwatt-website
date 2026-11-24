@@ -15,9 +15,9 @@
 .kc-v{font-size:15px;line-height:1.45}
 .kc-name{font-size:17px;font-weight:600}
 .kc-an{margin-top:14px;border-top:1px solid rgba(255,255,255,.06)}
-.kc-row{display:grid;grid-template-columns:minmax(160px,1.4fr) 90px 150px minmax(120px,1fr) minmax(200px,2fr);gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}
+.kc-row{display:grid;grid-template-columns:minmax(140px,1.4fr) 90px 120px 150px 120px 110px minmax(150px,1.2fr);gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}.kc-row>*{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kc-row .sw-badge{max-width:100%}
 .kc-row:last-child{border-bottom:0}
-@media (max-width:820px){.kc-top{grid-template-columns:1fr 1fr}.kc-row{grid-template-columns:1fr 1fr}}
+@media (max-width:1100px){.kc-row{grid-template-columns:1fr 90px 120px 150px}.kc-row>*:nth-child(n+5){grid-column:auto}}@media (max-width:820px){.kc-top{grid-template-columns:1fr 1fr}.kc-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -132,7 +132,9 @@ async function renderList(){
         '<div><div class="kc-l">Abo</div><div class="kc-v">'+aboTxt(p.id)+'</div></div>'+
         '<div><div class="kc-l">Letzte Zahlung</div><div class="kc-v" id="zl_'+p.id+'"><span class="sw-muted">…</span></div></div></div>'+
         '<div class="kc-an">'+(al.length?al.map(function(a){var d=SW.daysUntil(a.kuendigung_bis),docs=SW.arr(a.dokumente),pc=SW.arr(a.pruefungen).sort(function(x,y){return x.monat<y.monat?1:-1;})[0];
-          return '<div class="kc-row"><a href="#/a/'+a.id+'"><strong>'+E(a.name)+'</strong></a><span>'+SW.num(a.kwp,1)+' kWp</span><span>'+SW.badge(a.status)+'</span><span>'+(a.kuendigung_bis?'kündigen bis '+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0&&wechsel(a)?' <span class="sw-red">('+d+' T.)</span>':''):'<span class="sw-muted">Frist offen</span>')+'</span><span class="sw-muted">'+docs.length+' Dok. · '+SW.arr(a.angebote).length+' Angebot(e)'+(pc?' · Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(2,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||''):'')+paTxt(a.id)+'</span></div>';}).join(''):'<div class="kc-row"><span class="sw-muted">Noch keine Anlage</span></div>')+'</div></div>';}).join('')+
+          var w=wechsel(a),x=PA[a.id],amp=x?({gruen:['🟢','günstig'],gelb:['🟡','üblich'],rot:['🔴','teuer']}[x.ampel]||['','']):null;
+          var frist=!w?'<span class="sw-muted">–</span>':a.kuendigung_bis?'<span'+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?' class="sw-red"':'')+'>bis '+SW.date(a.kuendigung_bis)+(d!=null&&d<=45&&OPEN.indexOf(a.status)>=0?' ('+d+' T.)':'')+'</span>':'<span class="sw-muted">Frist offen</span>';
+          return '<div class="kc-row"><a href="#/a/'+a.id+'"><strong>'+E(a.name)+'</strong></a><span>'+SW.num(a.kwp,1)+' kWp</span><span>'+(w?SW.badge(a.status):'<span class="sw-badge" style="--c:#8FA6FF">nur Check</span>')+'</span><span>'+frist+'</span><span class="sw-muted">'+docs.length+' Dok. · '+SW.arr(a.angebote).length+' Angeb.</span><span>'+(pc?'Check '+String(pc.monat).slice(5,7)+'/'+String(pc.monat).slice(2,4)+' '+({gruen:'✅',gelb:'⚠️',rot:'❗'}[pc.status]||''):'<span class="sw-muted">kein Check</span>')+'</span><span'+(x?' title="DV-Kosten ca. '+SW.num(x.kosten_jahr,0)+' €/J, günstig ab ca. '+SW.num(x.guenstig_jahr,0)+' €/J ('+x.vergleichspunkte+' Vergleichswerte)"':'')+'>'+(amp?amp[0]+' '+amp[1]+(x.ersparnis_jahr>0?' <span class="sw-muted">−'+SW.num(x.ersparnis_jahr,0)+' €/J</span>':''):'<span class="sw-muted">–</span>')+'</span></div>';}).join(''):'<div class="kc-row"><span class="sw-muted">Noch keine Anlage</span></div>')+'</div></div>';}).join('')+
     (kunden.length?'':'<p class="sw-muted">Noch keine Kunden.</p>')+'</section>';
   var fr=an.filter(function(a){return a.kuendigung_bis&&OPEN.indexOf(a.status)>=0&&wechsel(a);}).sort(function(x,y){return x.kuendigung_bis<y.kuendigung_bis?-1:1;});
   var ohne=an.filter(function(a){return !a.kuendigung_bis&&OPEN.indexOf(a.status)>=0&&wechsel(a);});

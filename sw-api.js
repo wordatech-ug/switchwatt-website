@@ -17,7 +17,7 @@
     var z = zuletztAktiv();
     if (z && Date.now() - z > LEERLAUF) {
       var rt = session.access_token; session = null; save(null);
-      try { fetch(URL_ + '/auth/v1/logout', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + rt } }); } catch (e) {}
+      try { fetch(URL_ + '/auth/v1/logout?scope=local', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + rt } }); } catch (e) {}
       try { sessionStorage.setItem('sw-abgemeldet', '1'); } catch (e) {}
       return true;
     }
@@ -94,7 +94,7 @@
     async signIn(email, password) { return setSession(await authCall('token?grant_type=password', { email: email, password: password })); },
     async recover(email) { var r = await fetch(URL_ + '/functions/v1/passwort', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) }); if (!r.ok) throw new Error('Das hat leider nicht geklappt. Bitte später noch einmal versuchen.'); return true; },
     async setPassword(pw) { await token(); return authCall('user', { password: pw }, 'PUT'); },
-    async signOut() { try { await fetch(URL_ + '/auth/v1/logout', { method: 'POST', headers: await headers() }); } catch (e) {} setSession(null); },
+    async signOut() { try { await fetch(URL_ + '/auth/v1/logout?scope=local', { method: 'POST', headers: await headers() }); } catch (e) {} setSession(null); },
     fromHash() {
       if (!location.hash || location.hash.indexOf('access_token=') < 0) return null;
       var p = new URLSearchParams(location.hash.slice(1));

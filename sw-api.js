@@ -215,14 +215,16 @@
       '<p>_______________________________<br>Ort, Datum, Unterschrift, Name in Druckbuchstaben<br>' + E(a.betreiber || '') + '</p>';
     var old = document.getElementById('sw-print'); if (old) old.remove();
     var d = document.createElement('div'); d.id = 'sw-print';
-    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen und gelb markierte Felder ergänzen. Dann drucken, unterschreiben und im Portal hochladen. Unterschreiben müssen die vertretungsberechtigten Personen: bei einer GmbH Geschäftsführer oder Prokuristen in vertretungsberechtigter Zahl, bei einer GbR in der Regel alle Gesellschafter. Die Kündigung ist Ihre Erklärung, wir bereiten sie nur vor.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
+    d.innerHTML = '<div class="sw-print-bar"><span>Bitte prüfen und gelb markierte Felder ergänzen. Dann drucken, unterschreiben und im Portal hochladen. Unterschreiben müssen die vertretungsberechtigten Personen: bei einer GmbH Geschäftsführer oder Prokuristen in vertretungsberechtigter Zahl, bei einer GbR oder eGbR in der Regel alle Gesellschafter. Die Kündigung ist Ihre Erklärung, wir bereiten sie nur vor.</span><span class="sw-row"><button class="sw-btn small" data-p="print">Drucken / als PDF speichern</button><button class="sw-btn ghost small" data-p="close">Schließen</button></span></div><div class="sw-letter">' + L + '</div>';
     document.body.appendChild(d);
     d.querySelector('[data-p=print]').onclick = function () { window.print(); };
     d.querySelector('[data-p=close]').onclick = function () { d.remove(); };
     return L;
   };
 
-  SW.VOLLMACHT_VERSION = '2026-11-23';
+  SW.VOLLMACHT_VERSION = '2026-11-24';
+  // Fassungen, die weiter gelten (24.11.: nur Klarstellung „GbR oder eGbR“)
+  SW.VOLLMACHT_GUELTIG = ['2026-11-23', '2026-11-24'];
   SW.AGB_VERSION = '23.11.2026';
   SW.vmFassung = function (v) {
     var m = /^(test-)?(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
@@ -238,7 +240,7 @@
     '<ol start="4"><li>die Kündigung meines bisherigen Direktvermarktungsvertrags und den Vertrag mit dem gewählten Direktvermarkter vorzubereiten und die von mir unterschriebenen Erklärungen an den jeweiligen Vertragspartner zu übermitteln,</li>' +
     '<li>die für den Wechsel nötigen Meldungen beim Netzbetreiber anzustoßen und Termine und technische Daten für die Anbindung abzustimmen; dazu darf sie die nötigen Anlagendaten an den von mir beauftragten Anbindungsdienstleister (z. B. SolarBridge GmbH) weitergeben.</li></ol>' +
     '<p>Kündigungen und Vertragserklärungen gebe ich selbst ab. Die WordAtech UG ist nicht berechtigt, in meinem Namen Verträge abzuschließen oder zu kündigen.</p>' +
-    '<p>Die unterzeichnende Person versichert, allein vertretungsberechtigt zu sein oder mit Zustimmung aller Vertretungsberechtigten zu handeln (bei einer GbR ohne abweichende Regelung alle Gesellschafter).</p>' +
+    '<p>Die unterzeichnende Person versichert, allein vertretungsberechtigt zu sein oder mit Zustimmung aller Vertretungsberechtigten zu handeln (bei einer GbR oder eGbR ohne abweichende Regelung alle Gesellschafter).</p>' +
     '<p>Die Vollmacht gilt bis auf Widerruf. Ich kann sie jederzeit im Kundenkonto oder per E-Mail an angebote@switchwatt.de widerrufen. Es gelten die <a href="agb.html" target="_blank">Allgemeinen Geschäftsbedingungen</a> von SwitchWatt. Meine Daten werden nach der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> verarbeitet.</p>';
 
   // Auge in jedem Passwortfeld: zeigt den Zustand (durchgestrichen = verborgen, offen = sichtbar).

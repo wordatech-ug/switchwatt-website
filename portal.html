@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=31"></script>
+<script src="sw-api.js?v=32"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -97,7 +97,7 @@ async function loadAll(){
   var vms=r[0]||[];
   return {vm:vms[0]||null,vms:vms,anlagen:r[1]};
 }
-function vmDeckt(vms,aid){return (vms||[]).some(function(v){return v.version===SW.VOLLMACHT_VERSION&&(!v.anlagen||v.anlagen.indexOf(aid)>=0);});}
+function vmDeckt(vms,aid){return (vms||[]).some(function(v){return SW.VOLLMACHT_GUELTIG.indexOf(v.version)>=0&&(!v.anlagen||v.anlagen.indexOf(aid)>=0);});}
 function steps(vm,anlagen){
   var s=['Konto','Anlage und Vertrag','Vollmacht','Angebote','Freigabe','Kündigung und Wechsel'];
   var best=1; if(anlagen.length)best=2;
@@ -118,7 +118,7 @@ async function renderHome(){
 (SW.arr(a.angebote).length&&!SW.arr(a.freigaben).length?' · <span style="color:#86EFAC">'+SW.arr(a.angebote).length+' Angebot(e)</span>':'')+'</div></div><a class="sw-btn ghost small" href="#/anlage/'+a.id+'">Öffnen</a></div>';});
   h+='</section>';
   var vms=d.vms||[],offenA=an.filter(function(x){return !vmDeckt(vms,x.id);}),gedeckt=an.filter(function(x){return vmDeckt(vms,x.id);});
-  var vmAlt=vms.some(function(v){return v.version!==SW.VOLLMACHT_VERSION;});
+  var vmAlt=vms.some(function(v){return SW.VOLLMACHT_GUELTIG.indexOf(v.version)<0;});
   if(offenA.length){
     h+='<section class="sw-card hl"><h2>'+(gedeckt.length?'Vollmacht für weitere Anlagen':'2. Vollmacht erteilen')+'</h2>'+(vmAlt&&!gedeckt.length?'<p>Wir haben die Vollmacht überarbeitet: Kündigung und neuen Vertrag unterschreiben Sie immer selbst, wir bereiten nur vor und übermitteln. Bitte erteilen Sie die neue Fassung.</p>':'')+
     '<ul class="sw-vmkurz"><li><strong>Sie erlauben uns:</strong> Angebote bei Direktvermarktern einzuholen und dafür Ihre Anlagendaten weiterzugeben, und die Einspeisedaten beim Netzbetreiber anzufordern.</li><li><strong>Erst wenn Sie ein Angebot freigeben,</strong> bereiten wir Kündigung und neuen Vertrag vor. Unterschreiben tun Sie selbst, wir übermitteln die Unterlagen.</li><li><strong>Widerruf</strong> jederzeit hier im Kundenkonto oder per E-Mail an angebote@switchwatt.de.</li></ul>'+
@@ -127,14 +127,14 @@ async function renderHome(){
     (offenA.length>1?'<label class="sw-check" style="margin:6px 0 4px"><input type="checkbox" id="vmall"><span><strong>Alle auswählen</strong></span></label>':'')+
     offenA.map(function(x){var hatV=SW.arr(x.dokumente).some(function(d){return d.art==='vertrag';});if(!hatV)return '<div class="sw-check" style="margin:4px 0;opacity:.85"><input type="checkbox" disabled><span>'+E(x.name)+' <span style="color:#FCD34D;font-size:14px">· Vertrag fehlt, für den Wechsel nötig: <a href="#/anlage/'+x.id+'">jetzt hochladen</a></span></span></div>';return '<label class="sw-check" style="margin:4px 0"><input type="checkbox" class="vma" value="'+x.id+'"'+(offenA.length===1?' checked':'')+'><span>'+E(x.name)+(x.kwp?' <span class="sw-muted">('+SW.num(x.kwp,1)+' kWp)</span>':'')+'</span></label>';}).join('')+
     '<div class="sw-grid" style="margin-top:12px"><div><label for="vmn">Ihr Name</label><input id="vmn" required value="'+E(profile&&profile.name||'')+'"></div><div><label for="vmfi">Für die Firma (Betreiber)</label><input id="vmfi" value="'+E(profile&&profile.firma||'')+'"></div></div>'+
-    '<div id="vmreg" aria-live="polite"></div>'+'<label class="sw-check" style="margin:16px 0 10px"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben für die ausgewählten Anlagen und bin allein vertretungsberechtigt oder handle mit Zustimmung aller Vertretungsberechtigten (bei einer GbR in der Regel alle Gesellschafter).</span></label>'+'<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="vmagb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Mit der Vollmacht beauftragen Sie uns, Angebote einzuholen. Finden wir kein besseres Angebot, kostet das nichts.</p><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht und Auftrag erteilen</button></form></section>';
+    '<div id="vmreg" aria-live="polite"></div>'+'<label class="sw-check" style="margin:16px 0 10px"><input type="checkbox" id="vmc"><span>Ich erteile die Vollmacht wie oben beschrieben für die ausgewählten Anlagen und bin allein vertretungsberechtigt oder handle mit Zustimmung aller Vertretungsberechtigten (bei einer GbR oder eGbR in der Regel alle Gesellschafter).</span></label>'+'<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="vmagb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<p class="sw-muted" style="font-size:14px;margin:0 0 14px">Mit der Vollmacht beauftragen Sie uns, Angebote einzuholen. Finden wir kein besseres Angebot, kostet das nichts.</p><div id="vmerr"></div><button class="sw-btn" type="submit">Vollmacht und Auftrag erteilen</button></form></section>';
   }
   if(gedeckt.length){
     h+='<p class="sw-msg ok">Vollmacht erteilt für '+gedeckt.map(function(x){return E(x.name);}).join(', ')+'. <a href="#" id="vmshow">Text ansehen</a> · <a href="#" id="vmwid">Widerrufen</a></p>';
   }
   h+='<p class="sw-muted" style="font-size:14px">Fragen? Schreiben Sie uns: <a href="mailto:angebote@switchwatt.de">angebote@switchwatt.de</a> oder über das <a href="impressum.html#kontakt" target="_blank">Kontaktformular</a></p>';
   app.innerHTML=h;
-  var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();var akt=vms.filter(function(v){return v.version===SW.VOLLMACHT_VERSION;});
+  var vs=$('#vmshow'); if(vs)vs.onclick=function(e){e.preventDefault();var akt=vms.filter(function(v){return SW.VOLLMACHT_GUELTIG.indexOf(v.version)>=0;});
     showModal('<h2>Ihre Vollmacht</h2><div class="sw-vm">'+SW.VOLLMACHT_HTML+'</div><p style="font-size:14px">'+akt.map(function(v){var na=v.anlagen?an.filter(function(x){return v.anlagen.indexOf(x.id)>=0;}).map(function(x){return x.name;}):an.map(function(x){return x.name;});return 'Erteilt am '+SW.dateTime(v.erteilt_at)+' von '+E(v.name_unterzeichner)+(v.firma?' für '+E(v.firma):'')+' für: <strong>'+E(na.join(', '))+'</strong>';}).join('<br>')+'</p><p class="sw-muted" style="font-size:14px">'+E(SW.vmFassung(SW.VOLLMACHT_VERSION))+'. Widerruf jederzeit hier im Kundenkonto oder per E-Mail an angebote@switchwatt.de.</p><button class="sw-btn" data-close>Schließen</button>');};
   var vw=$('#vmwid'); if(vw)vw.onclick=async function(e){e.preventDefault();if(!confirm('Vollmacht wirklich widerrufen? Wir holen dann keine Angebote mehr für diese Anlagen ein.'))return;try{for(var i=0;i<vms.length;i++)await SW.rest('rpc/vollmacht_widerrufen',{method:'POST',body:{vid:vms[i].id}});for(var j=0;j<gedeckt.length;j++)await SW.rest('verlauf',{method:'POST',body:{anlage_id:gedeckt[j].id,text:'Vollmacht widerrufen'}}).catch(function(){});renderHome();}catch(x){alertBox(x.message);}};
   var regT=null,regLetzt='';async function regPruef(){var fi=$('#vmfi'),na=$('#vmn'),box=$('#vmreg');if(!fi||!na||!box)return;var f=fi.value.trim(),n=na.value.trim(),k=f+'|'+n;if(k===regLetzt)return;regLetzt=k;box.innerHTML='';if(f.length<3||n.length<3||!/(gmbh|\bkg\b|gbr|\bug\b|\bag\b|\beg\b|ohg|partg|mbh)/i.test(f))return;
@@ -517,7 +517,7 @@ function aboAngebot(a,abo){
   '<div class="sw-grid" style="margin-bottom:12px"><label class="sw-opt"><input type="radio" name="ck_iv" value="monat" checked> <span><strong>'+e(p[0])+' im Monat</strong><br><span class="sw-muted" style="font-size:14px">monatlich kündbar</span></span></label>'+
   '<label class="sw-opt"><input type="radio" name="ck_iv" value="jahr"> <span><strong>'+e(p[1])+' im Jahr</strong><br><span class="sw-muted" style="font-size:14px">10 % günstiger, jährlich kündbar</span></span></label></div>'+
   '<p class="sw-muted" style="font-size:14px;margin:0 0 12px">Alle Preise netto zzgl. 19 % Umsatzsteuer. Ab der dritten Anlage 10 % Mengenrabatt. Bezahlung per Karte direkt hier, die Freischaltung erfolgt sofort nach der Zahlung.</p>'+
-  '<label class="sw-check" style="display:flex;align-items:flex-start;margin-bottom:14px"><input type="checkbox" id="ck_ut"><span>Ich buche als Unternehmer (zum Beispiel GmbH, GbR, Einzelunternehmen oder Landwirt), nicht als Verbraucher.</span></label>'+
+  '<label class="sw-check" style="display:flex;align-items:flex-start;margin-bottom:14px"><input type="checkbox" id="ck_ut"><span>Ich buche als Unternehmer (zum Beispiel GmbH, GbR, eGbR, Einzelunternehmen oder Landwirt), nicht als Verbraucher.</span></label>'+
   '<label class="sw-check" style="margin:0 0 16px"><input type="checkbox" id="ck_agb"><span>Ich habe die <a href="agb.html" target="_blank">AGB</a> (Stand '+SW.AGB_VERSION+') gelesen und akzeptiere sie.</span></label>'+'<div class="sw-row"><button class="sw-btn" id="ck_buy">Weiter zur Bezahlung</button></div>';
 }
 function checkSection(a,checks,allDocs,cf,abo){

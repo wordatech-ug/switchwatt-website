@@ -158,7 +158,7 @@
     abgebrochen: ['Abgebrochen', '#71717A']
   };
   SW.badge = function (s) { var x = SW.STATUS[s] || [s, '#A1A1AA']; return '<span class="sw-badge" style="--c:' + x[1] + '">' + SW.esc(x[0]) + '</span>'; };
-  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von SwitchWatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Abrechnung Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Export' };
+  SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von SwitchWatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Abrechnung Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Export', vollmacht: 'Vollmacht (PDF)', rechnung: 'Rechnung' };
   // Vertragstermine: aktuelles Vertragsende und nächster Kündigungstermin, inklusive automatischer Verlängerung.
   // Ergebnis: { ende, kuendigen_bis, verlaengert, fehlt: 'vertrag' | 'start' | null }
   SW.termine = function (a, hatVertrag) {

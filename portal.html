@@ -22,7 +22,7 @@
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
 var E=SW.esc, me=null, profile=null, modus='wechsel';
-var WUNSCH=(new URLSearchParams(location.search).get('bereich')==='check')?'check':null;
+var WUNSCH=(function(b){return ['check','wechsel','beide'].indexOf(b)>=0?b:null;})(new URLSearchParams(location.search).get('bereich'));
 var PW_REGEL='mindestens 10 Zeichen mit Groß- und Kleinbuchstaben, Ziffer und Sonderzeichen';
 function pwOk(p){return p.length>=10&&/[a-z]/.test(p)&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[^A-Za-z0-9]/.test(p);}
 var STRIPE_PK='pk_test_51UeyalENDQKfxlzFn1J1SelV2LBDxXE7AoPLeL7XQ568a06OHT5TFKBJvUVG3a53jNX3lwBwQEsIdx87p1pq91va00BULZAc72',_stripe=null,_einbett=null;
@@ -31,6 +31,7 @@ function stripeLaden(){if(_stripe)return Promise.resolve(_stripe);return new Pro
 async function einbetten(ziel,secret){if(_einbett){try{_einbett.destroy();}catch(x){}_einbett=null;}var st=await stripeLaden();_einbett=await st.initEmbeddedCheckout({fetchClientSecret:function(){return Promise.resolve(secret);}});_einbett.mount(ziel);}
 function gruss(){var p=profile||{},n=String(p.name||'').trim();if(p.anrede&&n)return 'Guten Tag, '+p.anrede+' '+n.split(/\s+/).pop();return n?'Guten Tag, '+n:'Guten Tag';}
 function nurCheck(){return profile&&profile.bereich==='check'&&profile.rolle!=='admin';}
+function nurWechsel(){return profile&&profile.bereich==='wechsel'&&profile.rolle!=='admin';}
 function msg(type,text){return '<div class="sw-msg '+type+'" role="'+(type==='err'?'alert':'status')+'">'+E(text)+'</div>';}
 function $(s){return app.querySelector(s);}
 function busy(btn,on,label){if(!btn)return;btn.disabled=on;if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'Bitte warten …';}else if(btn.dataset.l){btn.textContent=btn.dataset.l;}}
@@ -41,13 +42,13 @@ function renderAuth(mode,note){
   nav.innerHTML='';
   mode=mode||'login';
   app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Ihr SwitchWatt-Konto</h1>'+
-  '<p class="sw-muted">'+(WUNSCH==='check'?'Hier laden Sie jeden Monat Ihre Abrechnungen hoch und sehen sofort, ob alles stimmt.':'Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.')+'</p>'+
+  '<p class="sw-muted">'+(WUNSCH==='check'?'Hier laden Sie jeden Monat Ihre Abrechnungen hoch und sehen sofort, ob alles stimmt.':(WUNSCH==='wechsel'?'Hier laden Sie Ihre Verträge hoch, sehen die Angebote und geben den Wechsel frei.':'Prüfen Sie Ihre Abrechnungen oder lassen Sie Ihren Direktvermarkter-Wechsel vorbereiten.'))+'</p>'+
   (note||'')+(mode==='login'&&SW.abgemeldet()?'<div class="sw-msg info" style="font-size:14px">Sie wurden nach 30 Minuten ohne Aktivität automatisch abgemeldet. Bitte melden Sie sich erneut an.</div>':'')+
-  (mode==='signup'&&!note&&WUNSCH==='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Den Abrechnungs-Check buchen Sie pro Anlage, monatlich oder jährlich. Bei Fragen meldet sich ein Mensch persönlich.</div>':'')+
-  (mode==='signup'&&!note&&WUNSCH!=='check'?'<div class="sw-msg info" style="font-size:14px"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
+  (mode==='signup'&&!note?'<div id="pilot_c" class="sw-msg info" style="font-size:14px'+(WUNSCH==='check'?'':';display:none')+'"><strong>Exklusive Pilotphase.</strong> Den Abrechnungs-Check buchen Sie pro Anlage, monatlich oder jährlich. Bei Fragen meldet sich ein Mensch persönlich.</div>':'')+
+  (mode==='signup'&&!note?'<div id="pilot_w" class="sw-msg info" style="font-size:14px'+(WUNSCH==='wechsel'||WUNSCH==='beide'?'':';display:none')+'"><strong>Exklusive Pilotphase.</strong> Wir nehmen nur eine begrenzte Zahl an Anlagen auf, mit Vorrang nach Kündigungstermin, und melden uns nach Ihrer Anmeldung persönlich. Die Vollmacht erlaubt uns nur, Angebote einzuholen. Gekündigt und gewechselt wird erst, wenn Sie ein Angebot freigeben.</div>':'')+
   '<div class="sw-card"><div class="sw-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="'+(mode==='login')+'">Anmelden</button><button role="tab" data-m="signup" aria-selected="'+(mode==='signup')+'">Konto anlegen</button></div>'+
   '<form id="f" novalidate>'+
-  (mode==='signup'?'<div style="margin-bottom:14px"><label for="anrede">Anrede</label><select id="anrede"><option value="">keine Angabe</option><option>Frau</option><option>Herr</option></select></div><div style="margin-bottom:14px"><label for="name">Ihr Vor- und Nachname</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
+  (mode==='signup'?'<fieldset class="sw-wahl" style="border:0;padding:0;margin:0 0 16px"><legend style="font-weight:600;margin-bottom:8px">Wofür möchten Sie SwitchWatt nutzen?</legend>'+[['check','Abrechnungs-Check','Monatliche Abrechnungen hochladen und prüfen lassen'],['wechsel','Direktvermarkter-Wechsel','Angebote einholen und den Wechsel vorbereiten lassen'],['beide','Beides','Abrechnungen prüfen und Wechsel vorbereiten']].map(function(o){return '<label class="sw-check" style="margin-bottom:8px"><input type="radio" name="ber" value="'+o[0]+'"'+(WUNSCH===o[0]?' checked':'')+'><span><strong>'+o[1]+'</strong><br><span class="sw-muted" style="font-size:14px">'+o[2]+'</span></span></label>';}).join('')+'</fieldset>'+'<div style="margin-bottom:14px"><label for="anrede">Anrede</label><select id="anrede"><option value="">keine Angabe</option><option>Frau</option><option>Herr</option></select></div><div style="margin-bottom:14px"><label for="name">Ihr Vor- und Nachname</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
   '<div style="margin-bottom:14px"><label for="mail">E-Mail</label><input id="mail" type="email" required autocomplete="email"></div>'+
   '<div style="margin-bottom:14px"><label for="pw">Passwort'+(mode==='signup'?' ('+PW_REGEL+')':'')+'</label><input id="pw" type="password" required autocomplete="'+(mode==='signup'?'new-password':'current-password')+'"></div>'+
   (mode==='signup'?'<div style="margin-bottom:14px"><label for="pw2">Passwort wiederholen</label><input id="pw2" type="password" required autocomplete="new-password"></div>':'')+
@@ -56,6 +57,7 @@ function renderAuth(mode,note){
   (mode==='login'?'<p style="margin:16px 0 0;font-size:14px"><a href="#" id="forgot">Passwort vergessen?</a></p>':'')+
   '</div></div>';
   app.querySelectorAll('[data-m]').forEach(function(b){b.onclick=function(){renderAuth(b.dataset.m);};});
+  app.querySelectorAll('input[name=ber]').forEach(function(i){i.onchange=function(){var pc=$('#pilot_c'),pw_=$('#pilot_w');if(pc)pc.style.display=i.value==='check'?'':'none';if(pw_)pw_.style.display=i.value==='check'?'none':'';};});
   var fg=$('#forgot'); if(fg)fg.onclick=function(e){e.preventDefault();renderForgot();};
   $('#f').onsubmit=async function(e){e.preventDefault();var btn=this.querySelector('button[type=submit]'),err=$('#err');err.innerHTML='';
     var mail=$('#mail').value.trim(),pw=$('#pw').value;
@@ -65,9 +67,10 @@ function renderAuth(mode,note){
     busy(btn,true);
     try{
       if(mode==='signup'){
+        var berW=app.querySelector('input[name=ber]:checked');if(!berW){throw new Error('Bitte wählen Sie aus, wofür Sie SwitchWatt nutzen möchten.');}
         if(!$('#name').value.trim()){throw new Error('Bitte geben Sie Ihren Namen ein.');}
         if(!$('#ds').checked){throw new Error('Bitte bestätigen Sie die Datenschutzerklärung.');}
-        var d=await SW.signUp(mail,pw,{anrede:$('#anrede').value||null,name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:WUNSCH||'wechsel'});
+        var d=await SW.signUp(mail,pw,{anrede:$('#anrede').value||null,name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:berW.value});
         if(!d||!d.access_token){renderAuth('login','<div class="sw-msg info" role="status"><strong>Fast geschafft.</strong> Wir haben Ihnen eine E-Mail an <strong>'+E(mail)+'</strong> geschickt. Bitte klicken Sie auf den Link darin, um Ihre Adresse zu bestätigen. Danach ist Ihr Konto aktiv. Keine E-Mail da? Schauen Sie bitte auch im Spam-Ordner nach.</div>');return;}
       } else { await SW.signIn(mail,pw); }
       await start();
@@ -669,6 +672,7 @@ function tabsBar(){
   var bar=document.getElementById('bereich');
   if(!bar){bar=document.createElement('nav');bar.id='bereich';bar.className='sw-bereich';bar.setAttribute('aria-label','Bereich');app.parentNode.insertBefore(bar,app);}
   if(nurCheck()){bar.innerHTML='<div class="sw-bereich-in"><a href="#/check" class="'+(modus==='check'?'on':'')+'">Abrechnungs-Check</a></div>';return;}
+  if(nurWechsel()){bar.innerHTML='<div class="sw-bereich-in"><a href="#/" class="'+(modus==='wechsel'?'on':'')+'">Direktvermarkter-Wechsel</a><a href="#" id="ck_dazu" style="margin-left:auto;font-weight:400;font-size:14px" title="Abrechnungs-Check zusätzlich nutzen">+ Abrechnungs-Check</a></div>';var cd=$('#ck_dazu');if(cd)cd.onclick=async function(e){e.preventDefault();try{await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';location.hash='#/check';}catch(x){alertBox(x.message);}};return;}
   bar.innerHTML='<div class="sw-bereich-in"><a href="#/" class="'+(modus==='wechsel'?'on':'')+'"'+(modus==='wechsel'?' aria-current="page"':'')+'>Direktvermarkter-Wechsel</a><a href="#/check" class="'+(modus==='check'?'on':'')+'"'+(modus==='check'?' aria-current="page"':'')+'>Abrechnungs-Check</a></div>';
 }
 
@@ -677,6 +681,7 @@ async function route(){
   var h=location.hash||'#/';
   try{
     if(h==='#/konto'){var vorher=modus;modus='konto';tabsBar();window._kontoZurueck=vorher==='wechsel'&&!nurCheck()?'#/':'#/check';await renderKonto();window.scrollTo(0,0);return;}
+    if(nurWechsel()&&h.indexOf('#/check')===0)h=(h.indexOf('#/check/')===0?'#/anlage/'+h.slice(8):'#/');
     if(nurCheck()&&h.indexOf('#/check')!==0)h=(h.indexOf('#/anlage/')===0?'#/check/'+h.slice(9):'#/check');
     if(h==='#/abrechnungen')h='#/check';
     modus=h.indexOf('#/check')===0?'check':'wechsel';
@@ -740,7 +745,7 @@ async function start(){
   nav.innerHTML=(profile&&profile.rolle==='admin'?'<a class="sw-btn ghost small" href="admin.html">Verwaltung</a>':'')+'<span class="sw-muted sw-hide-s" style="font-size:14px">'+E(me.email)+'</span><a class="sw-btn ghost small" href="#/konto">Kundenkonto</a><button class="sw-btn ghost small" id="out">Abmelden</button>';
   document.getElementById('out').onclick=async function(){me=null;profile=null;try{await SW.signOut();}catch(x){}var lg=document.querySelector('.sw-logo');if(lg)lg.setAttribute('href','index.html');history.replaceState(null,'',location.pathname);nav.innerHTML='';var b=document.getElementById('bereich');if(b)b.remove();renderAuth();};
   var lg=document.querySelector('.sw-logo');if(lg){lg.setAttribute('href',nurCheck()?'#/check':'#/');lg.setAttribute('title','Zu Ihrer Übersicht');}
-  if(WUNSCH==='check'&&(!location.hash||location.hash==='#/')){location.hash='#/check';return;}
+  if(WUNSCH==='check'&&!nurWechsel()&&(!location.hash||location.hash==='#/')){location.hash='#/check';return;}
   route();
 }
 window.addEventListener('hashchange',function(){if(me)route();});

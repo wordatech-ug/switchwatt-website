@@ -275,16 +275,22 @@ async function renderAnlage(id,mode){
   var ps=String(id).split('/');id=ps[0];var openM=ps[1]==='ck'?ps[2]:(mode==='check'&&/^\d{4}-\d{2}$/.test(ps[1]||'')?ps[1]:null);window._ckOpen=openM;
   var r=await Promise.all([SW.rest('anlagen?select=*&id=eq.'+encodeURIComponent(id)),SW.rest('dokumente?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),
     SW.rest('angebote?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=empfohlen.desc,ersparnis_jahr.desc.nullslast'),SW.rest('freigaben?select=*&anlage_id=eq.'+encodeURIComponent(id)),
-    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=version,anlagen&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id)),SW.rest('abos?select=*&anlage_id=eq.'+encodeURIComponent(id)).catch(function(){return [];})]);
+    SW.rest('verlauf?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc'),SW.rest('vollmachten?select=version,anlagen&widerrufen_at=is.null'),SW.rest('pruefungen?select=*&anlage_id=eq.'+encodeURIComponent(id)+'&order=monat.desc'),SW.rest('check_frei?select=*&anlage_id=eq.'+encodeURIComponent(id)),SW.rest('abos?select=*&anlage_id=eq.'+encodeURIComponent(id)).catch(function(){return [];}),SW.rest('wechsel_zahlungen?select=*&anlage_id=eq.'+encodeURIComponent(id)).catch(function(){return [];})]);
   var a=r[0][0];if(!a){app.innerHTML=msg('err','Diese Anlage wurde nicht gefunden.')+'<a href="#/">Zur Übersicht</a>';return;}
-  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=vmDeckt(r[5],id),checks=r[6]||[],cf=r[7][0]||null,abo=(r[8]||[])[0]||null;
+  var allDocs=r[1],docs=allDocs.filter(function(x){return String(x.art).indexOf('gutschrift_')!==0&&x.art!=='monitoring';}),offers=r[2],fg=r[3][0],log=r[4],hasVm=vmDeckt(r[5],id),checks=r[6]||[],cf=r[7][0]||null,abo=(r[8]||[])[0]||null,wz=(r[9]||[])[0]||null;
   var editable=mode==='check'||['neu','in_pruefung'].indexOf(a.status)>=0, dd=SW.daysUntil(a.kuendigung_bis);
   var CKM=mode==='check';
   window._ckWechsel=hasVm||['in_pruefung','angebote','freigegeben','kuendigung','gewechselt'].indexOf(a.status)>=0;
+  var wq=new URLSearchParams(location.search).get('wechsel');
+  if(wq&&!window._wsSync){window._wsSync=1;history.replaceState(null,'',location.pathname+location.hash);var wd=null;try{wd=JSON.parse(sessionStorage.getItem('sw-wechsel')||'null');}catch(x){}
+    app.innerHTML=msg('info','Ihre Karte wird gespeichert und das Angebot freigegeben …');
+    try{if(!wd||wd.anlage!==id)throw new Error('Die Freigabe konnte nicht zugeordnet werden. Bitte wählen Sie das Angebot noch einmal.');await wechselAbschliessen(id,wd.angebot,wd.name,wq);}catch(x){window._wsFehler=x.message;}
+    return renderAnlage(id,mode);}
   if(CKM&&/[?&]abo=ok/.test(location.search)&&!window._aboSync){window._aboSync=1;history.replaceState(null,'',location.pathname+location.hash);app.innerHTML=msg('info','Zahlung wird bestätigt …');try{await SW.fn('stripe',{aktion:'sync',anlage_id:id});}catch(x){}return renderAnlage(id,mode);}
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>'+
     (CKM?'<p class="sw-sub">'+[a.kwp?SW.num(a.kwp,1)+' kWp':'',a.direktvermarkter?E(a.direktvermarkter):'',a.standort?E(a.standort):''].filter(Boolean).join(' · ')+'</p>':'');
   if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
+  if(window._wsFehler){h+=msg('err',window._wsFehler);window._wsFehler=null;}
   if(!CKM&&!hasVm)h+=msg('info','Damit wir für diese Anlage Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');
   var needReview=editable&&!a.daten_bestaetigt_at;
   if(needReview)h+='<section class="sw-card hl" id="review"></section>';
@@ -309,7 +315,8 @@ async function renderAnlage(id,mode){
   /* Kündigung */
   if(!CKM&&(fg||['kuendigung','gewechselt'].indexOf(a.status)>=0)){
     var ents=docs.filter(function(x){return x.art==='kuendigung_entwurf';}),sig=docs.filter(function(x){return x.art==='kuendigung_unterschrieben';});
-    h+='<section class="sw-card hl"><h2>Kündigung</h2>'+(sig.length?msg('ok','Unterschriebene Kündigung liegt vor. Wir kümmern uns um den Versand und den Wechsel.'):'<p class="sw-muted">Ihr bisheriger Vertrag muss mit Ihrer Unterschrift gekündigt werden. So geht es:</p><ol><li>Kündigungsschreiben öffnen und prüfen'+(ents.length?' (oder unseren Entwurf unten verwenden)':'')+'</li><li>Unterschreiben: ausdrucken und unterschreiben, oder digital mit qualifizierter Signatur</li><li>Unterschriebene Kündigung hier hochladen</li></ol>')+
+    var wzt=wz?(wz.status==='bezahlt'?'Wechselpauschale bezahlt'+(wz.bezahlt_at?' am '+SW.date(wz.bezahlt_at):'')+'.'+(wz.rechnung_url?' <a href="'+E(wz.rechnung_url)+'" target="_blank" rel="noopener">Rechnung ansehen</a>':''):wz.status==='aktion_noetig'?'Die Abbuchung der Wechselpauschale braucht Ihre Bestätigung. '+(wz.zahlung_url?'<a href="'+E(wz.zahlung_url)+'" target="_blank" rel="noopener">Jetzt bestätigen</a>':''):'Wechselpauschale: '+SW.num(wz.betrag_cent/100,0)+' € netto, Karte hinterlegt. Wir buchen ab, sobald Ihr neuer Vertrag unterschrieben ist.'):'';
+    h+='<section class="sw-card hl"><h2>Kündigung</h2>'+(wzt?'<p class="sw-muted" style="font-size:14px;margin:0 0 12px">'+wzt+'</p>':'')+(sig.length?msg('ok','Unterschriebene Kündigung liegt vor. Wir kümmern uns um den Versand und den Wechsel.'):'<p class="sw-muted">Ihr bisheriger Vertrag muss mit Ihrer Unterschrift gekündigt werden. So geht es:</p><ol><li>Kündigungsschreiben öffnen und prüfen'+(ents.length?' (oder unseren Entwurf unten verwenden)':'')+'</li><li>Unterschreiben: ausdrucken und unterschreiben, oder digital mit qualifizierter Signatur</li><li>Unterschriebene Kündigung hier hochladen</li></ol>')+
     '<div class="sw-row"><button class="sw-btn ghost" id="kbtn">Kündigungsschreiben öffnen</button></div>'+
     '<div style="margin-top:16px"><label for="up_k">Unterschriebene Kündigung hochladen</label><div class="sw-row"><input id="up_k" type="file" accept="application/pdf,image/jpeg,image/png" style="flex:1 1 260px"><button class="sw-btn" id="kup">Hochladen</button></div></div><div id="kerr"></div></section>';
   }
@@ -340,10 +347,25 @@ async function renderAnlage(id,mode){
   app.querySelectorAll('[data-pick]').forEach(function(b){b.onclick=function(){
     if(!hasVm){alertBox('Bitte erteilen Sie zuerst die Vollmacht für diese Anlage auf der Übersichtsseite.');return;}
     var o=offers.filter(function(x){return x.id===b.dataset.pick;})[0];
+    var netto={s:390,m:590,l:890}[ckKlasse(a.kwp)],brutto=SW.num(netto*1.19,2);
     showModal('<h2>Angebot freigeben</h2><p>Sie wählen <strong>'+E(o.anbieter)+'</strong> für die Anlage <strong>'+E(a.name)+'</strong>.</p><p class="sw-muted" style="font-size:15px">Damit bereitet SwitchWatt die Kündigung des bisherigen Vertrags und den neuen Vertrag vor. Beides unterschreiben Sie selbst, wir übermitteln es danach für Sie.</p>'+
-      '<label for="fgn">Ihr Name</label><input id="fgn" value="'+E(profile&&profile.name||'')+'"><label class="sw-check" style="margin:14px 0"><input type="checkbox" id="fgc"><span>Ich gebe dieses Angebot verbindlich frei.</span></label><div id="fgerr"></div><div class="sw-row"><button class="sw-btn" id="fgok">Freigeben</button><button class="sw-btn ghost" data-close>Abbrechen</button></div>');
-    modal.querySelector('#fgok').onclick=async function(){var n=modal.querySelector('#fgn').value.trim();if(!n||!modal.querySelector('#fgc').checked){modal.querySelector('#fgerr').innerHTML=msg('err','Bitte Namen eingeben und ankreuzen.');return;}
-      busy(this,true);try{await SW.rest('freigaben',{method:'POST',body:{anlage_id:a.id,angebot_id:o.id,name_unterzeichner:n}});closeModal();renderAnlage(id);}catch(x){modal.querySelector('#fgerr').innerHTML=msg('err',x.message);busy(this,false);}};
+      '<div class="sw-msg info" style="font-size:14px"><strong>Wechselpauschale: '+netto+' € netto</strong> ('+brutto+' € inkl. 19 % USt). Abgebucht wird erst, wenn Ihr neuer Vertrag unterschrieben ist. Dafür hinterlegen Sie jetzt eine Karte.</div>'+
+      '<label for="fgn">Ihr Name</label><input id="fgn" value="'+E(profile&&profile.name||'')+'"><label class="sw-check" style="margin:14px 0"><input type="checkbox" id="fgc"><span>Ich gebe dieses Angebot verbindlich frei. SwitchWatt darf die Wechselpauschale nach Abschluss des neuen Vertrags von meiner Karte abbuchen.</span></label><div id="fgerr"></div><div id="fgpay"></div>'+
+      '<div class="sw-row" id="fgbtns"><button class="sw-btn" id="fgok">Weiter</button><button class="sw-btn ghost" data-close>Abbrechen</button></div>');
+    var err=function(t){modal.querySelector('#fgerr').innerHTML=msg('err',t);};
+    var karte=async function(neu){var r=await SW.fn('stripe',{aktion:'wechsel_karte',anlage_id:a.id,angebot_id:o.id,neu:!!neu});if(!r||!r.ok)throw new Error((r&&r.error)||'Die Zahlung konnte nicht vorbereitet werden.');return r;};
+    modal.querySelector('#fgok').onclick=async function(){var btn=this,n=modal.querySelector('#fgn').value.trim();if(!n||!modal.querySelector('#fgc').checked){err('Bitte Namen eingeben und ankreuzen.');return;}
+      busy(btn,true);modal.querySelector('#fgerr').innerHTML='';
+      try{try{sessionStorage.setItem('sw-wechsel',JSON.stringify({anlage:a.id,angebot:o.id,name:n}));}catch(x){}
+        var r=await karte(false);
+        if(r.karte){modal.querySelector('#fgpay').innerHTML='<p style="font-size:15px;margin:0 0 12px">Ihre hinterlegte Karte wird verwendet: <strong>'+E(String(r.karte.marke||'').toUpperCase())+' •••• '+E(r.karte.endung)+'</strong>. <a href="#" id="fgneu">Andere Karte verwenden</a></p>';
+          btn.dataset.l='Verbindlich freigeben';busy(btn,false);
+          btn.onclick=async function(){busy(btn,true);try{await wechselAbschliessen(a.id,o.id,n,null);closeModal();renderAnlage(id);}catch(x){err(x.message);busy(btn,false);}};
+          modal.querySelector('#fgneu').onclick=async function(ev){ev.preventDefault();try{var r2=await karte(true);modal.querySelector('#fgbtns').style.display='none';modal.querySelector('#fgpay').innerHTML='<div id="fgst" class="sw-pay"></div>'+STRIPE_HINWEIS;await einbetten('#fgst',r2.client_secret);}catch(x){err(x.message);}};
+        } else {modal.querySelector('#fgbtns').style.display='none';modal.querySelector('#fgpay').innerHTML='<div id="fgst" class="sw-pay"></div>'+STRIPE_HINWEIS+'<p style="font-size:14px;margin:10px 0 0"><a href="#" data-close>Abbrechen</a></p>';
+          modal.querySelectorAll('[data-close]').forEach(function(x){x.onclick=function(ev){ev.preventDefault();if(_einbett){_einbett.destroy();_einbett=null;}closeModal();};});
+          await einbetten('#fgst',r.client_secret);}
+      }catch(x){err(x.message);busy(btn,false);}};
   };});
   var kb=$('#kbtn'); if(kb)kb.onclick=function(){try{var ka=null;checks.some(function(c){var k=c.ergebnis&&c.ergebnis.kontakte&&c.ergebnis.kontakte.dv;if(k&&k.anschrift){ka=k;return true;}});SW.kuendigung(Object.assign({},a,{dv_anschrift:a.dv_anschrift||(ka&&ka.anschrift)||'',dv_vertragsnr:a.dv_vertragsnr||(ka&&ka.kundennummer)||''}),profile&&profile.firma);}catch(x){alertBox(x.message);}};
   var ku=$('#kup'); if(ku)ku.onclick=async function(){var b=this;busy(b,true,'Lädt …');try{var n=await uploadFiles(a,$('#up_k'),'kuendigung_unterschrieben');if(!n)throw new Error('Bitte zuerst die Datei auswählen.');renderAnlage(id);}catch(x){$('#kerr').innerHTML=msg('err',x.message);busy(b,false);}};
@@ -624,6 +646,12 @@ function mountTeaser(){var b=$('#tz_go');if(b)b.onclick=async function(){busy(b,
 document.addEventListener('click',async function(ev){var b=ev.target.closest&&ev.target.closest('[data-ws]');if(!b)return;busy(b,true);try{if(nurCheck()){await SW.rest('profiles?id=eq.'+me.id,{method:'PATCH',body:{bereich:'beide'}});profile.bereich='beide';}location.hash='#/anlage/'+b.getAttribute('data-ws');}catch(x){alertBox(x.message);busy(b,false);}});
 
 /* ---------- Modal ---------- */
+async function wechselAbschliessen(aid,ang,name,sid){
+  var r=await SW.fn('stripe',{aktion:'wechsel_sichern',anlage_id:aid,angebot_id:ang,session_id:sid||undefined});
+  if(!r||!r.ok)throw new Error((r&&r.error)||'Die Karte konnte nicht gespeichert werden.');
+  await SW.rest('freigaben',{method:'POST',body:{anlage_id:aid,angebot_id:ang,name_unterzeichner:name}});
+  try{sessionStorage.removeItem('sw-wechsel');}catch(x){}
+}
 function showModal(inner){modal.innerHTML='<div class="sw-modal" role="dialog" aria-modal="true"><div>'+inner+'</div></div>';modal.querySelectorAll('[data-close]').forEach(function(b){b.onclick=closeModal;});var f=modal.querySelector('input,button');if(f)f.focus();}
 function closeModal(){modal.innerHTML='';}
 function alertBox(t){showModal('<p>'+E(t)+'</p><button class="sw-btn" data-close>OK</button>');}

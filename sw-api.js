@@ -94,7 +94,7 @@
     async signIn(email, password) { return setSession(await authCall('token?grant_type=password', { email: email, password: password })); },
     async recover(email) { var r = await fetch(URL_ + '/functions/v1/passwort', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) }); if (!r.ok) throw new Error('Das hat leider nicht geklappt. Bitte später noch einmal versuchen.'); return true; },
     async setPassword(pw) { await token(); return authCall('user', { password: pw }, 'PUT'); },
-    async signOut() { try { await fetch(URL_ + '/auth/v1/logout?scope=local', { method: 'POST', headers: await headers() }); } catch (e) {} setSession(null); },
+    async signOut() { try { await fetch(URL_ + '/auth/v1/logout', { method: 'POST', headers: await headers() }); } catch (e) {} setSession(null); },
     fromHash() {
       if (!location.hash || location.hash.indexOf('access_token=') < 0) return null;
       var p = new URLSearchParams(location.hash.slice(1));
@@ -130,6 +130,8 @@
     async fn(name, body) {
       var r = await fetch(URL_ + '/functions/v1/' + name, { method: 'POST', headers: await headers({ 'Content-Type': 'application/json' }), body: JSON.stringify(body || {}) });
       var j = null; try { j = await r.json(); } catch (e) {}
+      // Sitzung wurde woanders beendet (z. B. „Abmelden“ auf einem anderen Gerät): hier auch abmelden und zur Anmeldung
+      if (session && (r.status === 401 || (j && j.error === 'nicht angemeldet'))) { setSession(null); location.reload(); return { ok: false, error: 'Bitte melden Sie sich erneut an.' }; }
       return j || { ok: false, error: 'Fehler ' + r.status };
     },
     async removeFile(path) {

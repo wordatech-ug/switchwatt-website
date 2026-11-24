@@ -82,8 +82,9 @@ function renderForgot(){
     catch(x){$('#err').innerHTML=msg('err',x.message);} busy(btn,false);};
 }
 function renderNewPassword(){
-  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Neues Passwort</h1><div class="sw-card"><form id="f"><label for="pw">Neues Passwort ('+PW_REGEL+')</label><input id="pw" type="password" required autocomplete="new-password"><div id="err"></div><button class="sw-btn" style="margin-top:16px" type="submit">Speichern</button></form></div></div>';
+  app.innerHTML='<div style="max-width:460px;margin:0 auto"><h1>Neues Passwort</h1><div class="sw-card"><form id="f"><label for="pw">Neues Passwort ('+PW_REGEL+')</label><input id="pw" type="password" required autocomplete="new-password"><label for="pw2" style="margin-top:12px">Neues Passwort wiederholen</label><input id="pw2" type="password" required autocomplete="new-password"><div id="err"></div><button class="sw-btn" style="margin-top:16px" type="submit">Speichern</button></form></div></div>';
   $('#f').onsubmit=async function(e){e.preventDefault();var pw=$('#pw').value;if(!pwOk(pw)){$('#err').innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}
+    if(pw!==$('#pw2').value){$('#err').innerHTML=msg('err','Die beiden Passwörter stimmen nicht überein.');return;}
     try{await SW.setPassword(pw);await start();}catch(x){$('#err').innerHTML=msg('err',x.message);}};
 }
 
@@ -664,7 +665,7 @@ async function renderKonto(){
   h+='</section>';
   h+='<section class="sw-card" id="k_zahl"><h2>Zahlungsart</h2>'+kmsg+'<div id="k_karte"><p class="sw-muted" style="margin:0">Wird geladen …</p></div><div id="k_kartebox"></div></section>';
   h+='<section class="sw-card"><h2>Rechnungen</h2><div id="k_rech"><p class="sw-muted" style="margin:0">Wird geladen …</p></div></section>';
-  h+='<section class="sw-card"><h2>Passwort ändern</h2><div style="max-width:420px"><label for="k_pw">Neues Passwort ('+PW_REGEL+')</label><input id="k_pw" type="password" autocomplete="new-password"></div><div id="k_pwmsg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn ghost" id="k_pwsave">Passwort speichern</button></div></section>';
+  h+='<section class="sw-card"><h2>Passwort ändern</h2><div style="max-width:420px"><label for="k_pw">Neues Passwort ('+PW_REGEL+')</label><input id="k_pw" type="password" autocomplete="new-password"><label for="k_pw2" style="margin-top:12px">Neues Passwort wiederholen</label><input id="k_pw2" type="password" autocomplete="new-password"></div><div id="k_pwmsg"></div><div class="sw-row" style="margin-top:14px"><button class="sw-btn ghost" id="k_pwsave">Passwort speichern</button></div></section>';
   h+='<section class="sw-card"><h2>Konto löschen</h2><p class="sw-muted" style="margin:0">Wenn Sie Ihr Konto und alle Unterlagen löschen möchten, schreiben Sie uns an <a href="mailto:angebote@switchwatt.de?subject=Konto%20l%C3%B6schen">angebote@switchwatt.de</a>. Laufende Abos kündigen Sie bitte vorher oben.</p></section>';
   app.innerHTML=h;
   $('#k_save').onclick=async function(){var b=this,o={};F.forEach(function(f){var v=$('#'+f[0]).value.trim();o[f[2]]=v===''?null:v;});
@@ -681,7 +682,7 @@ async function renderKonto(){
     $('#k_kneu').onclick=async function(){var b=this;busy(b,true);try{var r=await SW.fn('stripe',{aktion:'karte_neu'});if(!r||!r.ok)throw new Error((r&&r.error)||'Nicht möglich.');b.remove();$('#k_kartebox').innerHTML='<p class="sw-muted" style="font-size:14px;margin:12px 0 0">Mit der Hinterlegung ermächtigen Sie SwitchWatt, die Karte für fällige Abo-Entgelte und Vergütungen nach den <a href="agb.html" target="_blank">AGB</a> zu belasten. Vor jeder Belastung erhalten Sie eine Rechnung.</p><div id="k_pay" class="sw-pay" style="margin-top:12px"></div>'+STRIPE_HINWEIS;await einbetten('#k_pay',r.client_secret);}catch(x){alertBox(x.message);busy(b,false);}};
     var rs=z.rechnungen||[];$('#k_rech').innerHTML=rs.length?'<table class="sw-stack"><thead><tr><th>Datum</th><th>Nummer</th><th>Betrag</th><th>Status</th><th></th></tr></thead><tbody>'+rs.map(function(x){return '<tr><td data-l="Datum">'+SW.date(new Date(x.datum*1000).toISOString())+'</td><td data-l="Nummer">'+E(x.nummer||'–')+'</td><td data-l="Betrag">'+SW.num(x.betrag/100,2)+' €</td><td data-l="Status">'+({paid:'bezahlt',open:'offen',void:'storniert',uncollectible:'uneinbringlich'}[x.status]||E(x.status))+'</td><td data-l="">'+(x.pdf?'<a href="'+E(x.pdf)+'" target="_blank" rel="noopener">PDF herunterladen</a>':'')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="sw-muted" style="margin:0">Noch keine Rechnungen.</p>';
   }).catch(function(){$('#k_karte').innerHTML=msg('err','Zahlungsdaten konnten gerade nicht geladen werden.');$('#k_rech').innerHTML='';});
-  $('#k_pwsave').onclick=async function(){var pw=$('#k_pw').value;if(!pwOk(pw)){$('#k_pwmsg').innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}
+  $('#k_pwsave').onclick=async function(){var pw=$('#k_pw').value;if(!pwOk(pw)){$('#k_pwmsg').innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}if(pw!==$('#k_pw2').value){$('#k_pwmsg').innerHTML=msg('err','Die beiden Passwörter stimmen nicht überein.');return;}
     busy(this,true);try{await SW.setPassword(pw);$('#k_pw').value='';$('#k_pwmsg').innerHTML=msg('ok','Passwort geändert.');}catch(x){$('#k_pwmsg').innerHTML=msg('err',x.message);}busy(this,false);};
 }
 async function start(){

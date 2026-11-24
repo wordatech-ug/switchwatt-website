@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=25"></script>
+<script src="sw-api.js?v=26"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -50,6 +50,7 @@ function renderAuth(mode,note){
   (mode==='signup'?'<div style="margin-bottom:14px"><label for="anrede">Anrede</label><select id="anrede"><option value="">keine Angabe</option><option>Frau</option><option>Herr</option></select></div><div style="margin-bottom:14px"><label for="name">Ihr Vor- und Nachname</label><input id="name" required autocomplete="name"></div><div style="margin-bottom:14px"><label for="firma">Firma (optional)</label><input id="firma" autocomplete="organization"></div><div style="margin-bottom:14px"><label for="tel">Telefon (optional)</label><input id="tel" type="tel" autocomplete="tel"></div>':'')+
   '<div style="margin-bottom:14px"><label for="mail">E-Mail</label><input id="mail" type="email" required autocomplete="email"></div>'+
   '<div style="margin-bottom:14px"><label for="pw">Passwort'+(mode==='signup'?' ('+PW_REGEL+')':'')+'</label><input id="pw" type="password" required autocomplete="'+(mode==='signup'?'new-password':'current-password')+'"></div>'+
+  (mode==='signup'?'<div style="margin-bottom:14px"><label for="pw2">Passwort wiederholen</label><input id="pw2" type="password" required autocomplete="new-password"></div>':'')+
   (mode==='signup'?'<label class="sw-check" style="margin-bottom:16px"><input type="checkbox" id="ds" required><span>Ich habe die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen.</span></label>':'')+
   '<div id="err"></div><button class="sw-btn" style="width:100%" type="submit">'+(mode==='signup'?'Konto anlegen':'Anmelden')+'</button></form>'+
   (mode==='login'?'<p style="margin:16px 0 0;font-size:14px"><a href="#" id="forgot">Passwort vergessen?</a></p>':'')+
@@ -60,13 +61,14 @@ function renderAuth(mode,note){
     var mail=$('#mail').value.trim(),pw=$('#pw').value;
     if(!mail||!pw){err.innerHTML=msg('err','Bitte E-Mail und Passwort eingeben.');return;}
     if(mode==='signup'&&!pwOk(pw)){err.innerHTML=msg('err','Das Passwort braucht '+PW_REGEL+'.');return;}
+    if(mode==='signup'&&pw!==$('#pw2').value){err.innerHTML=msg('err','Die beiden Passwörter stimmen nicht überein.');return;}
     busy(btn,true);
     try{
       if(mode==='signup'){
         if(!$('#name').value.trim()){throw new Error('Bitte geben Sie Ihren Namen ein.');}
         if(!$('#ds').checked){throw new Error('Bitte bestätigen Sie die Datenschutzerklärung.');}
         var d=await SW.signUp(mail,pw,{anrede:$('#anrede').value||null,name:$('#name').value.trim(),firma:$('#firma').value.trim(),telefon:$('#tel').value.trim(),bereich:WUNSCH||'wechsel'});
-        if(!d||!d.access_token){renderAuth('login',msg('info','Fast geschafft: Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen geschickt haben. Danach können Sie sich anmelden.'));return;}
+        if(!d||!d.access_token){renderAuth('login','<div class="sw-msg info" role="status"><strong>Fast geschafft.</strong> Wir haben Ihnen eine E-Mail an <strong>'+E(mail)+'</strong> geschickt. Bitte klicken Sie auf den Link darin, um Ihre Adresse zu bestätigen. Danach ist Ihr Konto aktiv. Keine E-Mail da? Schauen Sie bitte auch im Spam-Ordner nach.</div>');return;}
       } else { await SW.signIn(mail,pw); }
       await start();
     }catch(x){err.innerHTML=msg('err',x.message);busy(btn,false);}

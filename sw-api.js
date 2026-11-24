@@ -85,9 +85,11 @@
     get user() { return session && session.user; },
     abgemeldet() { try { var v = sessionStorage.getItem('sw-abgemeldet'); sessionStorage.removeItem('sw-abgemeldet'); return !!v; } catch (e) { return false; } },
     async signUp(email, password, meta) {
-      var d = await authCall('signup', { email: email, password: password, data: meta || {} });
-      if (d && d.access_token) setSession(d);
-      return d;
+      // Konto entsteht serverseitig und ist erst nach Klick auf den Bestätigungslink aktiv
+      var r = await fetch(URL_ + '/functions/v1/konto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: password, meta: meta || {} }) });
+      var j = null; try { j = await r.json(); } catch (e) {}
+      if (!r.ok) throw new Error((j && j.error) || 'Das hat leider nicht geklappt. Bitte später noch einmal versuchen.');
+      return { bestaetigen: true };
     },
     async signIn(email, password) { return setSession(await authCall('token?grant_type=password', { email: email, password: password })); },
     async recover(email) { var r = await fetch(URL_ + '/functions/v1/passwort', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) }); if (!r.ok) throw new Error('Das hat leider nicht geklappt. Bitte später noch einmal versuchen.'); return true; },

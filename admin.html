@@ -77,7 +77,7 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
   AE.forEach(function(x){if(!x.bis||x.bis>heute)aus[x.schluessel]=x;});
   var L=[],tage=function(d){return d?Math.floor((Date.now()-new Date(d).getTime())/864e5):null;};
   var cur=null,GR={frist:'w',freigabe:'w',angebote:'w',nachfassen:'w',fristfehlt:'w',startfehlt:'w',vertragfehlt:'w',daten:'k',kontakt:'k',check:'c',ws:'c'};
-  var add=function(k,prio,text,link,wer,info){if(!aus[k])L.push({k:k,p:prio,t:text,l:link,w:wer,i:info||'',g:GR[k.split(':')[0]]||'k',f:cur});};
+  var add=function(k,prio,text,link,wer,info){if(!aus[k])var g=GR[k.split(':')[0]]||'k';info=info||'';if(g==='w'&&!/kündigen bis|Frist offen|Kündigungsfrist/.test(info+text))info=(cur?'kündigen bis '+SW.date(cur):'Frist offen')+(info?' · '+info:'');L.push({k:k,p:prio,t:text,l:link,w:wer,i:info,g:g,f:cur});};
   an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;cur=a.kuendigung_bis||null;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
     var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote),fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
     var fristP=d==null?4:d<=14?1:d<=30?2:d<=60?3:4;

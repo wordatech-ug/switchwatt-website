@@ -79,7 +79,7 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
   var add=function(k,prio,text,link,wer,info){if(!aus[k])L.push({k:k,p:prio,t:text,l:link,w:wer,i:info||''});};
   an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
     var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote),fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
-    var fristP=d==null?60:d<=14?1:d<=30?2:d<=60?3:4;
+    var fristP=d==null?4:d<=14?1:d<=30?2:d<=60?3:4;
     if(offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
     if(fg.length&&['kuendigung','gewechselt'].indexOf(a.status)<0)add('freigabe:'+a.id,fristP,'Kunde hat freigegeben: Kündigung und neuen Vertrag vorbereiten',lk,wer,'freigegeben am '+SW.date(fg[0].freigegeben_at));
     if(hatVm&&offen&&!ang.length&&!fg.length)add('angebote:'+a.id,fristP,'Angebote einholen',lk,wer,'Vollmacht seit '+SW.date(v.erteilt_at)+(a.kuendigung_bis?' · kündigen bis '+SW.date(a.kuendigung_bis):' · Frist offen'));

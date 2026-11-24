@@ -310,13 +310,27 @@ async function renderKunde(uid){
     alert(res.art==='entfernt'?'Das Konto hatte keine Unterlagen und wurde ganz entfernt.':'Das Konto ist geschlossen. Die Unterlagen bleiben archiviert.');location.hash='#/';};
 }
 
-async function route(){var h=location.hash||'#/';try{if(h.indexOf('#/a/')===0){var ps=h.slice(4).split('/');await renderOne(ps[0]);if(ps[1]==='angebot'){var t=$('#sec_ang');if(t){t.scrollIntoView();}return;}}else if(h.indexOf('#/k/')===0)await renderKunde(h.slice(4));else await renderList();}catch(x){app.innerHTML=msg('err',x.message);}window.scrollTo(0,0);}
+/* ---------- Datenlogger je Direktvermarkter ---------- */
+var LOGGER_ART=[['bluelog','meteocontrol blue\'Log'],['sma','SMA Data Manager'],['solarlog','Solar-Log'],['dv_box','Steuerbox des aktuellen DV'],['sonstiges','anderer Logger']];
+async function renderLogger(){
+  var rows=await SW.rest('dv_logger?select=*&order=dv.asc,logger.asc');
+  var nm={};LOGGER_ART.forEach(function(x){nm[x[0]]=x[1];});
+  var h='<p style="margin-top:28px"><a href="#/">← Übersicht</a></p><h1>Datenlogger je Direktvermarkter</h1><p class="sw-muted">Kann ein Direktvermarkter den beim Kunden vorhandenen Datenlogger einbinden, zählt seine Steuerbox beim Angebotsvergleich nicht als Kosten. Das Angebot bekommt dann den internen Hinweis „bitte bestätigen lassen“. Der Name wird als ganzes Wort im Anbieternamen gesucht (z. B. „EWE“ passt auf „EWE VERTRIEB GmbH“).</p>'+
+  '<section class="sw-card"><table class="sw-stack"><thead><tr><th>Direktvermarkter</th><th>Datenlogger</th><th>Hinweis</th><th></th></tr></thead><tbody>'+
+  (rows.length?rows.map(function(x){return '<tr><td>'+E(x.dv)+'</td><td>'+E(nm[x.logger]||x.logger)+'</td><td>'+E(x.hinweis||'')+'</td><td style="text-align:right"><button class="sw-btn ghost small" data-dlweg="'+x.id+'" title="Eintrag entfernen">Entfernen</button></td></tr>';}).join(''):'<tr><td colspan="4" class="sw-muted">Noch keine Einträge.</td></tr>')+
+  '</tbody></table></section>'+
+  '<section class="sw-card"><h2>Neuer Eintrag</h2><div class="sw-grid"><div><label for="dl_dv">Direktvermarkter</label><input id="dl_dv" placeholder="z. B. EWE"></div><div><label for="dl_lg">Datenlogger</label><select id="dl_lg">'+LOGGER_ART.filter(function(x){return x[0]!=='dv_box'&&x[0]!=='sonstiges';}).map(function(x){return '<option value="'+x[0]+'">'+E(x[1])+'</option>';}).join('')+'</select></div></div><div style="margin-top:12px"><label for="dl_hw">Hinweis (optional)</label><input id="dl_hw" placeholder="z. B. laut Telefonat mit Herrn X am 24.11."></div><div id="dl_err"></div><button class="sw-btn" id="dl_add" style="margin-top:12px">Hinzufügen</button></section>';
+  app.innerHTML=h;
+  $('#dl_add').onclick=async function(){var dv=$('#dl_dv').value.trim();if(dv.length<2){$('#dl_err').innerHTML=msg('err','Bitte den Namen des Direktvermarkters eingeben.');return;}this.disabled=true;try{await SW.rest('dv_logger',{method:'POST',body:{dv:dv,logger:$('#dl_lg').value,hinweis:$('#dl_hw').value.trim()||null}});renderLogger();}catch(x){$('#dl_err').innerHTML=msg('err',x.message);this.disabled=false;}};
+  app.querySelectorAll('[data-dlweg]').forEach(function(b){b.onclick=async function(){if(!confirm('Eintrag wirklich entfernen?'))return;try{await SW.rest('dv_logger?id=eq.'+b.dataset.dlweg,{method:'DELETE'});renderLogger();}catch(x){alert(x.message);}};});
+}
+async function route(){var h=location.hash||'#/';try{if(h.indexOf('#/a/')===0){var ps=h.slice(4).split('/');await renderOne(ps[0]);if(ps[1]==='angebot'){var t=$('#sec_ang');if(t){t.scrollIntoView();}return;}}else if(h.indexOf('#/k/')===0)await renderKunde(h.slice(4));else if(h==='#/logger')await renderLogger();else await renderList();}catch(x){app.innerHTML=msg('err',x.message);}window.scrollTo(0,0);}
 async function start(){
   me=await SW.me();if(!me){renderLogin();return;}
   var p=(await SW.rest('profiles?select=*&id=eq.'+me.id))[0];
   ME=p||{};
   if(!p||p.rolle!=='admin'){app.innerHTML=msg('err','Dieses Konto hat keinen Zugang zur Verwaltung.')+'<p><a href="portal.html">Zum Kundenkonto</a></p>';return;}
-  nav.innerHTML='<a class="sw-btn ghost small" href="#/">Übersicht</a><a class="sw-btn ghost small" href="index.html" target="_blank" rel="noopener">Website ↗</a><button class="sw-btn ghost small" id="out">Abmelden</button>';
+  nav.innerHTML='<a class="sw-btn ghost small" href="#/">Übersicht</a><a class="sw-btn ghost small" href="#/logger">Datenlogger</a><a class="sw-btn ghost small" href="index.html" target="_blank" rel="noopener">Website ↗</a><button class="sw-btn ghost small" id="out">Abmelden</button>';
   document.getElementById('out').onclick=async function(){await SW.signOut();renderLogin();};
   route();
 }

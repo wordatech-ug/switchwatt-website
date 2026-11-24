@@ -204,7 +204,7 @@ async function uploadFiles(anlage,input,art){
 function renderNew(){
   var ziel=modus==='check'?'#/check/':'#/anlage/';
   app.innerHTML='<p style="margin-top:28px"><a href="'+(modus==='check'?'#/check':'#/')+'">← Zur Übersicht</a></p><h1>Anlage hinzufügen</h1>'+
-  '<p class="sw-muted">Laden Sie Ihren <strong>Vertrag mit dem Direktvermarkter</strong> hoch. Wir lesen Entgelt, Laufzeit und Kündigungsfrist aus und gleichen die Anlage mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch. Ohne Vertrag können wir nicht prüfen, ob richtig abgerechnet wird.</p>'+
+  '<p class="sw-muted">Laden Sie Ihren <strong>Vertrag mit dem Direktvermarkter</strong> hoch. Wir lesen Entgelt, Laufzeit und Kündigungsfrist aus und gleichen die Anlage mit dem Marktstammdatenregister ab. Sie prüfen danach nur noch. Ohne Vertrag geht es auch, dann prüfen wir aber Ihr Vermarktungsentgelt nicht.</p>'+
   '<section class="sw-card hl"><label class="sw-drop" for="up_doc"><strong>Vertrag hierher ziehen oder auswählen</strong><span class="sw-muted">PDF oder Foto vom Handy, höchstens 20 MB</span><span id="fname" style="color:#C9D4FF"></span></label>'+
   '<input id="up_doc" type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden>'+
   '<div class="sw-row" style="margin-top:14px"><label for="up_art" style="margin:0">Das ist</label><select id="up_art" style="flex:0 1 320px"><option value="vertrag">der Vertrag</option><option value="abrechnung">eine Abrechnung (Vertrag reiche ich nach)</option></select></div>'+

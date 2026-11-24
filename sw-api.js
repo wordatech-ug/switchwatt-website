@@ -161,6 +161,9 @@
   SW.ART = { vertrag: 'Vertrag', abrechnung: 'Abrechnung', kuendigung_entwurf: 'Kündigung (Entwurf von SwitchWatt)', kuendigung_unterschrieben: 'Kündigung (unterschrieben)', sonstiges: 'Sonstiges', gutschrift_dv: 'Abrechnung Direktvermarkter', gutschrift_nb: 'Abrechnung Netzbetreiber', monitoring: 'Monitoring-Export', vollmacht: 'Vollmacht (PDF)', rechnung: 'Rechnung' };
   // Vertragstermine: aktuelles Vertragsende und nächster Kündigungstermin, inklusive automatischer Verlängerung.
   // Ergebnis: { ende, kuendigen_bis, verlaengert, fehlt: 'vertrag' | 'start' | null }
+  // Angebote holen wir rund 4 Monate vor der Kündigungsfrist ein (Angebote gelten nur wenige Wochen). Ab 6 Monaten Abstand sieht der Kunde den Hinweis „noch zu früh“.
+  SW.VORLAUF_MONATE = 4; SW.ZU_FRUEH_TAGE = 183;
+  SW.angeboteAb = function (kb) { if (!kb) return null; var x = new Date(String(kb).slice(0, 10) + 'T00:00:00Z'); x.setUTCMonth(x.getUTCMonth() - SW.VORLAUF_MONATE); return x.toISOString().slice(0, 10); };
   SW.termine = function (a, hatVertrag) {
     var ZW = { ein: 1, einen: 1, einem: 1, eine: 1, zwei: 2, drei: 3, vier: 4, sechs: 6, zwoelf: 12, 'zwölf': 12 };
     var monate = function (t) { var m = String(t || '').toLowerCase().match(/(\d+|ein|einen|einem|eine|zwei|drei|vier|sechs|zwölf|zwoelf)\s*(?:weitere[sn]?\s+)?(jahr|monat|woche)/); if (!m) return null; var n = /\d/.test(m[1]) ? Number(m[1]) : ZW[m[1]]; return m[2] === 'jahr' ? n * 12 : m[2] === 'monat' ? n : n / 4.345; };

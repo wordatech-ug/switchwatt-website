@@ -28,7 +28,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=32"></script>
+<script src="sw-api.js?v=33"></script>
 <script src="sw-zip.js?v=1"></script>
 <script>
 // Datensicherung: Tabellen als JSON plus alle Dateien in eine ZIP-Datei (nur Superadmin).
@@ -76,7 +76,7 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
   var heute=new Date().toISOString().slice(0,10),aus={};
   AE.forEach(function(x){if(!x.bis||x.bis>heute)aus[x.schluessel]=x;});
   var L=[],tage=function(d){return d?Math.floor((Date.now()-new Date(d).getTime())/864e5):null;};
-  var cur=null,GR={frist:'w',freigabe:'w',angebote:'w',uebergeben:'w',nachfassen:'w',fristfehlt:'w',startfehlt:'w',vertragfehlt:'w',daten:'k',kontakt:'k',check:'c',ws:'c'};
+  var cur=null,GR={frist:'w',freigabe:'w',angebote:'w',uebergeben:'w',wartet:'w',nachfassen:'w',fristfehlt:'w',startfehlt:'w',vertragfehlt:'w',daten:'k',kontakt:'k',check:'c',ws:'c'};
   var add=function(k,prio,text,link,wer,info){if(!aus[k])var g=GR[k.split(':')[0]]||'k';info=info||'';if(g==='w'&&!/kündigen bis|Frist offen|Kündigungsfrist/.test(info+text))info=(cur?'kündigen bis '+SW.date(cur):'Frist offen')+(info?' · '+info:'');L.push({k:k,p:prio,t:text,l:link,w:wer,i:info,g:g,f:cur});};
   an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;cur=a.kuendigung_bis||null;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
     var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote).filter(function(o){return o.sichtbar;}),entw=SW.arr(a.angebote).filter(function(o){return !o.sichtbar;}).length,fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
@@ -84,7 +84,9 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
     if(hatVm&&offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
     if(fg.length&&['kuendigung','gewechselt'].indexOf(a.status)<0)add('freigabe:'+a.id,fristP,'Kunde hat freigegeben: Kündigung und neuen Vertrag vorbereiten',lk,wer,'freigegeben am '+SW.date(fg[0].freigegeben_at));
     if(hatVm&&offen&&!ang.length&&!fg.length&&entw)add('uebergeben:'+a.id,fristP,'Angebote prüfen und an Kunden übergeben',lk,wer,entw+' Entwurf/Entwürfe');
-    if(hatVm&&offen&&!ang.length&&!fg.length&&!entw)add('angebote:'+a.id,fristP,'Angebote einholen',lk,wer,'Vollmacht seit '+SW.date(v.erteilt_at)+(a.kuendigung_bis?' · kündigen bis '+SW.date(a.kuendigung_bis):' · Frist offen'));
+    var abD=SW.angeboteAb(a.kuendigung_bis),zuFrueh=abD&&abD>new Date().toISOString().slice(0,10);
+    if(hatVm&&offen&&!ang.length&&!fg.length&&!entw&&zuFrueh)add('wartet:'+a.id+':'+abD,6,'Angebote einholen ab '+SW.date(abD),lk,wer,'Kündigungsfrist erst '+SW.date(a.kuendigung_bis)+', Angebote gelten nur wenige Wochen');
+    if(hatVm&&offen&&!ang.length&&!fg.length&&!entw&&!zuFrueh)add('angebote:'+a.id,fristP,'Angebote einholen',lk,wer,'Vollmacht seit '+SW.date(v.erteilt_at)+(a.kuendigung_bis?' · kündigen bis '+SW.date(a.kuendigung_bis):' · Frist offen'));
     if(ang.length&&!fg.length&&offen){var neu=ang.map(function(o){return o.uebergeben_at||o.created_at;}).sort().pop(),t=tage(neu);if(t!=null&&t>=5)add('nachfassen:'+a.id+':'+String(neu).slice(0,10),fristP,'Kunde hat seit '+t+' Tagen nicht freigegeben: nachfassen',lk,wer,ang.length+' Angebot(e)');}
     if(offen&&!a.kuendigung_bis&&hatVm&&a._t){if(a._t.fehlt==='vertrag')add('vertragfehlt:'+a.id,3,'Vertrag anfordern',lk,wer,'ohne Vertrag kein Kündigungstermin');else if(a._t.fehlt==='start')add('startfehlt:'+a.id,3,'Beginn der Belieferung klären',lk,wer,'Vertrag läuft '+(a._t.laufzeit?a._t.laufzeit/12+' Jahre ':'')+'ab tatsächlichem Beginn, Datum fehlt');else add('fristfehlt:'+a.id,4,'Kündigungsfrist im Vertrag prüfen',lk,wer,'Termin ließ sich nicht berechnen');}
     if(!a.daten_bestaetigt_at&&tage(a.created_at)>=3)add('daten:'+a.id,5,'Kunde hat die Anlagendaten noch nicht bestätigt: erinnern',lk,wer,'angelegt am '+SW.date(a.created_at));

@@ -17,7 +17,7 @@
 <main class="sw-wrap" id="app"><p class="sw-muted" style="margin-top:40px">Wird geladen …</p></main>
 <footer style="border-top:1px solid rgba(255,255,255,.08);padding:20px;text-align:center;font-size:13px;color:#71717A"><a href="agb.html" style="color:#A1A1AA">AGB</a> · <a href="impressum.html#kontakt" style="color:#A1A1AA">Kontakt</a> · <a href="impressum.html" style="color:#A1A1AA">Impressum</a> · <a href="datenschutz.html" style="color:#A1A1AA">Datenschutz</a></footer>
 <div id="modal"></div>
-<script src="sw-api.js?v=32"></script>
+<script src="sw-api.js?v=33"></script>
 <script>
 (function(){
 var app=document.getElementById('app'),nav=document.getElementById('topnav'),modal=document.getElementById('modal');
@@ -291,6 +291,7 @@ async function renderAnlage(id,mode){
   var h='<p style="margin-top:28px"><a href="'+(CKM?'#/check':'#/')+'">← Zur Übersicht</a></p><div class="sw-row" style="justify-content:space-between"><h1 style="margin-bottom:0">'+E(a.name)+'</h1>'+(CKM?'':SW.badge(a.status))+'</div>'+
     (CKM?'<p class="sw-sub">'+[a.kwp?SW.num(a.kwp,1)+' kWp':'',a.direktvermarkter?E(a.direktvermarkter):'',a.standort?E(a.standort):''].filter(Boolean).join(' · ')+'</p>':'');
   if(!CKM&&!allDocs.some(function(x){return x.art==='vertrag';}))h+=msg('info','Für den Wechsel brauchen wir Ihren Vertrag mit dem Direktvermarkter. Nur daraus kennen wir Laufzeit und Kündigungsfrist. Bitte unten bei „Dokumente“ als „Vertrag“ hochladen.');
+  if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>SW.ZU_FRUEH_TAGE&&['neu','in_pruefung'].indexOf(a.status)>=0)h+=msg('info','Ihr Vertrag kann erst spät gekündigt werden: spätestens bis '+SW.date(a.kuendigung_bis)+'. Angebote der Direktvermarkter gelten meist nur wenige Wochen. Damit Sie aktuelle Preise bekommen, holen wir die Angebote rund '+SW.VORLAUF_MONATE+' Monate vor Ihrer Kündigungsfrist ein, also ab '+SW.date(SW.angeboteAb(a.kuendigung_bis))+'. Wir melden uns dann automatisch per E-Mail bei Ihnen. Bis dahin müssen Sie nichts tun.');
   if(!CKM&&a.kuendigung_bis&&dd!=null&&dd>=0&&dd<=45&&!fg)h+=msg('info','Der späteste Kündigungstermin ist der '+SW.date(a.kuendigung_bis)+' (noch '+dd+' Tage). Wir behalten das im Blick.');
   if(window._wsFehler){h+=msg('err',window._wsFehler);window._wsFehler=null;}
   if(!CKM&&!hasVm)h+=msg('info','Damit wir für diese Anlage Angebote einholen dürfen, erteilen Sie bitte noch die Vollmacht. Das geht auf der Übersicht in einer Minute.');

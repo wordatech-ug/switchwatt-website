@@ -299,7 +299,7 @@ async function renderAnlage(id,mode){
   /* Angebote */
   if(CKM){}
   else if(offers.length){
-    h+='<section class="sw-card hl"><h2>Angebote</h2>'+(fg?'':'<p class="sw-muted">Wählen Sie ein Angebot. Erst mit Ihrer Freigabe kündigen wir und schließen den neuen Vertrag ab.</p>');
+    h+='<section class="sw-card hl"><h2>Angebote</h2>'+(fg?'':'<p class="sw-muted">Wählen Sie ein Angebot. Erst nach Ihrer Freigabe bereiten wir Kündigung und neuen Vertrag vor. Unterschreiben tun Sie beides selbst.</p>');
     offers.forEach(function(o){var chosen=fg&&fg.angebot_id===o.id;
       h+='<div class="sw-offer'+(o.empfohlen?' best':'')+'"><div class="sw-row" style="justify-content:space-between"><h3 style="margin:0">'+E(o.anbieter)+'</h3>'+(o.empfohlen?'<span class="sw-badge" style="--c:#22C55E">Unsere Empfehlung</span>':'')+(chosen?'<span class="sw-badge" style="--c:#8FA6FF">Von Ihnen gewählt</span>':'')+'</div>'+
       '<dl class="sw-grid sw-dl" style="margin:12px 0 0"><div><dt>Entgelt</dt><dd>'+E(o.entgelt_text||((o.ct_kwh!=null?SW.num(o.ct_kwh,2)+' ct/kWh':'')+(o.fix_monat?' + '+SW.num(o.fix_monat,2)+' €/Monat':'')))+'</dd></div>'+

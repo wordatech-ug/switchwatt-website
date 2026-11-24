@@ -76,8 +76,9 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
   var heute=new Date().toISOString().slice(0,10),aus={};
   AE.forEach(function(x){if(!x.bis||x.bis>heute)aus[x.schluessel]=x;});
   var L=[],tage=function(d){return d?Math.floor((Date.now()-new Date(d).getTime())/864e5):null;};
-  var add=function(k,prio,text,link,wer,info){if(!aus[k])L.push({k:k,p:prio,t:text,l:link,w:wer,i:info||''});};
-  an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
+  var cur=null,GR={frist:'w',freigabe:'w',angebote:'w',nachfassen:'w',fristfehlt:'w',startfehlt:'w',vertragfehlt:'w',daten:'k',kontakt:'k',check:'c',ws:'c'};
+  var add=function(k,prio,text,link,wer,info){if(!aus[k])L.push({k:k,p:prio,t:text,l:link,w:wer,i:info||'',g:GR[k.split(':')[0]]||'k',f:cur});};
+  an.forEach(function(a){var u=users[a.owner]||{};if(u.geschlossen_at)return;cur=a.kuendigung_bis||null;var wer='<a href="#/k/'+a.owner+'">'+E(u.name||u.email||'?')+'</a>',lk='<a href="#/a/'+a.id+'">'+E(a.name)+'</a>';
     var v=vm[a.owner],hatVm=v&&(!v.anlagen||!v.anlagen.length||v.anlagen.indexOf(a.id)>=0),ang=SW.arr(a.angebote),fg=SW.arr(a.freigaben),d=SW.daysUntil(a.kuendigung_bis),offen=OPEN.indexOf(a.status)>=0;
     var fristP=d==null?4:d<=14?1:d<=30?2:d<=60?3:4;
     if(hatVm&&offen&&a.kuendigung_bis&&d!=null&&d<=30&&!fg.length)add('frist:'+a.id+':'+a.kuendigung_bis,d<=14?0:1,(d<0?'Kündigungsfrist abgelaufen':'Kündigungsfrist in '+d+' Tagen')+' ('+SW.date(a.kuendigung_bis)+')',lk,wer,ang.length?ang.length+' Angebot(e), noch nicht freigegeben':'noch keine Angebote');
@@ -88,12 +89,15 @@ function aufgabenHtml(an,users,vm,WS,AE,KA){
     if(!a.daten_bestaetigt_at&&tage(a.created_at)>=3)add('daten:'+a.id,5,'Kunde hat die Anlagendaten noch nicht bestätigt: erinnern',lk,wer,'angelegt am '+SW.date(a.created_at));
     var cf=SW.arr(a.check_frei)[0]||a.check_frei;if(cf&&cf.angefragt_at&&!cf.frei_at)add('check:'+a.id,2,'Abrechnungs-Check freischalten',lk,wer,'angefragt am '+SW.date(cf.angefragt_at));
   });
+  cur=null;
   var anById={};an.forEach(function(a){anById[a.id]=a;});
   WS.forEach(function(w){var a=anById[w.anlage_id]||{},u=users[w.owner]||{};add('ws:'+w.anlage_id+':'+w.monat,1,'Abrechnungs-Check wartet: erneut prüfen ('+String(w.monat).slice(5,7)+'/'+String(w.monat).slice(0,4)+')','<a href="#/a/'+w.anlage_id+'">'+E(a.name||'?')+'</a>',E(u.name||u.email||'?'),E(w.fehler||''));});
   KA.forEach(function(x){add('kontakt:'+x.id,x.name==='SwitchWatt System'?1:2,x.name==='SwitchWatt System'?'Systemmeldung prüfen':'Kontaktanfrage beantworten','<span title="'+E(x.nachricht||'')+'">'+E(String(x.nachricht||'').slice(0,60))+(String(x.nachricht||'').length>60?' …':'')+'</span>',E((x.name||'')+(x.firma?', '+x.firma:''))+' ('+E(x.email||'')+')',SW.dateTime(x.created_at));});
-  L.sort(function(x,y){return x.p-y.p;});
+  L.sort(function(x,y){if(x.f!==y.f){if(!x.f)return 1;if(!y.f)return -1;return x.f<y.f?-1:1;}return x.p-y.p;});
   var farbe=function(p){return p<=0?'#F87171':p<=1?'#F87171':p<=2?'#F5B70A':p<=4?'#8FA6FF':'#71717A';},wort=function(p){return p<=1?'dringend':p<=2?'bald':p<=4?'offen':'später';};
-  return '<section class="sw-card" id="todo"><h2>Was ist zu tun?'+(L.length?' <span class="sw-muted" style="font-weight:400">('+L.length+')</span>':'')+'</h2>'+(L.length?L.map(function(x){return '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)"><span class="sw-badge" style="--c:'+farbe(x.p)+';flex:0 0 84px;width:84px;box-sizing:border-box;justify-content:center;text-align:center">'+wort(x.p)+'</span><div style="flex:1 1 260px;min-width:0"><div style="font-weight:500">'+x.t+'</div><div class="sw-muted" style="font-size:13px;margin-top:2px">'+x.l+' · '+x.w+(x.i?' · '+x.i:'')+'</div></div><span style="flex:0 0 auto;white-space:nowrap"><button class="sw-btn ghost small" data-ae="'+E(x.k)+'" data-bis="7">Später</button> <button class="sw-btn ghost small" data-ae="'+E(x.k)+'">Erledigt</button></span></div>';}).join(''):'<p class="sw-muted" style="margin:0">Nichts offen. 🎉</p>')+'</section>';
+  var zeile=function(x){return '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)"><span class="sw-badge" style="--c:'+farbe(x.p)+';flex:0 0 84px;width:84px;box-sizing:border-box;justify-content:center;text-align:center">'+wort(x.p)+'</span><div style="flex:1 1 260px;min-width:0"><div style="font-weight:500">'+x.t+'</div><div class="sw-muted" style="font-size:13px;margin-top:2px">'+x.l+' · '+x.w+(x.i?' · '+x.i:'')+'</div></div><span style="flex:0 0 auto;white-space:nowrap"><button class="sw-btn ghost small" data-ae="'+E(x.k)+'" data-bis="7">Später</button> <button class="sw-btn ghost small" data-ae="'+E(x.k)+'">Erledigt</button></span></div>';};
+  var G=[['w','Wechselservice'],['c','Abrechnungs-Check'],['k','Kunden und Anfragen']];
+  return '<section class="sw-card" id="todo"><h2>Was ist zu tun?'+(L.length?' <span class="sw-muted" style="font-weight:400">('+L.length+')</span>':'')+'</h2>'+(L.length?G.map(function(g){var l=L.filter(function(x){return x.g===g[0];});return l.length?'<h3 style="margin:18px 0 2px;font-size:15px;color:#A1A1AA;font-weight:600;text-transform:uppercase;letter-spacing:.04em">'+g[1]+' <span style="font-weight:400">('+l.length+')</span></h3>'+l.map(zeile).join(''):'';}).join(''):'<p class="sw-muted" style="margin:0">Nichts offen. 🎉</p>')+'</section>';
 }
 document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-ae]');if(!b)return;e.preventDefault();b.disabled=true;
   var k=b.getAttribute('data-ae'),bis=b.getAttribute('data-bis');
